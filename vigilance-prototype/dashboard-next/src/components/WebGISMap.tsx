@@ -31,10 +31,34 @@ export default function WebGISMap({ clusters, onStatusChange }: WebGISMapProps) 
   useEffect(() => {
     if (!mapContainer.current) return;
 
+    // Carto Dark Matter style
     const map = new maplibregl.Map({
       container: mapContainer.current,
-      style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
-      center: [80.2030, 13.0067],
+      style: {
+        version: 8,
+        sources: {
+          'carto-dark': {
+            type: 'raster',
+            tiles: [
+              'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png',
+              'https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png',
+              'https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png'
+            ],
+            tileSize: 256,
+            attribution: '© OpenStreetMap contributors, © CARTO'
+          }
+        },
+        layers: [
+          {
+            id: 'carto-dark-layer',
+            type: 'raster',
+            source: 'carto-dark',
+            minzoom: 0,
+            maxzoom: 20
+          }
+        ]
+      },
+      center: [80.2030, 13.0067], // Chennai Center (Guindy / Kathipara)
       zoom: 11.5,
       pitch: 30,
     });
@@ -42,7 +66,20 @@ export default function WebGISMap({ clusters, onStatusChange }: WebGISMapProps) 
     map.addControl(new maplibregl.NavigationControl({ showCompass: true }), 'top-right');
     mapRef.current = map;
 
+    // Ensure map fits container correctly on render
+    map.on('load', () => {
+      map.resize();
+    });
+
+    const resizeObserver = new ResizeObserver(() => {
+      map.resize();
+    });
+    if (mapContainer.current) {
+      resizeObserver.observe(mapContainer.current);
+    }
+
     return () => {
+      resizeObserver.disconnect();
       map.remove();
     };
   }, []);
@@ -51,47 +88,49 @@ export default function WebGISMap({ clusters, onStatusChange }: WebGISMapProps) 
     const map = mapRef.current;
     if (!map) return;
 
+    // Clear old markers
     markersRef.current.forEach((m) => m.remove());
     markersRef.current = [];
 
     clusters.forEach((c) => {
-      const isCrit = c.max_severity.toLowerCase() === 'critical';
+      const isCrit = c.max_severity?.toLowerCase() === 'critical';
       const el = document.createElement('div');
       el.className = 'custom-cluster-node cursor-pointer';
       
-      const bgColor = isCrit ? '#DC2626' : (c.rpi_score > 70 ? '#EA580C' : '#2563EB');
+      const bgColor = isCrit ? '#DC2626' : (c.rpi_score > 75 ? '#EA580C' : '#2563EB');
       const borderColor = isCrit ? '#FCA5A5' : '#93C5FD';
       
       el.innerHTML = `
         <div style="
           background: ${bgColor};
           color: white;
-          width: 28px;
-          height: 28px;
+          width: 32px;
+          height: 32px;
           border-radius: 50%;
           border: 2px solid ${borderColor};
           display: flex;
           align-items: center;
           justify-content: center;
           font-size: 11px;
-          font-weight: 700;
-          box-shadow: 0 0 12px ${bgColor};
-          transition: transform 0.2s;
+          font-weight: 800;
+          box-shadow: 0 0 14px ${bgColor};
+          transition: transform 0.2s ease-in-out;
+          cursor: pointer;
         ">
           ${c.detection_count}
         </div>
       `;
 
       const popupContent = `
-        <div style="color: #0f172a; padding: 4px; font-family: sans-serif;">
+        <div style="color: #0f172a; padding: 6px; font-family: sans-serif; min-width: 180px;">
           <h4 style="font-weight: 700; font-size: 13px; margin: 0 0 4px 0; color: #1e293b;">
-            ${c.dominant_type} Node (RPI: ${c.rpi_score})
+            ${c.dominant_type} (RPI: ${c.rpi_score})
           </h4>
           <p style="font-size: 11px; color: #475569; margin: 0 0 4px 0;">${c.road_name}</p>
-          <div style="font-size: 10px; color: #64748b; margin-bottom: 6px;">
-            <span>Nearest POI: <b>${c.nearest_poi || 'Urban Corridor'}</b></span><br/>
-            <span>Multi-Pass Ingestions: <b>${c.detection_count}</b></span><br/>
-            <span>Current Status: <b style="text-transform: uppercase; color: #2563eb;">${c.status}</b></span>
+          <div style="font-size: 10px; color: #64748b; margin-bottom: 6px; line-height: 1.4;">
+            <span>📍 POI: <b>${c.nearest_poi || 'Urban Corridor'}</b></span><br/>
+            <span>🚗 Multi-Passes: <b>${c.detection_count}</b></span><br/>
+            <span>⚡ Status: <b style="text-transform: uppercase; color: #2563eb;">${c.status}</b></span>
           </div>
         </div>
       `;
@@ -108,8 +147,8 @@ export default function WebGISMap({ clusters, onStatusChange }: WebGISMapProps) 
   }, [clusters]);
 
   return (
-    <div className="w-full h-full relative rounded-lg overflow-hidden border border-slate-800">
-      <div ref={mapContainer} className="w-full h-full" />
+    <div className="w-full h-full min-h-[450px] relative rounded-lg overflow-hidden border border-slate-800 bg-slate-950">
+      <div ref={mapContainer} className="w-full h-full absolute inset-0" />
     </div>
   );
 }
