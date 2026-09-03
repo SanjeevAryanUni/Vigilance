@@ -14,7 +14,7 @@ try:
 except ImportError:
     GEOALCHEMY_AVAILABLE = False
 
-from poi_data import get_road_weight, get_proximity_weight, haversine_meters
+from poi_data import get_road_weight, get_proximity_weight, haversine_meters, get_contractor
 
 DB_PATH = os.path.join(os.path.dirname(__file__), "vigilance.db")
 DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{DB_PATH}")
@@ -52,6 +52,9 @@ class Cluster(Base):
     rpi_score = Column(Float, default=0.0)       # 0 - 100
     status = Column(String, default="open")      # open, assigned, resolved
     road_name = Column(String, default="GST Road, Chennai")
+    contractor_name = Column(String, default="L&T Highways Infra Ltd")
+    contractor_contact = Column(String, default="+91 98401 22345")
+    sla_hours = Column(Integer, default=24)
     nearest_poi = Column(String, default="General Area")
     poi_distance_m = Column(Float, default=0.0)
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -159,6 +162,7 @@ def run_spatial_deduplication(db_session) -> int:
         road_name = det_list[0].road_name
         road_wt = get_road_weight(road_name)
         prox_wt, nearest_poi, poi_dist = get_proximity_weight(center_lat, center_lon)
+        contractor_info = get_contractor(road_name)
         
         rpi = compute_rpi(max_sev, len(det_list), road_type_weight=road_wt, proximity_weight=prox_wt)
         
@@ -182,6 +186,9 @@ def run_spatial_deduplication(db_session) -> int:
             rpi_score=rpi,
             status=matched_status,
             road_name=road_name,
+            contractor_name=contractor_info["name"],
+            contractor_contact=contractor_info["contact"],
+            sla_hours=contractor_info["sla_hours"],
             nearest_poi=nearest_poi,
             poi_distance_m=poi_dist,
             created_at=created_time,

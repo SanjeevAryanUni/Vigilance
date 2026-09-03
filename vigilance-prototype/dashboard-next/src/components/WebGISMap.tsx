@@ -14,6 +14,9 @@ interface ClusterData {
   rpi_score: number;
   status: string;
   road_name: string;
+  contractor_name?: string;
+  contractor_contact?: string;
+  sla_hours?: number;
   nearest_poi?: string;
   poi_distance_m?: number;
 }
@@ -37,22 +40,22 @@ export default function WebGISMap({ clusters, onStatusChange }: WebGISMapProps) 
       style: {
         version: 8,
         sources: {
-          'carto-dark': {
+          'osm-basemap': {
             type: 'raster',
             tiles: [
-              'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png',
-              'https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png',
-              'https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png'
+              'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
+              'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
+              'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png'
             ],
             tileSize: 256,
-            attribution: '© OpenStreetMap contributors, © CARTO'
+            attribution: '© OpenStreetMap contributors'
           }
         },
         layers: [
           {
-            id: 'carto-dark-layer',
+            id: 'osm-basemap-layer',
             type: 'raster',
-            source: 'carto-dark',
+            source: 'osm-basemap',
             minzoom: 0,
             maxzoom: 20
           }
@@ -122,14 +125,17 @@ export default function WebGISMap({ clusters, onStatusChange }: WebGISMapProps) 
       `;
 
       const popupContent = `
-        <div style="color: #0f172a; padding: 6px; font-family: sans-serif; min-width: 180px;">
+        <div style="color: #0f172a; padding: 6px; font-family: sans-serif; min-width: 210px;">
           <h4 style="font-weight: 700; font-size: 13px; margin: 0 0 4px 0; color: #1e293b;">
             ${c.dominant_type} (RPI: ${c.rpi_score})
           </h4>
           <p style="font-size: 11px; color: #475569; margin: 0 0 4px 0;">${c.road_name}</p>
-          <div style="font-size: 10px; color: #64748b; margin-bottom: 6px; line-height: 1.4;">
+          <div style="font-size: 10px; color: #64748b; margin-bottom: 6px; line-height: 1.5;">
             <span>📍 POI: <b>${c.nearest_poi || 'Urban Corridor'}</b></span><br/>
-            <span>🚗 Multi-Passes: <b>${c.detection_count}</b></span><br/>
+            <span>🚗 Fleet Passes: <b>${c.detection_count}</b></span><br/>
+            <span>🏗️ Contractor: <b>${c.contractor_name || 'L&T Infra'}</b></span><br/>
+            <span>📞 Contact: <b>${c.contractor_contact || 'PWD HQ'}</b></span><br/>
+            <span>⏱️ Repair SLA: <b style="color: #dc2626;">${c.sla_hours || 24} Hours</b></span><br/>
             <span>⚡ Status: <b style="text-transform: uppercase; color: #2563eb;">${c.status}</b></span>
           </div>
         </div>

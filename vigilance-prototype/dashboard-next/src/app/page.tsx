@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
-import { ShieldAlert, Radio, RefreshCw, Wrench, PieChart as PieIcon, MapPin } from 'lucide-react';
+import Link from 'next/link';
+import { ShieldAlert, Radio, RefreshCw, Wrench, PieChart as PieIcon, MapPin, Smartphone } from 'lucide-react';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Doughnut } from 'react-chartjs-2';
 
@@ -19,15 +20,15 @@ const WebGISMap = dynamic(() => import('@/components/WebGISMap'), {
 
 // Initial High-Fidelity Chennai Municipal Transit Seed Dataset
 const INITIAL_CLUSTERS = [
-  { id: 1, centroid_lat: 12.9516, centroid_lon: 80.1462, detection_count: 7, dominant_type: "D40 (Pothole)", max_severity: "critical", rpi_score: 94.5, status: "open", road_name: "GST Road, Tambaram (NH-32)", nearest_poi: "MIOT Hospital Corridor", poi_distance_m: 420 },
-  { id: 2, centroid_lat: 13.0067, centroid_lon: 80.2030, detection_count: 5, dominant_type: "D40 (Pothole)", max_severity: "critical", rpi_score: 89.2, status: "assigned", road_name: "Guindy Kathipara Grade Junction", nearest_poi: "Anna University", poi_distance_m: 850 },
-  { id: 3, centroid_lat: 13.0604, centroid_lon: 80.2496, detection_count: 4, dominant_type: "D20 (Alligator Crack)", max_severity: "high", rpi_score: 82.1, status: "open", road_name: "Anna Salai (Mount Road)", nearest_poi: "Apollo Hospital, Greams Rd", poi_distance_m: 310 },
-  { id: 4, centroid_lat: 12.8231, centroid_lon: 80.0442, detection_count: 6, dominant_type: "D40 (Pothole)", max_severity: "critical", rpi_score: 88.0, status: "open", road_name: "SRM Institute / Potheri Highway", nearest_poi: "SRM Medical College", poi_distance_m: 180 },
-  { id: 5, centroid_lat: 12.9719, centroid_lon: 80.2500, detection_count: 3, dominant_type: "D10 (Transverse Crack)", max_severity: "high", rpi_score: 74.5, status: "assigned", road_name: "Old Mahabalipuram Road (OMR)", nearest_poi: "IIT Madras Zone", poi_distance_m: 1200 },
-  { id: 6, centroid_lat: 13.0827, centroid_lon: 80.2707, detection_count: 4, dominant_type: "D00 (Longitudinal Crack)", max_severity: "medium", rpi_score: 68.4, status: "resolved", road_name: "Poonamallee High Road", nearest_poi: "Madras Medical College", poi_distance_m: 650 },
-  { id: 7, centroid_lat: 12.9815, centroid_lon: 80.2180, detection_count: 3, dominant_type: "D40 (Pothole)", max_severity: "high", rpi_score: 79.8, status: "open", road_name: "Velachery Main Road", nearest_poi: "Fortis Malar Hospital", poi_distance_m: 1400 },
-  { id: 8, centroid_lat: 13.0418, centroid_lon: 80.2341, detection_count: 5, dominant_type: "D20 (Alligator Crack)", max_severity: "high", rpi_score: 76.2, status: "open", road_name: "T. Nagar Usman Road Commercial", nearest_poi: "D.A.V. School Link", poi_distance_m: 920 },
-  { id: 9, centroid_lat: 13.0878, centroid_lon: 80.2155, detection_count: 2, dominant_type: "D00 (Longitudinal Crack)", max_severity: "low", rpi_score: 52.0, status: "resolved", road_name: "Anna Nagar 2nd Avenue", nearest_poi: "Kendriya Vidyalaya", poi_distance_m: 1600 }
+  { id: 1, centroid_lat: 12.9516, centroid_lon: 80.1462, detection_count: 7, dominant_type: "D40 (Pothole)", max_severity: "critical", rpi_score: 94.5, status: "open", road_name: "GST Road, Tambaram (NH-32)", contractor_name: "L&T Highways Infra Ltd", contractor_contact: "+91 98401 22345", sla_hours: 24, nearest_poi: "MIOT Hospital Corridor", poi_distance_m: 420 },
+  { id: 2, centroid_lat: 13.0067, centroid_lon: 80.2030, detection_count: 5, dominant_type: "D40 (Pothole)", max_severity: "critical", rpi_score: 89.2, status: "assigned", road_name: "Guindy Kathipara Grade Junction", contractor_name: "NHAI Metro Division Chennai", contractor_contact: "+91 91760 55667", sla_hours: 12, nearest_poi: "Anna University", poi_distance_m: 850 },
+  { id: 3, centroid_lat: 13.0604, centroid_lon: 80.2496, detection_count: 4, dominant_type: "D20 (Alligator Crack)", max_severity: "high", rpi_score: 82.1, status: "open", road_name: "Anna Salai (Mount Road)", contractor_name: "GMR Urban Highways Ltd", contractor_contact: "+91 98840 77890", sla_hours: 24, nearest_poi: "Apollo Hospital, Greams Rd", poi_distance_m: 310 },
+  { id: 4, centroid_lat: 12.8231, centroid_lon: 80.0442, detection_count: 6, dominant_type: "D40 (Pothole)", max_severity: "critical", rpi_score: 88.0, status: "open", road_name: "SRM Institute / Potheri Highway", contractor_name: "Chettinad Road Infra Pvt Ltd", contractor_contact: "+91 97900 88990", sla_hours: 24, nearest_poi: "SRM Medical College", poi_distance_m: 180 },
+  { id: 5, centroid_lat: 12.9719, centroid_lon: 80.2500, detection_count: 3, dominant_type: "D10 (Transverse Crack)", max_severity: "high", rpi_score: 74.5, status: "assigned", road_name: "Old Mahabalipuram Road (OMR)", contractor_name: "TNRDC OMR Cell", contractor_contact: "+91 99400 33445", sla_hours: 48, nearest_poi: "IIT Madras Zone", poi_distance_m: 1200 },
+  { id: 6, centroid_lat: 13.0827, centroid_lon: 80.2707, detection_count: 4, dominant_type: "D00 (Longitudinal Crack)", max_severity: "medium", rpi_score: 68.4, status: "resolved", road_name: "Poonamallee High Road", contractor_name: "TN PWD Division 4", contractor_contact: "+91 94440 11223", sla_hours: 48, nearest_poi: "Madras Medical College", poi_distance_m: 650 },
+  { id: 7, centroid_lat: 12.9815, centroid_lon: 80.2180, detection_count: 3, dominant_type: "D40 (Pothole)", max_severity: "high", rpi_score: 79.8, status: "open", road_name: "Velachery Main Road", contractor_name: "Chennai Corp Zone 13", contractor_contact: "+91 94451 90013", sla_hours: 72, nearest_poi: "Fortis Malar Hospital", poi_distance_m: 1400 },
+  { id: 8, centroid_lat: 13.0418, centroid_lon: 80.2341, detection_count: 5, dominant_type: "D20 (Alligator Crack)", max_severity: "high", rpi_score: 76.2, status: "open", road_name: "T. Nagar Usman Road Commercial", contractor_name: "Chennai Corp Zone 10", contractor_contact: "+91 94451 90010", sla_hours: 48, nearest_poi: "D.A.V. School Link", poi_distance_m: 920 },
+  { id: 9, centroid_lat: 13.0878, centroid_lon: 80.2155, detection_count: 2, dominant_type: "D00 (Longitudinal Crack)", max_severity: "low", rpi_score: 52.0, status: "resolved", road_name: "Anna Nagar 2nd Avenue", contractor_name: "Chennai Corp Zone 8", contractor_contact: "+91 94451 90008", sla_hours: 72, nearest_poi: "Kendriya Vidyalaya", poi_distance_m: 1600 }
 ];
 
 const INITIAL_DETECTIONS = [
@@ -38,90 +39,123 @@ const INITIAL_DETECTIONS = [
   { id: 105, defect_type: "D00", confidence: 0.79, severity: "medium", vehicle_id: "BUS-TN22-5501", road_name: "Old Mahabalipuram Road (OMR)", timestamp: new Date(Date.now() - 600000).toISOString() }
 ];
 
-const API_BASE = typeof window !== 'undefined' && window.location.hostname === 'localhost' ? 'http://localhost:8000' : '';
+const getApiBase = (): string => {
+  if (process.env.NEXT_PUBLIC_API_BASE_URL) {
+    return process.env.NEXT_PUBLIC_API_BASE_URL.replace(/\/$/, '');
+  }
+  if (typeof window !== 'undefined') {
+    return `${window.location.protocol}//${window.location.hostname}:8000`;
+  }
+  return 'http://localhost:8000';
+};
+
+const getWsUrl = (apiBase: string): string => {
+  try {
+    const url = new URL(apiBase);
+    const wsProtocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
+    return `${wsProtocol}//${url.host}/ws`;
+  } catch (e) {
+    return 'ws://localhost:8000/ws';
+  }
+};
 
 export default function DashboardPage() {
   const [stats, setStats] = useState({
-    total_detections: 64,
-    deduplicated_clusters: 9,
-    potholes: 24,
-    cracks: 40,
-    critical_severity: 14,
-    high_severity: 28,
-    active_vehicles: 5,
+    total_detections: 0,
+    deduplicated_clusters: 0,
+    potholes: 0,
+    cracks: 0,
+    critical_severity: 0,
+    high_severity: 0,
+    active_vehicles: 0,
   });
 
-  const [detections, setDetections] = useState<any[]>(INITIAL_DETECTIONS);
-  const [clusters, setClusters] = useState<any[]>(INITIAL_CLUSTERS);
-  const [isLiveStream, setIsLiveStream] = useState(true);
+  const [detections, setDetections] = useState<any[]>([]);
+  const [clusters, setClusters] = useState<any[]>([]);
+  const [wsConnected, setWsConnected] = useState(false);
 
   const fetchData = async () => {
-    if (!API_BASE) return;
+    const apiBase = getApiBase();
     try {
       const [statsRes, detRes, clusterRes] = await Promise.all([
-        fetch(`${API_BASE}/api/stats`),
-        fetch(`${API_BASE}/api/detections?limit=15`),
-        fetch(`${API_BASE}/api/clusters`),
+        fetch(`${apiBase}/api/stats`),
+        fetch(`${apiBase}/api/detections?limit=15`),
+        fetch(`${apiBase}/api/clusters`),
       ]);
 
       if (statsRes.ok) setStats(await statsRes.json());
       if (detRes.ok) {
         const d = await detRes.json();
-        if (d && d.length > 0) setDetections(d);
+        if (Array.isArray(d)) setDetections(d);
       }
       if (clusterRes.ok) {
         const c = await clusterRes.json();
-        if (c && c.length > 0) setClusters(c);
+        if (Array.isArray(c)) setClusters(c);
       }
     } catch (e) {
-      // Local backend offline -> gracefully retain cloud seed data
+      console.warn('Backend fetch warning:', e);
     }
   };
 
   const updateStatus = async (clusterId: number, newStatus: string) => {
     setClusters(prev => prev.map(c => c.id === clusterId ? { ...c, status: newStatus } : c));
-    if (API_BASE) {
-      try {
-        await fetch(`${API_BASE}/api/clusters/${clusterId}/status?status=${newStatus}`, { method: 'POST' });
-      } catch (e) {}
-    }
+    const apiBase = getApiBase();
+    try {
+      await fetch(`${apiBase}/api/clusters/${clusterId}/status?status=${newStatus}`, { method: 'POST' });
+    } catch (e) {}
   };
 
   useEffect(() => {
     fetchData();
 
-    // Live Edge Perception Simulation Interval
-    const simInterval = setInterval(() => {
-      const vehicles = ["BUS-TN01-1042", "BUS-TN02-3891", "MUNICIPAL-TRUCK-07", "PATROL-VAN-12", "BUS-TN22-5501"];
-      const defects = ["D40", "D20", "D10", "D00"];
-      const roads = ["GST Road, Tambaram (NH-32)", "Anna Salai (Mount Road)", "Guindy Kathipara Junction", "SRM / Potheri Corridor", "OMR IT Express Highway"];
-      
-      const newDefect = defects[Math.floor(Math.random() * defects.length)];
-      const newRoad = roads[Math.floor(Math.random() * roads.length)];
-      const newVehicle = vehicles[Math.floor(Math.random() * vehicles.length)];
-      const isCrit = newDefect === "D40" && Math.random() > 0.3;
-      
-      const newDet = {
-        id: Date.now(),
-        defect_type: newDefect,
-        confidence: Number((0.82 + Math.random() * 0.16).toFixed(2)),
-        severity: isCrit ? "critical" : (newDefect in ["D40", "D20"] ? "high" : "medium"),
-        vehicle_id: newVehicle,
-        road_name: newRoad,
-        timestamp: new Date().toISOString()
+    // 1. Setup Fallback Polling (Every 5 seconds)
+    const pollInterval = setInterval(() => {
+      fetchData();
+    }, 5000);
+
+    // 2. Setup WebSocket Live Stream
+    const apiBase = getApiBase();
+    const wsUrl = getWsUrl(apiBase);
+    let socket: WebSocket | null = null;
+    let isComponentMounted = true;
+
+    try {
+      socket = new WebSocket(wsUrl);
+
+      socket.onopen = () => {
+        if (isComponentMounted) setWsConnected(true);
+        fetchData();
       };
 
-      setDetections(prev => [newDet, ...prev.slice(0, 14)]);
-      setStats(prev => ({
-        ...prev,
-        total_detections: prev.total_detections + 1,
-        potholes: newDefect === "D40" ? prev.potholes + 1 : prev.potholes,
-        cracks: newDefect !== "D40" ? prev.cracks + 1 : prev.cracks,
-        critical_severity: isCrit ? prev.critical_severity + 1 : prev.critical_severity,
-      }));
-    }, 4000);
+      socket.onmessage = (event) => {
+        try {
+          const msg = JSON.parse(event.data);
+          if (msg.event === 'NEW_DETECTION' || msg.event === 'CLUSTER_UPDATED') {
+            fetchData();
+          }
+        } catch (err) {
+          fetchData();
+        }
+      };
 
-    return () => clearInterval(simInterval);
+      socket.onclose = () => {
+        if (isComponentMounted) setWsConnected(false);
+      };
+
+      socket.onerror = () => {
+        if (isComponentMounted) setWsConnected(false);
+      };
+    } catch (err) {
+      console.warn('WebSocket connection error:', err);
+    }
+
+    return () => {
+      isComponentMounted = false;
+      clearInterval(pollInterval);
+      if (socket && socket.readyState === WebSocket.OPEN) {
+        socket.close();
+      }
+    };
   }, []);
 
   const chartData = {
@@ -155,13 +189,19 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 bg-emerald-950/60 border border-emerald-700/60 px-3 py-1.5 rounded-full text-xs text-emerald-300">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span>{stats.active_vehicles} Fleet Nodes Active (Live Stream)</span>
+            <span className={`w-2.5 h-2.5 rounded-full ${wsConnected ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`}></span>
+            <span>{stats.active_vehicles} Fleet Nodes • {wsConnected ? 'WebSocket Live' : 'HTTP Polling'}</span>
           </div>
+          <Link
+            href="/capture"
+            className="bg-blue-600 hover:bg-blue-500 text-white text-xs px-3 py-1.5 rounded-lg border border-blue-500 flex items-center gap-1.5 transition font-semibold shadow-md shadow-blue-600/20"
+          >
+            <Smartphone className="w-3.5 h-3.5" /> Mobile Phone Dashcam Mode
+          </Link>
           <button
-            onClick={() => setStats(prev => ({ ...prev, total_detections: prev.total_detections + 1 }))}
+            onClick={() => fetchData()}
             className="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs px-3 py-1.5 rounded border border-slate-700 flex items-center gap-1.5 transition"
           >
             <RefreshCw className="w-3.5 h-3.5" /> Refresh
@@ -289,9 +329,19 @@ export default function DashboardPage() {
                       RPI {c.rpi_score}
                     </span>
                   </div>
-                  <div className="text-[11px] text-slate-300 truncate">{c.road_name}</div>
+                  <div className="text-[11px] text-slate-300 font-medium truncate">{c.road_name}</div>
+                  <div className="flex flex-col gap-0.5 text-[10px] text-slate-400 bg-slate-900/60 p-1.5 rounded border border-slate-800/80">
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-300 font-semibold">🏗️ {c.contractor_name || 'L&T Infra'}</span>
+                      <span className="text-red-400 font-mono font-semibold">{c.sla_hours || 24}h SLA</span>
+                    </div>
+                    <div className="flex justify-between items-center text-[9.5px] text-slate-400">
+                      <span>📞 {c.contractor_contact || '+91 98401 22345'}</span>
+                      <span>{c.detection_count} Passes</span>
+                    </div>
+                  </div>
                   <div className="flex justify-between items-center text-[10px] text-slate-400">
-                    <span>{c.detection_count} Passes • {c.nearest_poi}</span>
+                    <span className="truncate text-slate-500">📍 {c.nearest_poi}</span>
                     <span
                       className={`capitalize px-1.5 py-0.5 rounded text-[9px] font-semibold ${
                         c.status === 'resolved'
@@ -307,15 +357,15 @@ export default function DashboardPage() {
                   <div className="flex gap-1 mt-1">
                     <button
                       onClick={() => updateStatus(c.id, 'assigned')}
-                      className="flex-1 py-1 bg-slate-800 hover:bg-blue-700 text-slate-200 text-[10px] rounded transition"
+                      className="flex-1 py-1 bg-blue-900/40 hover:bg-blue-600 text-blue-200 text-[10px] font-semibold rounded border border-blue-700/60 transition"
                     >
-                      Dispatch PWD
+                      Alert Contractor
                     </button>
                     <button
                       onClick={() => updateStatus(c.id, 'resolved')}
-                      className="px-2 py-1 bg-slate-800 hover:bg-emerald-700 text-slate-200 text-[10px] rounded transition"
+                      className="px-2.5 py-1 bg-emerald-900/40 hover:bg-emerald-600 text-emerald-200 text-[10px] font-semibold rounded border border-emerald-700/60 transition"
                     >
-                      Resolve
+                      Mark Settled
                     </button>
                   </div>
                 </div>
