@@ -1,16 +1,29 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
+import dynamic from 'next/dynamic';
 import Header from '@/components/Header';
 import ConnectionStatus from '@/components/ConnectionStatus';
 import KPICard from '@/components/KPICard';
+import HardwareAssembly from '@/components/HardwareAssembly';
 import { useDashboardData } from '@/hooks/useDashboardData';
-import { Truck, Radio, Navigation, Activity, ShieldCheck, MapPin, Gauge } from 'lucide-react';
+import { Truck, Radio, Navigation, Activity, ShieldCheck, MapPin, Gauge, Camera } from 'lucide-react';
 import { formatTimeAgo } from '@/lib/utils';
+
+const EdgeCockpit3D = dynamic(() => import('@/components/EdgeCockpit3D'), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-80 flex items-center justify-center bg-slate-950 text-cyan-400 font-mono text-xs rounded-xl border border-slate-800">
+      Initializing 3D Transit Highway Telemetry...
+    </div>
+  ),
+});
 
 export default function FleetPage() {
   const { stats, detections, isConnected, backendAvailable, lastUpdated, refreshData, triggerDedup } =
     useDashboardData();
+
+  const [selectedVehicleId, setSelectedVehicleId] = useState<string>('BUS-TN01-1042');
 
   const FLEET_VEHICLES = [
     {
@@ -70,6 +83,8 @@ export default function FleetPage() {
     },
   ];
 
+  const activeVehicle = FLEET_VEHICLES.find((v) => v.id === selectedVehicleId) || FLEET_VEHICLES[0];
+
   return (
     <div className="flex flex-col min-h-screen bg-slate-950 text-slate-100 font-sans select-none">
       <Header
@@ -79,21 +94,21 @@ export default function FleetPage() {
         onTriggerDedup={triggerDedup}
       />
 
-      <main className="flex-1 p-4 lg:p-6 flex flex-col gap-5 max-w-7xl mx-auto w-full">
+      <main className="flex-1 p-4 lg:p-6 flex flex-col gap-6 max-w-7xl mx-auto w-full">
         {/* Title */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
             <h1 className="text-xl font-bold font-mono tracking-tight flex items-center gap-2">
               <Truck className="w-5 h-5 text-cyan-400" />
-              <span>Public Transit Edge AI Fleet Monitoring</span>
+              <span>Public Transit Edge AI Fleet Monitoring & Cockpit</span>
             </h1>
             <p className="text-xs text-slate-400 font-mono mt-0.5">
-              Live telemetry streams from onboard MTC buses and municipal vehicles operating across Chennai
+              Live telemetry and edge windshield perception streaming across Chennai arterial transit corridors
             </p>
           </div>
-          <div className="flex items-center gap-2 bg-emerald-950/70 border border-emerald-700/60 px-3 py-1.5 rounded-lg text-xs font-mono text-emerald-300">
+          <div className="flex items-center gap-2 bg-emerald-950/70 border border-emerald-700/60 px-3 py-1.5 rounded-lg text-xs font-mono text-emerald-300 self-start sm:self-auto">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span>5/5 Units Online</span>
+            <span>5/5 Fleet Nodes Active</span>
           </div>
         </div>
 
@@ -129,64 +144,115 @@ export default function FleetPage() {
           />
         </div>
 
-        {/* Vehicles Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {FLEET_VEHICLES.map((veh) => {
-            const vehicleDetections = detections.filter((d) => d.vehicle_id === veh.id);
-            const latestDet = vehicleDetections[0];
+        {/* 1. Live 3D Transit Cockpit Simulator Section */}
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div className="flex items-center gap-2 text-xs font-mono">
+              <Camera className="w-4 h-4 text-cyan-400" />
+              <span className="font-bold text-slate-200 uppercase tracking-wider">
+                Live Windshield Edge AI Perception Stream (WebGL Three.js)
+              </span>
+            </div>
+            {/* Quick Vehicle Switcher Tabs */}
+            <div className="flex items-center gap-1 bg-slate-900 border border-slate-800 p-1 rounded-lg overflow-x-auto text-[10px] font-mono">
+              {FLEET_VEHICLES.map((v) => (
+                <button
+                  key={v.id}
+                  onClick={() => setSelectedVehicleId(v.id)}
+                  className={`px-2 py-1 rounded transition whitespace-nowrap font-bold ${
+                    selectedVehicleId === v.id
+                      ? 'bg-cyan-950 text-cyan-300 border border-cyan-700/80 shadow-[0_0_10px_rgba(6,182,212,0.3)]'
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  {v.id}
+                </button>
+              ))}
+            </div>
+          </div>
 
-            return (
-              <div
-                key={veh.id}
-                className="bg-slate-900/80 backdrop-blur-xl border border-slate-800 hover:border-slate-700 rounded-xl p-4 flex flex-col justify-between gap-3 transition-all duration-300 shadow-sm hover:shadow-md"
-              >
-                {/* Header */}
-                <div className="flex items-start justify-between">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-slate-100 font-mono text-sm">{veh.id}</span>
-                      <span className="px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800 text-[10px] font-mono font-semibold">
-                        ONLINE
-                      </span>
+          <div className="h-[460px] w-full">
+            <EdgeCockpit3D
+              vehicleId={activeVehicle.id}
+              roadName={activeVehicle.route.split(':')[1]?.trim() || 'GST Road (NH-32)'}
+            />
+          </div>
+        </div>
+
+        {/* 2. Interactive Sub-₹3,000 Hardware Architecture Assembly */}
+        <HardwareAssembly />
+
+        {/* 3. Fleet Nodes Detail Grid */}
+        <div className="flex flex-col gap-3">
+          <div className="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
+            <Truck className="w-4 h-4 text-amber-400" />
+            <span>Active Fleet Unit Roster</span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {FLEET_VEHICLES.map((veh) => {
+              const vehicleDetections = detections.filter((d) => d.vehicle_id === veh.id);
+              const latestDet = vehicleDetections[0];
+              const isSelected = selectedVehicleId === veh.id;
+
+              return (
+                <div
+                  key={veh.id}
+                  onClick={() => setSelectedVehicleId(veh.id)}
+                  className={`bg-slate-900/80 backdrop-blur-xl border rounded-xl p-4 flex flex-col justify-between gap-3 transition-all duration-300 shadow-sm cursor-pointer ${
+                    isSelected
+                      ? 'border-cyan-500/80 shadow-[0_0_15px_rgba(6,182,212,0.2)] bg-slate-900'
+                      : 'border-slate-800 hover:border-slate-700'
+                  }`}
+                >
+                  {/* Header */}
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-slate-100 font-mono text-sm">{veh.id}</span>
+                        <span className="px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800 text-[10px] font-mono font-semibold">
+                          ONLINE
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-400 font-mono mt-0.5">{veh.type}</p>
                     </div>
-                    <p className="text-[11px] text-slate-400 font-mono mt-0.5">{veh.type}</p>
+                    <div className="p-2 rounded-lg bg-slate-800 border border-slate-700 text-cyan-400">
+                      <Radio className="w-4 h-4 animate-pulse" />
+                    </div>
                   </div>
-                  <div className="p-2 rounded-lg bg-slate-800 border border-slate-700 text-cyan-400">
-                    <Radio className="w-4 h-4 animate-pulse" />
-                  </div>
-                </div>
 
-                {/* Route Information */}
-                <div className="bg-slate-950/80 border border-slate-800/80 p-2.5 rounded-lg text-xs font-mono flex flex-col gap-1">
-                  <span className="text-[10px] text-slate-500 uppercase font-semibold">Assigned Transit Corridor</span>
-                  <span className="text-slate-200 font-medium text-[11px]">{veh.route}</span>
-                </div>
+                  {/* Route Information */}
+                  <div className="bg-slate-950/80 border border-slate-800/80 p-2.5 rounded-lg text-xs font-mono flex flex-col gap-1">
+                    <span className="text-[10px] text-slate-500 uppercase font-semibold">Assigned Transit Corridor</span>
+                    <span className="text-slate-200 font-medium text-[11px]">{veh.route}</span>
+                  </div>
 
-                {/* Specs & Hardware */}
-                <div className="grid grid-cols-2 gap-2 text-[10px] font-mono">
-                  <div className="bg-slate-950/50 p-2 rounded border border-slate-800/50">
-                    <span className="text-slate-500">Camera Optics</span>
-                    <div className="text-slate-300 font-semibold truncate mt-0.5">{veh.cameraModel}</div>
+                  {/* Specs & Hardware */}
+                  <div className="grid grid-cols-2 gap-2 text-[10px] font-mono">
+                    <div className="bg-slate-950/50 p-2 rounded border border-slate-800/50">
+                      <span className="text-slate-500">Camera Optics</span>
+                      <div className="text-slate-300 font-semibold truncate mt-0.5">{veh.cameraModel}</div>
+                    </div>
+                    <div className="bg-slate-950/50 p-2 rounded border border-slate-800/50">
+                      <span className="text-slate-500">Onboard Compute</span>
+                      <div className="text-cyan-300 font-semibold truncate mt-0.5">{veh.edgeSoC}</div>
+                    </div>
                   </div>
-                  <div className="bg-slate-950/50 p-2 rounded border border-slate-800/50">
-                    <span className="text-slate-500">Onboard Compute</span>
-                    <div className="text-cyan-300 font-semibold truncate mt-0.5">{veh.edgeSoC}</div>
-                  </div>
-                </div>
 
-                {/* Telemetry Footer */}
-                <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px] font-mono">
-                  <div className="flex items-center gap-1 text-slate-400">
-                    <Activity className="w-3.5 h-3.5 text-cyan-400" />
-                    <span>Speed: <b>{veh.speedKmh} km/h</b></span>
-                  </div>
-                  <div className="text-slate-400 text-[10px]">
-                    {latestDet ? formatTimeAgo(latestDet.timestamp) : 'Active now'}
+                  {/* Telemetry Footer */}
+                  <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px] font-mono">
+                    <div className="flex items-center gap-1 text-slate-400">
+                      <Activity className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>Speed: <b>{veh.speedKmh} km/h</b></span>
+                    </div>
+                    <div className="text-slate-400 text-[10px]">
+                      {latestDet ? formatTimeAgo(latestDet.timestamp) : 'Active now'}
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
 
         {/* Store & Forward Resilient Network Banner */}

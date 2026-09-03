@@ -10,7 +10,7 @@ import ClusterTable from '@/components/ClusterTable';
 import DoughnutChart from '@/components/DoughnutChart';
 import ConnectionStatus from '@/components/ConnectionStatus';
 import { Cluster } from '@/types/vigilance';
-import { Activity, AlertOctagon, Layers, MapPin, PieChart, ShieldAlert, Sparkles, Truck } from 'lucide-react';
+import { Activity, AlertOctagon, Camera, Layers, MapPin, PieChart, ShieldAlert, Sparkles, Truck, X } from 'lucide-react';
 
 const WebGISMap = dynamic(() => import('@/components/WebGISMap'), {
   ssr: false,
@@ -18,6 +18,15 @@ const WebGISMap = dynamic(() => import('@/components/WebGISMap'), {
     <div className="w-full h-full flex flex-col items-center justify-center bg-slate-950 text-slate-400 font-mono text-xs gap-3">
       <div className="w-8 h-8 rounded-full border-2 border-cyan-500 border-t-transparent animate-spin" />
       <span>Initializing Chennai Arterial WebGIS Spatial Grid (MapLibre GL)...</span>
+    </div>
+  ),
+});
+
+const EdgeCockpit3D = dynamic(() => import('@/components/EdgeCockpit3D'), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-full flex items-center justify-center bg-slate-950 text-cyan-400 font-mono text-xs">
+      Initializing 3D Transit Highway Telemetry...
     </div>
   ),
 });
@@ -37,6 +46,7 @@ export default function CommandCenterPage() {
 
   const [selectedCluster, setSelectedCluster] = useState<Cluster | null>(null);
   const [showRPIModal, setShowRPIModal] = useState(false);
+  const [showCockpitModal, setShowCockpitModal] = useState(false);
 
   return (
     <div className="flex flex-col h-screen w-screen bg-slate-950 text-slate-100 overflow-hidden font-sans select-none">
@@ -128,6 +138,15 @@ export default function CommandCenterPage() {
             </div>
 
             <button
+              onClick={() => setShowCockpitModal(true)}
+              className="bg-cyan-950/80 hover:bg-cyan-900/90 border border-cyan-700/80 text-cyan-300 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 text-xs font-mono transition shadow-lg animate-pulse"
+              title="View live 3D highway edge cockpit perspective"
+            >
+              <Camera className="w-3.5 h-3.5 text-cyan-400" />
+              <span>3D Bus Cockpit</span>
+            </button>
+
+            <button
               onClick={() => setShowRPIModal(!showRPIModal)}
               className="bg-blue-950/80 hover:bg-blue-900/90 border border-blue-800/80 text-cyan-300 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 text-xs font-mono transition shadow-lg"
             >
@@ -174,6 +193,19 @@ export default function CommandCenterPage() {
               <span>🛣️ Arterials: 8</span>
             </div>
           </div>
+
+          {/* 3D Edge Cockpit Modal Overlay */}
+          {showCockpitModal && (
+            <div className="absolute inset-4 z-30 flex flex-col bg-slate-950/95 backdrop-blur-xl rounded-xl border border-cyan-700/80 shadow-2xl overflow-hidden animate-in fade-in zoom-in-95">
+              <div className="flex-1 w-full h-full relative">
+                <EdgeCockpit3D
+                  vehicleId="BUS-TN01-1042"
+                  roadName="GST Road, Tambaram (NH-32)"
+                  onClose={() => setShowCockpitModal(false)}
+                />
+              </div>
+            </div>
+          )}
 
           {/* RPI Formula Explainer Modal */}
           {showRPIModal && (
