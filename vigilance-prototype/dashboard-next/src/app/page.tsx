@@ -7,10 +7,14 @@ import Header from '@/components/Header';
 import KPICard from '@/components/KPICard';
 import TelemetryFeed from '@/components/TelemetryFeed';
 import ClusterTable from '@/components/ClusterTable';
-import DoughnutChart from '@/components/DoughnutChart';
 import ConnectionStatus from '@/components/ConnectionStatus';
+import NoiseOverlay from '@/components/reactbits/NoiseOverlay';
+import AgentThoughtStream from '@/components/manus/AgentThoughtStream';
+import CommandPalette from '@/components/manus/CommandPalette';
+import CorridorDistressSpline from '@/components/charts/CorridorDistressSpline';
+import RPIRadialGauge from '@/components/charts/RPIRadialGauge';
 import { Cluster } from '@/types/vigilance';
-import { Activity, AlertOctagon, Camera, Layers, MapPin, PieChart, ShieldAlert, Sparkles, Truck, X } from 'lucide-react';
+import { Activity, AlertOctagon, Camera, Layers, MapPin, Sparkles, TrendingUp, Truck } from 'lucide-react';
 
 const WebGISMap = dynamic(() => import('@/components/WebGISMap'), {
   ssr: false,
@@ -47,22 +51,32 @@ export default function CommandCenterPage() {
   const [selectedCluster, setSelectedCluster] = useState<Cluster | null>(null);
   const [showRPIModal, setShowRPIModal] = useState(false);
   const [showCockpitModal, setShowCockpitModal] = useState(false);
+  const [showCommandPalette, setShowCommandPalette] = useState(false);
 
   return (
-    <div className="flex flex-col h-screen w-screen bg-slate-950 text-slate-100 overflow-hidden font-sans select-none">
+    <div className="flex flex-col h-screen w-screen bg-slate-950 text-slate-100 overflow-hidden font-sans select-none relative">
+      {/* 0. Organic Film Grain Noise Overlay */}
+      <NoiseOverlay />
+
       {/* 1. Master Header Bar */}
       <Header
         activeVehicles={stats.active_vehicles}
         isConnected={isConnected}
         onRefresh={refreshData}
         onTriggerDedup={triggerDedup}
+        onOpenCommandPalette={() => setShowCommandPalette(true)}
       />
 
-      {/* 2. Main Workstation Grid */}
+      {/* 2. Manus Live Agent Thought Stream */}
+      <div className="px-3 pt-2">
+        <AgentThoughtStream />
+      </div>
+
+      {/* 3. Main Workstation Grid */}
       <div className="flex-1 flex overflow-hidden p-3 gap-3">
-        {/* Left Sidebar (KPIs, Charts, Stream & Priority Queue) */}
-        <aside className="w-full lg:w-[420px] flex flex-col gap-3 shrink-0 overflow-y-auto custom-scrollbar pr-1">
-          {/* KPI 2x2 Metric Grid */}
+        {/* Left Sidebar (Spotlight KPIs, ApexCharts Spline & Radial, Priority Queue) */}
+        <aside className="w-full lg:w-[440px] flex flex-col gap-3 shrink-0 overflow-y-auto custom-scrollbar pr-1">
+          {/* KPI 2x2 Metric Grid with SpotlightCard and Mini Sparklines */}
           <div className="grid grid-cols-2 gap-2.5">
             <KPICard
               title="Total Ingests"
@@ -70,8 +84,9 @@ export default function CommandCenterPage() {
               subtitle="Continuous Fleet Perception"
               icon={Activity}
               colorClass="text-cyan-400"
-              glowColor="bg-cyan-500/20"
-              badgeText="LIVE"
+              spotlightColor="cyan"
+              badgeText="LIVE 5Hz"
+              sparklineData={[15, 22, 18, 32, 28, 45, 52]}
             />
             <KPICard
               title="DBSCAN Clusters"
@@ -79,8 +94,9 @@ export default function CommandCenterPage() {
               subtitle="15m Spatial Deduplication"
               icon={Layers}
               colorClass="text-amber-400"
-              glowColor="bg-amber-500/20"
+              spotlightColor="amber"
               badgeText="15m EPS"
+              sparklineData={[4, 6, 5, 8, 9, 12, 14]}
             />
             <KPICard
               title="Critical Hazards"
@@ -88,8 +104,9 @@ export default function CommandCenterPage() {
               subtitle="D40 Deep Potholes"
               icon={AlertOctagon}
               colorClass="text-red-400"
-              glowColor="bg-red-500/20"
+              spotlightColor="red"
               badgeText="HIGH RISK"
+              sparklineData={[2, 4, 3, 5, 4, 7, 8]}
             />
             <KPICard
               title="Active Fleet"
@@ -97,32 +114,45 @@ export default function CommandCenterPage() {
               subtitle="Chennai Transit Buses"
               icon={Truck}
               colorClass="text-emerald-400"
-              glowColor="bg-emerald-500/20"
-              badgeText="GPS 5Hz"
+              spotlightColor="emerald"
+              badgeText="ONLINE"
+              sparklineData={[5, 5, 5, 5, 5, 5, 5]}
             />
           </div>
 
-          {/* Severity Breakdown Doughnut Chart */}
-          <div className="bg-slate-900/80 backdrop-blur-xl border border-slate-800/80 rounded-xl p-3 flex flex-col">
-            <div className="flex items-center justify-between pb-2 mb-1 border-b border-slate-800/60">
-              <div className="flex items-center gap-1.5 text-xs font-mono font-bold uppercase tracking-wider text-slate-300">
-                <PieChart className="w-3.5 h-3.5 text-cyan-400" />
-                <span>Distress Distribution</span>
+          {/* Cinematic ApexCharts: Real-time Corridor Distress Spline */}
+          <div className="bg-slate-900/80 backdrop-blur-xl border border-slate-800/80 rounded-xl p-3 flex flex-col shadow-lg">
+            <div className="flex items-center justify-between pb-2 mb-1 border-b border-slate-800/60 font-mono text-xs">
+              <div className="flex items-center gap-1.5 font-bold uppercase tracking-wider text-slate-300">
+                <TrendingUp className="w-3.5 h-3.5 text-cyan-400" />
+                <span>Corridor Distress Velocity</span>
               </div>
-              <span className="text-[10px] font-mono text-slate-500">RDD2022</span>
+              <span className="text-[10px] text-slate-500">APEXCHARTS REAL-TIME</span>
             </div>
-            <DoughnutChart stats={stats} className="h-40 relative" />
+            <CorridorDistressSpline />
+          </div>
+
+          {/* RPI Concentric Radial Formula Breakdown */}
+          <div className="bg-slate-900/80 backdrop-blur-xl border border-slate-800/80 rounded-xl p-3 flex flex-col shadow-lg">
+            <div className="flex items-center justify-between pb-1 border-b border-slate-800/60 font-mono text-xs">
+              <div className="flex items-center gap-1.5 font-bold uppercase tracking-wider text-slate-300">
+                <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+                <span>RPI Factor Multi-Radial Gauge</span>
+              </div>
+              <span className="text-[10px] text-purple-400 font-bold">4-FACTOR WEIGHT</span>
+            </div>
+            <RPIRadialGauge />
           </div>
 
           {/* Real-time Telemetry Ingestion Feed */}
-          <TelemetryFeed detections={detections} maxItems={12} />
+          <TelemetryFeed detections={detections} maxItems={10} />
 
           {/* RPI Priority Repair Queue */}
           <ClusterTable
             clusters={clusters}
             onStatusChange={updateStatus}
             onSelectCluster={(c) => setSelectedCluster(c)}
-            maxItems={10}
+            maxItems={8}
           />
         </aside>
 
@@ -237,7 +267,15 @@ export default function CommandCenterPage() {
         </main>
       </div>
 
-      {/* 3. Bottom System Status Bar */}
+      {/* 4. Manus Command Palette (Cmd+K) */}
+      <CommandPalette
+        isOpen={showCommandPalette}
+        onClose={() => setShowCommandPalette(false)}
+        onTriggerDedup={triggerDedup}
+        onOpenCockpit={() => setShowCockpitModal(true)}
+      />
+
+      {/* 5. Bottom System Status Bar */}
       <ConnectionStatus
         isConnected={isConnected}
         backendAvailable={backendAvailable}

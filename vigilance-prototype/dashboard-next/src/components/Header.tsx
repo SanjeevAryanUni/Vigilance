@@ -3,14 +3,16 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ShieldAlert, Radio, RefreshCw, Cpu, Activity, LayoutDashboard, BarChart3, Truck, ClipboardList } from 'lucide-react';
+import { ShieldAlert, Radio, RefreshCw, Cpu, Activity, LayoutDashboard, BarChart3, Truck, ClipboardList, Search, Command } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import ShinyText from '@/components/reactbits/ShinyText';
 
 interface HeaderProps {
   activeVehicles?: number;
   isConnected?: boolean;
   onRefresh?: () => void;
   onTriggerDedup?: () => Promise<any>;
+  onOpenCommandPalette?: () => void;
 }
 
 export default function Header({
@@ -18,6 +20,7 @@ export default function Header({
   isConnected = false,
   onRefresh,
   onTriggerDedup,
+  onOpenCommandPalette,
 }: HeaderProps) {
   const pathname = usePathname();
   const [currentTime, setCurrentTime] = useState<string>('');
@@ -55,12 +58,12 @@ export default function Header({
       {/* Brand & Badge */}
       <div className="flex items-center gap-4">
         <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-600 to-cyan-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/20 group-hover:scale-105 transition-transform">
+          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-600 via-cyan-600 to-emerald-600 flex items-center justify-center text-white shadow-lg shadow-cyan-500/20 group-hover:scale-105 transition-transform">
             <ShieldAlert className="w-5 h-5" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-extrabold text-base tracking-wider text-slate-100 font-mono">VIGILANCE</span>
+              <ShinyText text="VIGILANCE" className="font-extrabold text-base tracking-wider text-slate-100 font-mono" />
               <span className="bg-blue-950/90 text-blue-300 text-[10px] font-mono px-1.5 py-0.5 rounded border border-blue-800/80 font-semibold tracking-wide">
                 SIH26124 • BEL
               </span>
@@ -94,7 +97,22 @@ export default function Header({
       </div>
 
       {/* Action / Telemetry Status Indicators */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2.5">
+        {/* Manus Command Palette Trigger Button */}
+        {onOpenCommandPalette && (
+          <button
+            onClick={onOpenCommandPalette}
+            className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-cyan-300 border border-slate-800 hover:border-cyan-800 transition text-xs font-mono shadow-sm"
+            title="Open Manus Command Palette (Cmd+K)"
+          >
+            <Search className="w-3.5 h-3.5 text-cyan-400" />
+            <span className="hidden xl:inline text-[11px]">Command Bar</span>
+            <kbd className="hidden sm:inline text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded border border-slate-700">
+              ⌘K
+            </kbd>
+          </button>
+        )}
+
         {/* Live WebSocket / Simulation Status */}
         <div
           className={cn(
@@ -117,7 +135,7 @@ export default function Header({
         {/* Fleet Count */}
         <div className="hidden sm:flex items-center gap-1.5 bg-slate-900 border border-slate-800 px-2.5 py-1 rounded-lg text-xs text-slate-300 font-mono">
           <Radio className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
-          <span>{activeVehicles} Fleet Nodes</span>
+          <span>{activeVehicles} Nodes</span>
         </div>
 
         {/* UTC Clock */}
@@ -135,7 +153,7 @@ export default function Header({
             title="Trigger manual 15m DBSCAN spatial deduplication"
           >
             <Cpu className={cn('w-3.5 h-3.5', isDeduping && 'animate-spin')} />
-            <span className="hidden sm:inline">{isDeduping ? 'Deduping...' : 'Trigger Dedup'}</span>
+            <span className="hidden sm:inline">{isDeduping ? 'Deduping...' : 'Dedup'}</span>
           </button>
         )}
 
