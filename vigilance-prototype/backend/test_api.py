@@ -10,10 +10,10 @@ except ImportError:
 sys.path.insert(0, os.path.dirname(__file__))
 
 from fastapi.testclient import TestClient
-from main import app
+import main as main_app
 from database import init_db, compute_rpi, SessionLocal, Detection, Cluster
 
-client = TestClient(app)
+client = TestClient(main_app.app)
 
 if pytest:
     @pytest.fixture(scope="session", autouse=True)
