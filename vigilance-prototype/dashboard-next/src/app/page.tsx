@@ -30,7 +30,6 @@ import {
   BarChart3,
   ListOrdered,
   Calculator,
-  Eye,
 } from 'lucide-react';
 
 const WebGISMap = dynamic(() => import('@/components/WebGISMap'), {
@@ -56,7 +55,7 @@ type WorkstationMode = 'full-gis' | 'split-ops';
 type SidebarTab = 'queue' | 'analytics';
 
 const MAP_LAYER_OPTIONS = [
-  { key: 'cartoDark', label: 'Dark Matter' },
+  { key: 'esriDark', label: 'Dark Canvas' },
   { key: 'osmStandard', label: 'Street Map' },
   { key: 'esriSatellite', label: 'Satellite' },
   { key: 'esriTopo', label: 'Topography' },
@@ -81,7 +80,7 @@ export default function CommandCenterPage() {
   const [showCockpitModal, setShowCockpitModal] = useState(false);
   const [showCommandPalette, setShowCommandPalette] = useState(false);
   const [workstationMode, setWorkstationMode] = useState<WorkstationMode>('full-gis');
-  const [activeMapStyle, setActiveMapStyle] = useState<string>('cartoDark');
+  const [activeMapStyle, setActiveMapStyle] = useState<string>('esriDark');
   const [sidebarTab, setSidebarTab] = useState<SidebarTab>('queue');
   const [mobileTab, setMobileTab] = useState<'map' | 'telemetry'>('map');
 
@@ -141,7 +140,7 @@ export default function CommandCenterPage() {
         {/* Left Sidebar: Executive KPIs + Tabbed Operations / Analytics */}
         <aside
           className={cn(
-            'w-full lg:w-[420px] xl:w-[450px] flex flex-col gap-2.5 shrink-0 overflow-hidden',
+            'w-full lg:w-[410px] xl:w-[440px] flex flex-col gap-2.5 shrink-0 overflow-hidden',
             mobileTab !== 'telemetry' && 'hidden lg:flex'
           )}
         >
@@ -267,10 +266,10 @@ export default function CommandCenterPage() {
             mobileTab !== 'map' && 'hidden lg:flex'
           )}
         >
-          {/* Unified Map Control Ribbon (Above Map Canvas — ZERO Collisions) */}
-          <div className="bg-slate-900/95 border-b border-slate-800 px-3 py-2 flex flex-wrap items-center justify-between gap-2 shrink-0 z-20 select-none">
+          {/* Single-Row Unified Map Control Ribbon (NEVER WRAPS) */}
+          <div className="bg-slate-900/95 border-b border-slate-800 px-3 py-1.5 flex items-center justify-between gap-2 shrink-0 z-20 select-none overflow-x-auto custom-scrollbar flex-nowrap whitespace-nowrap">
             {/* Left Section: Region Title & View Mode Tabs */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 shrink-0">
               <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-slate-200 bg-slate-950 px-2.5 py-1 rounded-md border border-slate-800">
                 <MapPin className="w-3.5 h-3.5 text-blue-400" />
                 <span>Chennai Arterial Grid</span>
@@ -302,13 +301,13 @@ export default function CommandCenterPage() {
                   )}
                 >
                   <Columns className="w-3 h-3" />
-                  <span>Split 3D HUD</span>
+                  <span>Split 3D</span>
                 </button>
               </div>
             </div>
 
             {/* Center Section: Map Layer Switcher */}
-            <div className="flex items-center bg-slate-950 border border-slate-800 p-0.5 rounded-md text-xs font-mono">
+            <div className="flex items-center bg-slate-950 border border-slate-800 p-0.5 rounded-md text-xs font-mono shrink-0">
               {MAP_LAYER_OPTIONS.map((layer) => (
                 <button
                   key={layer.key}
@@ -326,7 +325,7 @@ export default function CommandCenterPage() {
             </div>
 
             {/* Right Action Buttons */}
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 shrink-0">
               <Link
                 href="/capture"
                 className="bg-blue-600 hover:bg-blue-500 text-white px-2.5 py-1 rounded-md flex items-center gap-1.5 text-xs font-mono transition font-bold shadow-xs active:scale-95"
@@ -390,8 +389,8 @@ export default function CommandCenterPage() {
               />
             </div>
 
-            {/* Bottom Map Legend (Clean positioning, no scale control collision) */}
-            <div className="absolute bottom-4 left-3 z-10 pointer-events-none flex items-center gap-2">
+            {/* Bottom Map Legend (Clean positioning) */}
+            <div className="absolute bottom-3 left-3 z-10 pointer-events-none flex items-center gap-2">
               <div className="bg-slate-950/95 border border-slate-800 px-3 py-1.5 rounded-lg flex items-center gap-3 text-xs font-mono pointer-events-auto shadow-md">
                 <div className="flex items-center gap-1.5">
                   <span className="w-2.5 h-2.5 rounded-full bg-rose-500" />

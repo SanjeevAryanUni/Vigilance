@@ -16,27 +16,40 @@ interface WebGISMapProps {
 }
 
 export const MAP_STYLES: Record<string, { label: string; style: maplibregl.StyleSpecification }> = {
-  cartoDark: {
-    label: 'Dark Matter',
+  esriDark: {
+    label: '🌙 Dark Canvas',
     style: {
       version: 8,
       sources: {
-        'carto-dark-tiles': {
+        'esri-dark-base': {
           type: 'raster',
           tiles: [
-            'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
-            'https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
-            'https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+            'https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
           ],
           tileSize: 256,
-          attribution: '© OpenStreetMap contributors, © CARTO',
+          attribution: '© Esri, DeLorme, NAVTEQ',
+        },
+        'esri-dark-reference': {
+          type: 'raster',
+          tiles: [
+            'https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
+          ],
+          tileSize: 256,
+          attribution: '',
         },
       },
       layers: [
         {
-          id: 'carto-dark-layer',
+          id: 'esri-dark-base-layer',
           type: 'raster',
-          source: 'carto-dark-tiles',
+          source: 'esri-dark-base',
+          minzoom: 0,
+          maxzoom: 20,
+        },
+        {
+          id: 'esri-dark-reference-layer',
+          type: 'raster',
+          source: 'esri-dark-reference',
           minzoom: 0,
           maxzoom: 20,
         },
@@ -44,7 +57,7 @@ export const MAP_STYLES: Record<string, { label: string; style: maplibregl.Style
     },
   },
   osmStandard: {
-    label: 'Street Map',
+    label: '🗺️ Street Map',
     style: {
       version: 8,
       sources: {
@@ -67,7 +80,7 @@ export const MAP_STYLES: Record<string, { label: string; style: maplibregl.Style
     },
   },
   esriSatellite: {
-    label: 'Satellite',
+    label: '🛰️ Satellite',
     style: {
       version: 8,
       sources: {
@@ -86,7 +99,7 @@ export const MAP_STYLES: Record<string, { label: string; style: maplibregl.Style
     },
   },
   esriTopo: {
-    label: 'Topography',
+    label: '🏔️ Topography',
     style: {
       version: 8,
       sources: {
@@ -106,7 +119,7 @@ export const MAP_STYLES: Record<string, { label: string; style: maplibregl.Style
   },
 };
 
-const DEFAULT_STYLE = 'cartoDark';
+const DEFAULT_STYLE = 'esriDark';
 
 export default function WebGISMap({
   clusters,
@@ -132,38 +145,41 @@ export default function WebGISMap({
 
   // Helper to add Chennai POI markers (Hospitals, Institutions, Arterials)
   const addPOIMarkers = (map: maplibregl.Map) => {
-    // Clean up existing POI markers
     poiMarkersRef.current.forEach((m) => m.remove());
     poiMarkersRef.current = [];
 
     CHENNAI_POIS.forEach((poi) => {
       const el = document.createElement('div');
       el.className = 'poi-marker';
-      el.title = `${poi.name} (${poi.type})`;
+      el.title = `${poi.name} (${poi.type === 'hospital' ? '1.5x POI' : '1.2x POI'})`;
 
       const isHospital = poi.type === 'hospital';
       const icon = isHospital ? '🏥' : '🎓';
       const badgeBg = isHospital ? '#ef4444' : '#3b82f6';
 
+      // Shorten name if too long for clean map display
+      const shortName = poi.name.split(',')[0].replace('Senior Secondary School', 'School');
+
       el.innerHTML = `
         <div style="
           display: flex;
           align-items: center;
-          gap: 4px;
-          background: rgba(15, 23, 42, 0.9);
-          border: 1px solid rgba(71, 85, 105, 0.8);
-          border-radius: 6px;
-          padding: 2px 5px;
+          gap: 3px;
+          background: rgba(15, 23, 42, 0.88);
+          border: 1px solid rgba(71, 85, 105, 0.7);
+          border-radius: 5px;
+          padding: 1.5px 5px;
           font-family: monospace;
-          font-size: 9.5px;
+          font-size: 9px;
           color: #f1f5f9;
-          box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+          box-shadow: 0 2px 8px rgba(0,0,0,0.5);
           cursor: pointer;
+          white-space: nowrap;
         ">
-          <span style="font-size: 11px;">${icon}</span>
-          <span style="font-weight: 600; white-space: nowrap;">${poi.name}</span>
-          <span style="background: ${badgeBg}; color: white; font-size: 8px; padding: 1px 4px; border-radius: 3px; text-transform: uppercase;">
-            ${isHospital ? '1.5x POI' : '1.2x POI'}
+          <span style="font-size: 10px;">${icon}</span>
+          <span style="font-weight: 600; max-width: 110px; overflow: hidden; text-overflow: ellipsis;">${shortName}</span>
+          <span style="background: ${badgeBg}; color: white; font-size: 7.5px; padding: 0.5px 3px; border-radius: 2px;">
+            ${isHospital ? '1.5x' : '1.2x'}
           </span>
         </div>
       `;
@@ -176,9 +192,8 @@ export default function WebGISMap({
     });
   };
 
-  // Helper to re-render Cluster markers with interactive popups
+  // Helper to render Cluster markers with interactive popups
   const addMarkers = (map: maplibregl.Map, currentClusters: Cluster[]) => {
-    // Remove existing markers
     markersRef.current.forEach((m) => m.remove());
     markersRef.current = [];
 
@@ -200,10 +215,10 @@ export default function WebGISMap({
             isCrit
               ? `<div style="
                   position: absolute;
-                  inset: -4px;
+                  inset: -3px;
                   border-radius: 50%;
                   background: ${bgColor};
-                  opacity: 0.3;
+                  opacity: 0.35;
                   animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
                 "></div>`
               : ''
