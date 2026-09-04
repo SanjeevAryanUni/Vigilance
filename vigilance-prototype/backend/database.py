@@ -108,7 +108,7 @@ def run_spatial_deduplication(db_session) -> int:
     If PostgreSQL/PostGIS is active, executes native PostGIS ST_ClusterDBSCAN and ST_DWithin queries.
     If SQLite is active, executes Haversine DBSCAN with centroid matching.
     """
-    detections = db_session.query(Detection).all()
+    detections = db_session.query(Detection).order_by(Detection.id.asc()).all()
     if not detections or len(detections) < 1:
         return 0
 
@@ -118,6 +118,7 @@ def run_spatial_deduplication(db_session) -> int:
         (c.centroid_lat, c.centroid_lon, c.status, c.created_at) for c in previous_clusters
     ]
 
+    labels = []
     # PostGIS Native Path
     if IS_POSTGRES and GEOALCHEMY_AVAILABLE:
         try:
@@ -125,27 +126,26 @@ def run_spatial_deduplication(db_session) -> int:
             sql = text("""
                 SELECT id,
                        ST_ClusterDBSCAN(ST_Transform(ST_SetSRID(ST_MakePoint(lon, lat), 4326), 3857), eps := 15.0, minpoints := 1) OVER () as cluster_id
-                FROM detections;
+                FROM detections
+                ORDER BY id ASC;
             """)
             result = db_session.execute(sql).fetchall()
-            labels = [r[1] for r in result]
+            postgis_map = {r[0]: (r[1] if r[1] is not None else 0) for r in result}
+            labels = [postgis_map.get(d.id, 0) for d in detections]
         except Exception as e:
-            # Fallback if PostGIS extension query fails
-            coords = np.array([[d.lat, d.lon] for d in detections])
-            epsilon_rad = 15.0 / 6371000.0
-            db = DBSCAN(eps=epsilon_rad, min_samples=1, metric='haversine', algorithm='ball_tree')
-            labels = db.fit_predict(np.radians(coords))
-    else:
+            labels = []
+
+    # If PostGIS was not used or failed, use scikit-learn or pure Python fallback
+    if not labels:
         if SKLEARN_AVAILABLE and NUMPY_AVAILABLE:
-            # SQLite / Standard In-Process Path via scikit-learn
             coords = np.array([[d.lat, d.lon] for d in detections])
             coords_rad = np.radians(coords)
             epsilon_rad = 15.0 / 6371000.0
             db = DBSCAN(eps=epsilon_rad, min_samples=1, metric='haversine', algorithm='ball_tree')
-            labels = db.fit_predict(coords_rad)
+            raw_labels = db.fit_predict(coords_rad)
+            labels = [int(lbl) for lbl in raw_labels]
         else:
             # Pure Python Haversine 15m Leader Clustering Fallback
-            labels = []
             cluster_centers: List[Tuple[float, float]] = []
             for d in detections:
                 matched_idx = -1
@@ -164,13 +164,15 @@ def run_spatial_deduplication(db_session) -> int:
     db_session.query(Cluster).delete()
     
     clusters_map = {}
-    for idx, cluster_label in enumerate(labels):
+    for idx, raw_label in enumerate(labels):
         det = detections[idx]
-        det.cluster_id = int(cluster_label)
+        # Align 1-indexed cluster ID for both detections and clusters
+        cluster_id_1indexed = int(raw_label) + 1 if raw_label is not None and raw_label >= 0 else 1
+        det.cluster_id = cluster_id_1indexed
         
-        if cluster_label not in clusters_map:
-            clusters_map[cluster_label] = []
-        clusters_map[cluster_label].append(det)
+        if cluster_id_1indexed not in clusters_map:
+            clusters_map[cluster_id_1indexed] = []
+        clusters_map[cluster_id_1indexed].append(det)
 
     created_clusters = 0
     for c_id, det_list in clusters_map.items():
@@ -204,7 +206,7 @@ def run_spatial_deduplication(db_session) -> int:
                 break
 
         cluster = Cluster(
-            id=int(c_id) + 1,
+            id=int(c_id),
             centroid_lat=center_lat,
             centroid_lon=center_lon,
             detection_count=len(det_list),

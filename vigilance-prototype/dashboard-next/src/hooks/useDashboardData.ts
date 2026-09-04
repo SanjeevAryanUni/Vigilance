@@ -80,8 +80,20 @@ export function useDashboardData() {
     } else if (msg.type === 'stats_update') {
       setStats(msg.data as DashboardStats);
       setLastUpdated(new Date());
+    } else if (msg.type === 'cluster_updated') {
+      const update = msg.data;
+      setClusters((prev) =>
+        prev.map((c) =>
+          c.id === update.id
+            ? { ...c, status: update.status, rpi_score: update.rpi_score ?? c.rpi_score, updated_at: new Date().toISOString() }
+            : c
+        )
+      );
+      setLastUpdated(new Date());
+    } else if (msg.type === 'clusters_reset') {
+      loadData();
     }
-  }, []);
+  }, [loadData]);
 
   const { isConnected } = useWebSocket(handleWsMessage);
 
@@ -144,18 +156,30 @@ export function useDashboardData() {
   }, [loadData]);
 
   const handleStatusChange = async (clusterId: number, newStatus: ClusterStatus) => {
+    const previous = clusters.find((c) => c.id === clusterId)?.status;
     setClusters((prev) =>
       prev.map((c) => (c.id === clusterId ? { ...c, status: newStatus, updated_at: new Date().toISOString() } : c))
     );
-    await updateClusterStatus(clusterId, newStatus);
+    const success = await updateClusterStatus(clusterId, newStatus);
+    if (!success && previous) {
+      // Rollback on network failure
+      setClusters((prev) =>
+        prev.map((c) => (c.id === clusterId ? { ...c, status: previous, updated_at: new Date().toISOString() } : c))
+      );
+    }
   };
 
   const handleTriggerDedup = async () => {
-    const res = await triggerDedup();
-    if (res) {
-      await loadData();
+    try {
+      const res = await triggerDedup();
+      if (res) {
+        await loadData();
+      }
+      return res;
+    } catch (err) {
+      console.error('Trigger dedup caught error:', err);
+      return null;
     }
-    return res;
   };
 
   return {

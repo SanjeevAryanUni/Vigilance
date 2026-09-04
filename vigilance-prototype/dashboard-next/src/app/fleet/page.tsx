@@ -327,6 +327,7 @@ export default function FleetPage() {
       <CommandPalette
         isOpen={showCommandPalette}
         onClose={() => setShowCommandPalette(false)}
+        onRefreshData={refreshData}
         onTriggerDedup={triggerDedup}
       />
 

@@ -50,7 +50,7 @@ def capture_termux_photo():
             with open(photo_path, "rb") as f:
                 b64_str = base64.b64encode(f.read()).decode("utf-8")
             os.remove(photo_path)
-            return b64_str[:1024]  # Return compact base64 representation
+            return b64_str
     except Exception as e:
         pass
     return None

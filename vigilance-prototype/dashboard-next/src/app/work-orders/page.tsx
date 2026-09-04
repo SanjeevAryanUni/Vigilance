@@ -326,6 +326,7 @@ export default function WorkOrdersPage() {
       <CommandPalette
         isOpen={showCommandPalette}
         onClose={() => setShowCommandPalette(false)}
+        onRefreshData={refreshData}
         onTriggerDedup={triggerDedup}
       />
 

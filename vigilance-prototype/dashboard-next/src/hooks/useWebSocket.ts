@@ -44,6 +44,16 @@ export function useWebSocket(onMessage?: (msg: WebSocketMessage) => void) {
               type: 'stats_update',
               data: parsed.data,
             };
+          } else if (parsed.type === 'cluster_updated' || parsed.event === 'CLUSTER_UPDATED') {
+            message = {
+              type: 'cluster_updated',
+              data: parsed.data,
+            };
+          } else if (parsed.type === 'clusters_reset' || parsed.event === 'CLUSTERS_RESET') {
+            message = {
+              type: 'clusters_reset',
+              data: parsed.data,
+            };
           }
 
           if (message) {

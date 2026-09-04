@@ -121,22 +121,30 @@ export const MAP_STYLES: Record<string, { label: string; style: maplibregl.Style
 
 const DEFAULT_STYLE = 'esriDark';
 
+function escapeHtml(val: unknown): string {
+  if (val === null || val === undefined) return '';
+  return String(val)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 export default function WebGISMap({
   clusters,
   onStatusChange,
   selectedClusterId,
   className,
   activeMapStyle = DEFAULT_STYLE,
-  onMapStyleChange,
 }: WebGISMapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markersRef = useRef<maplibregl.Marker[]>([]);
   const poiMarkersRef = useRef<maplibregl.Marker[]>([]);
   const clustersRef = useRef<Cluster[]>(clusters);
-  const [internalStyle, setInternalStyle] = useState<string>(activeMapStyle || DEFAULT_STYLE);
 
-  const currentStyle = activeMapStyle || internalStyle;
+  const currentStyle = activeMapStyle || DEFAULT_STYLE;
 
   // Keep the ref in sync with the latest clusters prop
   useEffect(() => {
@@ -177,7 +185,7 @@ export default function WebGISMap({
           white-space: nowrap;
         ">
           <span style="font-size: 10px;">${icon}</span>
-          <span style="font-weight: 600; max-width: 110px; overflow: hidden; text-overflow: ellipsis;">${shortName}</span>
+          <span style="font-weight: 600; max-width: 110px; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(shortName)}</span>
           <span style="background: ${badgeBg}; color: white; font-size: 7.5px; padding: 0.5px 3px; border-radius: 2px;">
             ${isHospital ? '1.5x' : '1.2x'}
           </span>
@@ -256,20 +264,20 @@ export default function WebGISMap({
       popupDiv.innerHTML = `
         <div style="border-bottom: 1px solid #334155; padding-bottom: 5px; margin-bottom: 6px;">
           <div style="font-weight: 800; font-size: 13px; color: ${borderColor};">
-            ${isCrit ? '🔴' : isHigh ? '🟠' : '🟡'} ${c.dominant_type}
+            ${isCrit ? '🔴' : isHigh ? '🟠' : '🟡'} ${escapeHtml(c.dominant_type)}
           </div>
           <div style="font-size: 10px; color: #94a3b8;">Incident Node #${c.id}</div>
         </div>
         <div style="margin-bottom: 6px; line-height: 1.5;">
-          <div><b style="color: #94a3b8;">Road:</b> <span style="color: #f1f5f9;">${c.road_name}</span></div>
+          <div><b style="color: #94a3b8;">Road:</b> <span style="color: #f1f5f9;">${escapeHtml(c.road_name)}</span></div>
           <div><b style="color: #94a3b8;">RPI Score:</b> <span style="font-weight: bold; color: #ef4444;">${c.rpi_score.toFixed(1)} / 100</span></div>
           <div><b style="color: #94a3b8;">Fleet Passes:</b> <span style="color: #f1f5f9;">${c.detection_count} passes</span></div>
-          ${c.contractor_name ? `<div style="color: #38bdf8; margin-top: 2px;"><b>Contractor:</b> ${c.contractor_name} <span style="color: #f87171;">(${c.sla_hours || 24}h SLA)</span></div>` : ''}
-          ${c.nearest_poi ? `<div style="color: #cbd5e1;"><b>Near POI:</b> ${c.nearest_poi} (${c.poi_distance_m}m)</div>` : ''}
+          ${c.contractor_name ? `<div style="color: #38bdf8; margin-top: 2px;"><b>Contractor:</b> ${escapeHtml(c.contractor_name)} <span style="color: #f87171;">(${c.sla_hours || 24}h SLA)</span></div>` : ''}
+          ${c.nearest_poi ? `<div style="color: #cbd5e1;"><b>Near POI:</b> ${escapeHtml(c.nearest_poi)} (${c.poi_distance_m}m)</div>` : ''}
           <div style="margin-top: 4px;">
             <b style="color: #94a3b8;">Status:</b> <span style="text-transform: uppercase; font-weight: bold; color: ${
               isResolved ? '#10b981' : isAssigned ? '#3b82f6' : '#ef4444'
-            };">${c.status}</span>
+            };">${escapeHtml(c.status)}</span>
           </div>
         </div>
         <div style="display: flex; gap: 6px; margin-top: 8px; border-top: 1px solid #334155; padding-top: 6px;">
@@ -362,6 +370,10 @@ export default function WebGISMap({
 
     return () => {
       resizeObserver.disconnect();
+      markersRef.current.forEach((m) => m.remove());
+      markersRef.current = [];
+      poiMarkersRef.current.forEach((m) => m.remove());
+      poiMarkersRef.current = [];
       map.remove();
     };
   }, []);

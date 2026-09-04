@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ShieldAlert, Radio, RefreshCw, Cpu, Activity, LayoutDashboard, BarChart3, Truck, ClipboardList, Search, Smartphone, AlertTriangle } from 'lucide-react';
+import { ShieldAlert, Radio, RefreshCw, Cpu, Activity, LayoutDashboard, BarChart3, Truck, ClipboardList, Search, Smartphone } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BackendConnectionStatus } from '@/hooks/useDashboardData';
 
@@ -17,18 +17,8 @@ interface HeaderProps {
   onOpenCommandPalette?: () => void;
 }
 
-export default function Header({
-  activeVehicles = 5,
-  isConnected = false,
-  backendAvailable = null,
-  backendStatus = 'unreachable',
-  onRefresh,
-  onTriggerDedup,
-  onOpenCommandPalette,
-}: HeaderProps) {
-  const pathname = usePathname();
+function LiveUTCClock() {
   const [currentTime, setCurrentTime] = useState<string>('');
-  const [isDeduping, setIsDeduping] = useState(false);
 
   useEffect(() => {
     const updateTime = () => {
@@ -39,6 +29,38 @@ export default function Header({
     const timer = setInterval(updateTime, 1000);
     return () => clearInterval(timer);
   }, []);
+
+  return (
+    <div className="hidden lg:flex items-center gap-1 bg-white/[0.03] border border-white/10 px-2 py-1 rounded-lg text-[10.5px] text-slate-400 font-mono backdrop-blur-md">
+      <Activity className="w-3 h-3 text-slate-500" />
+      <span>{currentTime || 'SYNCING...'}</span>
+    </div>
+  );
+}
+
+export default function Header({
+  activeVehicles = 5,
+  isConnected = false,
+  backendAvailable = null,
+  backendStatus = 'unreachable',
+  onRefresh,
+  onTriggerDedup,
+  onOpenCommandPalette,
+}: HeaderProps) {
+  const pathname = usePathname();
+  const [isDeduping, setIsDeduping] = useState(false);
+
+  // Global keyboard shortcut for Command Palette (Cmd+K / Ctrl+K)
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        onOpenCommandPalette?.();
+      }
+    };
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, [onOpenCommandPalette]);
 
   const handleDedupClick = async () => {
     if (!onTriggerDedup || isDeduping) return;
@@ -174,17 +196,16 @@ export default function Header({
         </div>
 
         {/* UTC Clock */}
-        <div className="hidden lg:flex items-center gap-1 bg-white/[0.03] border border-white/10 px-2 py-1 rounded-lg text-[10.5px] text-slate-400 font-mono backdrop-blur-md">
-          <Activity className="w-3 h-3 text-slate-500" />
-          <span>{currentTime || 'SYNCING...'}</span>
-        </div>
+        <LiveUTCClock />
 
         {/* Trigger Dedup Button */}
         {onTriggerDedup && (
           <button
             onClick={handleDedupClick}
             disabled={isDeduping}
-            className="flex items-center gap-1.5 bg-white/[0.04] hover:bg-white/[0.08] text-slate-200 border border-white/10 hover:border-white/20 text-xs px-2.5 py-1 rounded-lg font-mono backdrop-blur-md transition-all disabled:opacity-50"
+            aria-busy={isDeduping}
+            aria-label="Trigger manual 15-meter spatial deduplication"
+            className="flex items-center gap-1.5 bg-white/[0.04] hover:bg-white/[0.08] text-slate-200 border border-white/10 hover:border-white/20 text-xs px-2.5 py-1 rounded-lg font-mono backdrop-blur-md transition-all disabled:opacity-50 active:scale-95"
             title="Trigger manual 15m DBSCAN spatial deduplication"
           >
             <Cpu className={cn('w-3.5 h-3.5 text-blue-400', isDeduping && 'animate-spin')} />
@@ -196,7 +217,8 @@ export default function Header({
         {onRefresh && (
           <button
             onClick={onRefresh}
-            className="p-1 bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 hover:text-slate-100 border border-white/10 hover:border-white/20 rounded-lg text-xs backdrop-blur-md transition"
+            aria-label="Refresh telemetry and cluster data"
+            className="p-1 bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 hover:text-slate-100 border border-white/10 hover:border-white/20 rounded-lg text-xs backdrop-blur-md transition active:scale-95"
             title="Refresh dashboard data"
           >
             <RefreshCw className="w-3.5 h-3.5" />

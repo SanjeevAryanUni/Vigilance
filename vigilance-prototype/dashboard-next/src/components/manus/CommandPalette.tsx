@@ -12,7 +12,6 @@ import {
   Camera,
   FileSpreadsheet,
   CloudRain,
-  X,
   ArrowRight,
   Smartphone,
   Globe,
@@ -195,7 +194,12 @@ export default function CommandPalette({
       <div className="absolute inset-0" onClick={onClose} />
 
       {/* Palette Modal Box */}
-      <div className="relative w-full max-w-xl bg-slate-900 border border-slate-700 rounded-xl shadow-2xl overflow-hidden font-sans z-10">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Command Palette"
+        className="relative w-full max-w-xl bg-slate-900 border border-slate-700 rounded-xl shadow-2xl overflow-hidden font-sans z-10"
+      >
         {/* Search Header */}
         <div className="flex items-center px-4 py-3 border-b border-slate-800 gap-3 bg-slate-900/90">
           <Search className="w-4 h-4 text-blue-400 shrink-0" />
@@ -204,7 +208,7 @@ export default function CommandPalette({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Type a command, action, or navigate..."
-            className="w-full bg-transparent text-slate-100 placeholder-slate-500 text-sm focus:outline-hidden font-mono"
+            className="w-full bg-transparent text-slate-100 placeholder-slate-500 text-sm focus:outline-none font-mono"
             autoFocus
           />
           <kbd className="text-[10px] bg-slate-800 text-slate-400 px-1.5 py-0.5 rounded border border-slate-700 font-mono">

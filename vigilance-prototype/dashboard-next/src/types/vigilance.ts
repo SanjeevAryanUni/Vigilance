@@ -77,4 +77,12 @@ export type WebSocketMessage =
   | {
       type: 'stats_update';
       data: DashboardStats;
+    }
+  | {
+      type: 'cluster_updated';
+      data: { id: number; status: ClusterStatus; rpi_score?: number };
+    }
+  | {
+      type: 'clusters_reset';
+      data: { clusters_updated: number };
     };

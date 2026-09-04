@@ -13,7 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from database import init_db, get_db, Detection, Cluster, run_spatial_deduplication, compute_rpi
+from database import init_db, get_db, Detection, Cluster, run_spatial_deduplication, IS_POSTGRES
 from poi_data import match_nearest_road
 from tasks import async_spatial_deduplication
 
@@ -178,7 +178,8 @@ def get_stats(db: Session = Depends(get_db)):
     critical = db.query(Detection).filter(Detection.severity == "critical").count()
     high = db.query(Detection).filter(Detection.severity == "high").count()
     
-    vehicles = [v[0] for v in db.query(Detection.vehicle_id).distinct().all()]
+    corridors = [r[0] for r in db.query(Detection.road_name).distinct().all() if r[0]]
+    resolved_count = db.query(Cluster).filter(Cluster.status == "resolved").count()
     
     return {
         "total_detections": total,
@@ -188,7 +189,10 @@ def get_stats(db: Session = Depends(get_db)):
         "critical_severity": critical,
         "high_severity": high,
         "active_vehicles": len(vehicles) if vehicles else 5,
-        "vehicle_ids": vehicles
+        "vehicle_ids": vehicles,
+        "active_potholes": potholes,
+        "active_corridors": len(corridors),
+        "potholes_repaired": resolved_count
     }
 
 @app.get("/api/heatmap")
@@ -230,6 +234,26 @@ async def update_cluster_status(cluster_id: int, status: str = Query(...), db: S
         "data": {"id": cluster.id, "status": cluster.status, "rpi_score": cluster.rpi_score}
     })
     return {"status": "success", "cluster_id": cluster.id, "new_status": cluster.status}
+
+@app.post("/api/trigger-dedup")
+async def trigger_dedup(db: Session = Depends(get_db)):
+    """
+    Manually trigger spatial deduplication and RPI recalculation across all detections.
+    Broadcasts CLUSTERS_RESET event so all connected dashboard clients refresh immediately.
+    """
+    updated_count = run_spatial_deduplication(db)
+    await manager.broadcast({
+        "event": "CLUSTERS_RESET",
+        "data": {"clusters_updated": updated_count}
+    })
+    return {"status": "success", "clusters_updated": updated_count}
+
+@app.get("/api/work-orders")
+def get_work_orders(db: Session = Depends(get_db)):
+    """
+    Returns prioritized work orders corresponding to active road distress clusters.
+    """
+    return get_clusters(db=db)
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):

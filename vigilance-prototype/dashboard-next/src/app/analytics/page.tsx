@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import Header from '@/components/Header';
 import ConnectionStatus from '@/components/ConnectionStatus';
 import KPICard from '@/components/KPICard';
@@ -14,7 +14,7 @@ import CorridorDistressSpline from '@/components/charts/CorridorDistressSpline';
 import RPIRadialGauge from '@/components/charts/RPIRadialGauge';
 import { useDashboardData } from '@/hooks/useDashboardData';
 import { CHENNAI_ROADS, DEFECT_INFO } from '@/lib/constants';
-import { BarChart3, TrendingUp, AlertTriangle, Layers, Truck, ShieldCheck, MapPin, Sparkles } from 'lucide-react';
+import { BarChart3, TrendingUp, AlertTriangle, Layers, Truck, ShieldCheck, MapPin, Sparkles, Eye } from 'lucide-react';
 
 export default function AnalyticsPage() {
   const { stats, clusters, detections, isConnected, backendAvailable, lastUpdated, refreshData, triggerDedup } =
@@ -55,6 +55,12 @@ export default function AnalyticsPage() {
     if (d.severity === 'critical') vehicleStats[d.vehicle_id].critical += 1;
   });
 
+  const overallAvgRpi = useMemo(() => {
+    return clusters.length > 0
+      ? clusters.reduce((acc, c) => acc + c.rpi_score, 0) / clusters.length
+      : 84.5;
+  }, [clusters]);
+
   return (
     <div className="flex flex-col min-h-screen bg-slate-950 text-slate-100 font-sans select-none relative">
       <Header
@@ -84,12 +90,12 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Top Metric Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
           <KPICard
-            title="Total Verified Distresses"
+            title="Total Detections"
             value={stats.total_detections}
-            subtitle="Multi-Vehicle Edge Observations"
-            icon={TrendingUp}
+            subtitle="Raw Mobile Ingests"
+            icon={Eye}
             colorClass="text-cyan-400"
             spotlightColor="cyan"
             sparklineData={[20, 28, 25, 42, 38, 55, 62]}
@@ -105,12 +111,12 @@ export default function AnalyticsPage() {
           />
           <KPICard
             title="Avg Priority Score"
-            value={`${(clusters.length > 0 ? clusters.reduce((acc, c) => acc + c.rpi_score, 0) / clusters.length : 0.82).toFixed(2)}`}
+            value={overallAvgRpi.toFixed(1)}
             subtitle="Dynamic Multi-Factor RPI"
             icon={AlertTriangle}
             colorClass="text-amber-400"
             spotlightColor="amber"
-            sparklineData={[0.72, 0.75, 0.78, 0.81, 0.84, 0.85, 0.85]}
+            sparklineData={[78, 80, 82, 83, 84, 85, Math.round(overallAvgRpi)]}
           />
           <KPICard
             title="Critical Hazards (D40)"
@@ -138,7 +144,7 @@ export default function AnalyticsPage() {
               Time-series correlation between bus operating speed (km/h) and distress frequency along arterial routes
             </p>
             <div className="h-64">
-              <CorridorDistressSpline />
+              <CorridorDistressSpline potholesCount={stats.potholes} cracksCount={stats.cracks} />
             </div>
           </div>
 
@@ -156,7 +162,7 @@ export default function AnalyticsPage() {
                 Multi-radial breakdown of the 4 priority factors: Severity, Frequency, Highway, and POI proximity
               </p>
               <div className="h-60 flex items-center justify-center">
-                <RPIRadialGauge />
+                <RPIRadialGauge rpiScore={overallAvgRpi} />
               </div>
             </div>
 
@@ -275,6 +281,7 @@ export default function AnalyticsPage() {
       <CommandPalette
         isOpen={showCommandPalette}
         onClose={() => setShowCommandPalette(false)}
+        onRefreshData={refreshData}
         onTriggerDedup={triggerDedup}
       />
 

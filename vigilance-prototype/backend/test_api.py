@@ -33,7 +33,7 @@ class TestBackendAPI(unittest.TestCase):
         self.assertEqual(resp_root.status_code, 200)
         data_root = resp_root.json()
         self.assertEqual(data_root.get("status"), "healthy")
-        self.assertEqual(data_root.get("service"), "vigilance-backend")
+        self.assertIn("VIGILANCE", data_root.get("service", ""))
 
         resp_api = self.client.get("/api/health")
         self.assertEqual(resp_api.status_code, 200)

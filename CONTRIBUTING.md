@@ -26,7 +26,7 @@ main (Production / Presentation-Ready)
 ### 3. Feature & Topic Branches
 * `feature/edge-ai` — Onboard camera processing, YOLOv8 fine-tuning, RDD2022 dataset handling, edge telemetry.
 * `feature/backend-gis` — FastAPI endpoints, spatial database models, PostGIS queries, DBSCAN clustering, and RPI engine.
-* `feature/dashboard-ui` — Leaflet WebGIS interface, real-time WebSocket feeds, Tailwind layout, and Chart.js analytics.
+* `feature/dashboard-ui` — MapLibre GL WebGIS vector interface, real-time WebSocket feeds, Tailwind frosted glass layout, and ApexCharts analytics.
 * `docs/presentation` — Presentation decks, pitch scripts, diagrams, and project documentation.
 
 ---
