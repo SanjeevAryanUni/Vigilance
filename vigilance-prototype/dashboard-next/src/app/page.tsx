@@ -8,7 +8,7 @@ import { Doughnut } from 'react-chartjs-2';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-const WebGISMap = dynamic(() => import('@/components/WebGISMap'), {
+const WebGISMap = dynamic(() => import('../components/WebGISMap'), {
   ssr: false,
   loading: () => (
     <div className="w-full h-full flex items-center justify-center bg-slate-950 text-slate-400 font-mono text-xs">

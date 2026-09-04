@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "./vigilance-prototype/dashboard-next/src/*",
+        "./src/*"
+      ]
+    }
+  }
+}
