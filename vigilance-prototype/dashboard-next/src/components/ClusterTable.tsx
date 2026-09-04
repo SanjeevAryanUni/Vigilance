@@ -26,22 +26,22 @@ export default function ClusterTable({
   const items = maxItems ? sorted.slice(0, maxItems) : sorted;
 
   return (
-    <div className={cn('flex flex-col bg-slate-900/90 border border-slate-800 rounded-xl overflow-hidden shadow-sm', className)}>
+    <div className={cn('flex flex-col bg-slate-900/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden shadow-[0_8px_32px_0_rgba(0,0,0,0.37),inset_0_1px_0_0_rgba(255,255,255,0.08)]', className)}>
       {/* Table Title Bar */}
-      <div className="px-3.5 py-2.5 border-b border-slate-800 bg-slate-900 flex items-center justify-between">
+      <div className="px-3.5 py-2.5 border-b border-white/10 bg-white/[0.03] backdrop-blur-md flex items-center justify-between">
         <div className="flex items-center gap-2">
           <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
           <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-200">
             Priority Repair Queue
           </span>
         </div>
-        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700 font-semibold">
+        <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-white/[0.06] text-slate-300 border border-white/10 font-semibold backdrop-blur-md shadow-xs">
           {clusters.length} INCIDENTS
         </span>
       </div>
 
       {/* Table Container */}
-      <div className="overflow-y-auto divide-y divide-slate-800/60 p-2 space-y-1.5 custom-scrollbar max-h-[380px]">
+      <div className="overflow-y-auto divide-y divide-white/5 p-2 space-y-1.5 custom-scrollbar max-h-[380px]">
         {items.map((cluster, idx) => {
           const isCritical = cluster.max_severity === 'critical';
           const isHigh = cluster.max_severity === 'high';
@@ -51,18 +51,18 @@ export default function ClusterTable({
               key={cluster.id}
               onClick={() => onSelectCluster?.(cluster)}
               className={cn(
-                'p-2.5 rounded-lg bg-slate-950/70 hover:bg-slate-800/60 border transition-all text-xs flex flex-col gap-2 cursor-pointer',
+                'p-2.5 rounded-xl bg-slate-950/40 hover:bg-white/[0.05] border backdrop-blur-md transition-all text-xs flex flex-col gap-2 cursor-pointer shadow-xs',
                 isCritical
-                  ? 'border-l-4 border-l-rose-500 border-slate-800'
+                  ? 'border-l-4 border-l-rose-500 border-white/10 hover:border-l-rose-400'
                   : isHigh
-                  ? 'border-l-4 border-l-amber-500 border-slate-800'
-                  : 'border-l-4 border-l-blue-500 border-slate-800'
+                  ? 'border-l-4 border-l-amber-500 border-white/10 hover:border-l-amber-400'
+                  : 'border-l-4 border-l-blue-500 border-white/10 hover:border-l-blue-400'
               )}
             >
               {/* Row 1: Rank Badge + Defect Type + Severity Badge */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="w-5 h-5 rounded bg-slate-800 border border-slate-700 text-slate-300 text-[10px] font-mono font-bold flex items-center justify-center">
+                  <span className="w-5 h-5 rounded-md bg-white/[0.06] border border-white/10 text-slate-300 text-[10px] font-mono font-bold flex items-center justify-center">
                     #{idx + 1}
                   </span>
                   <span className="font-bold text-slate-100 font-mono text-[11px] truncate max-w-[150px]">
@@ -71,6 +71,7 @@ export default function ClusterTable({
                 </div>
                 <SeverityBadge severity={cluster.max_severity} />
               </div>
+
 
               {/* Row 2: Road Name & POI */}
               <div className="flex flex-col gap-0.5 text-[11px] text-slate-300">

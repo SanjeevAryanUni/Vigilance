@@ -62,11 +62,11 @@ export default function Header({
   const isColdStarting = backendStatus === 'cold-starting';
 
   return (
-    <header className="h-14 bg-slate-900/95 backdrop-blur-md border-b border-slate-800 px-3 lg:px-5 flex items-center justify-between z-30 select-none shrink-0">
+    <header className="h-14 bg-slate-950/60 backdrop-blur-2xl border-b border-white/10 px-3 lg:px-5 flex items-center justify-between z-30 select-none shrink-0 shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
       {/* Brand & Badge */}
       <div className="flex items-center gap-3.5">
         <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white shadow-sm group-hover:bg-blue-500 transition-colors">
+          <div className="w-8 h-8 rounded-lg bg-blue-600/80 backdrop-blur-md flex items-center justify-center text-white border border-blue-400/30 shadow-[0_0_15px_rgba(37,99,235,0.4)] group-hover:bg-blue-500 transition-all">
             <ShieldAlert className="w-4 h-4" />
           </div>
           <div>
@@ -74,7 +74,7 @@ export default function Header({
               <span className="font-extrabold text-sm tracking-wider text-slate-100 font-mono">
                 VIGILANCE
               </span>
-              <span className="bg-slate-800 text-slate-300 text-[10px] font-mono px-1.5 py-0.5 rounded border border-slate-700 font-semibold tracking-wide">
+              <span className="bg-white/[0.06] backdrop-blur-md text-slate-300 text-[10px] font-mono px-1.5 py-0.5 rounded-md border border-white/10 font-semibold tracking-wide shadow-xs">
                 SIH26124 • BEL
               </span>
             </div>
@@ -85,7 +85,7 @@ export default function Header({
         </Link>
 
         {/* Navigation Tabs */}
-        <nav className="hidden md:flex items-center gap-1 ml-3 pl-3 border-l border-slate-800">
+        <nav className="hidden md:flex items-center gap-1 ml-3 pl-3 border-l border-white/10">
           {navLinks.map((link) => {
             const Icon = link.icon;
             const isActive = pathname === link.href;
@@ -94,10 +94,10 @@ export default function Header({
                 key={link.href}
                 href={link.href}
                 className={cn(
-                  'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors',
+                  'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all',
                   isActive
-                    ? 'bg-blue-600/20 text-blue-300 border border-blue-500/40 font-semibold'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800 border border-transparent'
+                    ? 'bg-blue-500/20 text-blue-300 border border-blue-400/40 font-semibold shadow-[0_0_12px_rgba(59,130,246,0.25)]'
+                    : 'text-slate-400 hover:text-slate-100 hover:bg-white/[0.06] border border-transparent'
                 )}
               >
                 <Icon className="w-3.5 h-3.5" />
@@ -114,12 +114,12 @@ export default function Header({
         {onOpenCommandPalette && (
           <button
             onClick={onOpenCommandPalette}
-            className="flex items-center gap-2 px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700/80 text-slate-300 hover:text-slate-100 border border-slate-700 transition text-xs font-mono shadow-xs"
+            className="flex items-center gap-2 px-2.5 py-1 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 hover:text-slate-100 border border-white/10 hover:border-white/20 transition-all text-xs font-mono backdrop-blur-md shadow-xs"
             title="Open Command Palette (Cmd+K)"
           >
             <Search className="w-3.5 h-3.5 text-slate-400" />
             <span className="hidden xl:inline text-[11px]">Command Palette</span>
-            <kbd className="hidden sm:inline text-[10px] bg-slate-900 text-slate-400 px-1 py-0.5 rounded border border-slate-700 font-mono">
+            <kbd className="hidden sm:inline text-[10px] bg-slate-900/80 text-slate-400 px-1 py-0.5 rounded border border-white/10 font-mono">
               ⌘K
             </kbd>
           </button>
@@ -128,7 +128,7 @@ export default function Header({
         {/* Mobile Direct Dashcam Button */}
         <Link
           href="/capture"
-          className="md:hidden flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white text-[11px] font-mono font-bold px-2.5 py-1 rounded-lg shadow-sm active:scale-95 transition"
+          className="md:hidden flex items-center gap-1.5 bg-blue-600/90 hover:bg-blue-500 text-white text-[11px] font-mono font-bold px-2.5 py-1 rounded-lg border border-blue-400/30 shadow-[0_0_15px_rgba(37,99,235,0.3)] active:scale-95 transition"
         >
           <Smartphone className="w-3.5 h-3.5" />
           <span>Dashcam</span>
@@ -137,12 +137,12 @@ export default function Header({
         {/* Live Backend / Demo Status Badge */}
         <div
           className={cn(
-            'flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10.5px] font-mono border transition-all',
+            'flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10.5px] font-mono border backdrop-blur-md transition-all shadow-xs',
             isLive
-              ? 'bg-emerald-950/60 border-emerald-700/60 text-emerald-300'
+              ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-300 shadow-[0_0_12px_rgba(16,185,129,0.2)]'
               : isColdStarting
-              ? 'bg-amber-950/70 border-amber-600/70 text-amber-300 animate-pulse'
-              : 'bg-rose-950/60 border-rose-700/60 text-rose-300'
+              ? 'bg-amber-950/50 border-amber-500/50 text-amber-300 shadow-[0_0_12px_rgba(245,158,11,0.25)] animate-pulse'
+              : 'bg-rose-950/40 border-rose-500/40 text-rose-300 shadow-[0_0_12px_rgba(244,63,94,0.2)]'
           )}
           title={
             isLive
@@ -168,13 +168,13 @@ export default function Header({
         </div>
 
         {/* Active Fleet Node Count */}
-        <div className="hidden sm:flex items-center gap-1.5 bg-slate-800/80 border border-slate-700 px-2 py-1 rounded-lg text-xs text-slate-300 font-mono">
+        <div className="hidden sm:flex items-center gap-1.5 bg-white/[0.04] border border-white/10 px-2 py-1 rounded-lg text-xs text-slate-300 font-mono backdrop-blur-md">
           <Radio className="w-3.5 h-3.5 text-blue-400" />
           <span>{activeVehicles} Nodes</span>
         </div>
 
         {/* UTC Clock */}
-        <div className="hidden lg:flex items-center gap-1 bg-slate-800/50 border border-slate-700/80 px-2 py-1 rounded-lg text-[10.5px] text-slate-400 font-mono">
+        <div className="hidden lg:flex items-center gap-1 bg-white/[0.03] border border-white/10 px-2 py-1 rounded-lg text-[10.5px] text-slate-400 font-mono backdrop-blur-md">
           <Activity className="w-3 h-3 text-slate-500" />
           <span>{currentTime || 'SYNCING...'}</span>
         </div>
@@ -184,7 +184,7 @@ export default function Header({
           <button
             onClick={handleDedupClick}
             disabled={isDeduping}
-            className="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs px-2.5 py-1 rounded-lg font-mono transition-all disabled:opacity-50"
+            className="flex items-center gap-1.5 bg-white/[0.04] hover:bg-white/[0.08] text-slate-200 border border-white/10 hover:border-white/20 text-xs px-2.5 py-1 rounded-lg font-mono backdrop-blur-md transition-all disabled:opacity-50"
             title="Trigger manual 15m DBSCAN spatial deduplication"
           >
             <Cpu className={cn('w-3.5 h-3.5 text-blue-400', isDeduping && 'animate-spin')} />
@@ -196,7 +196,7 @@ export default function Header({
         {onRefresh && (
           <button
             onClick={onRefresh}
-            className="p-1 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-slate-100 border border-slate-700 rounded-lg text-xs transition"
+            className="p-1 bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 hover:text-slate-100 border border-white/10 hover:border-white/20 rounded-lg text-xs backdrop-blur-md transition"
             title="Refresh dashboard data"
           >
             <RefreshCw className="w-3.5 h-3.5" />
@@ -204,5 +204,6 @@ export default function Header({
         )}
       </div>
     </header>
+
   );
 }

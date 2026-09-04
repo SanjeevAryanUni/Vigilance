@@ -56,17 +56,17 @@ export default function AgentThoughtStream() {
   const current = PIPELINE_EVENTS[currentIndex];
 
   return (
-    <div className="w-full bg-slate-900/90 border border-slate-800/90 rounded-lg px-3 py-1.5 flex items-center justify-between font-mono text-xs overflow-hidden shadow-xs select-none">
+    <div className="w-full bg-slate-900/40 backdrop-blur-xl border border-white/10 rounded-xl px-3 py-1.5 flex items-center justify-between font-mono text-xs overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.25),inset_0_1px_0_0_rgba(255,255,255,0.08)] select-none">
       {/* Left Pulse Beacon & Audit Stream */}
       <div className="flex items-center gap-2.5 min-w-0 flex-1">
         <div className="flex items-center gap-1.5 shrink-0">
-          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.6)]" />
           <span className="text-[10px] font-bold text-slate-300 tracking-wider hidden sm:inline">
             PERCEPTION AUDIT LOG
           </span>
         </div>
 
-        <div className="h-3.5 w-px bg-slate-800 shrink-0" />
+        <div className="h-3.5 w-px bg-white/10 shrink-0" />
 
         {/* Audit Stream Item */}
         <div
@@ -77,13 +77,13 @@ export default function AgentThoughtStream() {
         >
           <span
             className={cn(
-              'px-1.5 py-0.5 rounded text-[9px] font-bold tracking-wide border shrink-0',
+              'px-1.5 py-0.5 rounded-md text-[9px] font-bold tracking-wide border backdrop-blur-md shrink-0 shadow-xs',
               current.tagClass
             )}
           >
             {current.tag}
           </span>
-          <p className="text-[11px] text-slate-300 truncate">
+          <p className="text-[11px] text-slate-200 truncate">
             {current.text}
           </p>
         </div>
@@ -92,8 +92,9 @@ export default function AgentThoughtStream() {
       {/* Latency Indicator */}
       <div className="hidden md:flex items-center gap-1.5 text-[10px] text-slate-400 shrink-0 pl-3">
         <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-        <span>Inference Latency: 85ms</span>
+        <span className="font-medium">Inference Latency: 85ms</span>
       </div>
     </div>
   );
 }
+
