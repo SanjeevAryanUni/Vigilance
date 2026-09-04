@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { API_BASE } from '@/lib/api';
+import { getApiBase } from '@/lib/api';
 import { WebSocketMessage } from '@/types/vigilance';
 
 export function useWebSocket(onMessage?: (msg: WebSocketMessage) => void) {
@@ -13,9 +13,10 @@ export function useWebSocket(onMessage?: (msg: WebSocketMessage) => void) {
   const connect = useCallback(() => {
     if (typeof window === 'undefined') return;
 
+    const base = getApiBase();
     const wsUrl =
       process.env.NEXT_PUBLIC_WS_URL ||
-      (API_BASE ? API_BASE.replace(/^http/, 'ws') + '/ws' : '') ||
+      (base ? base.replace(/^http/, 'ws') + '/ws' : '') ||
       (window.location.hostname === 'localhost' ? 'ws://localhost:8000/ws' : '');
 
     if (!wsUrl) return;

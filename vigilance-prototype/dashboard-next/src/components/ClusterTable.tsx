@@ -81,6 +81,12 @@ export default function ClusterTable({
                     Near: <span className="text-slate-400">{cluster.nearest_poi}</span> ({cluster.poi_distance_m}m)
                   </div>
                 )}
+                {cluster.contractor_name && (
+                  <div className="text-[9.5px] text-slate-400 font-mono pl-4 flex items-center gap-2">
+                    <span className="text-cyan-300 font-medium">🏗️ {cluster.contractor_name}</span>
+                    <span className="text-red-400 font-bold">({cluster.sla_hours || 24}h SLA)</span>
+                  </div>
+                )}
               </div>
 
               {/* Row 3: Detection Passes + RPI Bar */}

@@ -13,15 +13,21 @@
    * 5 virtual municipal buses concurrently streaming GPS-geotagged telemetry across the Chennai transit grid.
    * Real hardware benchmark: **~110 MB RAM footprint at ~23 FPS on Apple Silicon** (see `edge/BENCHMARKS.md`).
 
-2. **DBSCAN Spatial Deduplication & POI Engine (`backend/`):**
+2. **DBSCAN Spatial Deduplication, POI & SLA Engine (`backend/`):**
    * Eliminates duplicate reports from multiple buses traversing the same road segment within a **15-meter spatial threshold**.
    * Computes dynamic **Repair Prioritization Index (RPI)** using real Chennai road hierarchy and proximity to critical emergency hospitals and schools.
+   * Auto-matches raw GPS coordinates to arterial corridors (`match_nearest_road`) and links road segments to contracted maintenance entities (`ROAD_CONTRACTORS`) with SLA countdowns.
    * Preserves operator repair dispatch status (`open` ➔ `assigned` ➔ `resolved`) across live re-clustering passes.
 
 3. **Next.js 14 WebGIS Municipal Command Center (`dashboard-next/`):**
-   * Dark-mode MapLibre GL vector map centered on Chennai with interactive incident cluster badges.
-   * Real-time WebSocket telemetry stream and Defect Type Distribution Doughnut Chart.
-   * Interactive PWD Work-Order status dispatcher.
+   * Dark-mode MapLibre GL multi-layer vector map centered on Chennai with style switcher (CARTO, OSM, Satellite, Topo).
+   * Real-time WebSocket telemetry stream, ApexCharts distress velocity splines, and RPI radial formula gauges.
+   * Dedicated `/capture` Mobile Dashcam HUD for vehicle windshield testing.
+   * Interactive PWD Work-Order status dispatcher with contractor contact & SLA tracking.
+
+4. **Mobile Phone & Android Field Clients (`phone_client.py` & `termux_client.py`):**
+   * Physical Android phone support via Termux + Termux:API (`termux-location` GPS-FRESH fix + `termux-camera-photo`).
+   * `/capture` browser-based dashcam utilizing phone camera and HTML5 Geolocation.
 
 ---
 
@@ -32,5 +38,16 @@ cd vigilance-prototype
 ./start_demo.sh
 ```
 
-* 🌐 **GIS Dashboard:** `http://localhost:3000`
+* 🌐 **WebGIS Command Center:** `http://localhost:3000`
+* 📱 **Mobile Windshield Dashcam:** `http://localhost:3000/capture`
 * 📚 **REST API Documentation:** `http://localhost:8000/docs`
+
+### 📲 Running on an Android Phone (Live Field Telemetry)
+```bash
+# Inside Termux on Android Phone:
+pkg install python termux-api
+pip install requests
+export VIGILANCE_API_URL="http://<YOUR_LAPTOP_IP>:8000/api/detections"
+python termux_client.py
+```
+

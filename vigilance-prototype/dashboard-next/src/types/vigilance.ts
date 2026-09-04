@@ -28,6 +28,9 @@ export interface Cluster {
   road_name: string;
   nearest_poi: string;
   poi_distance_m: number;
+  contractor_name?: string;
+  contractor_contact?: string;
+  sla_hours?: number;
   created_at: string;
   updated_at: string;
 }

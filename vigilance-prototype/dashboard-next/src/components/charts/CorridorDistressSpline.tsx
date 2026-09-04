@@ -8,23 +8,29 @@ const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
 interface CorridorDistressSplineProps {
   className?: string;
+  potholesCount?: number;
+  cracksCount?: number;
 }
 
-export default function CorridorDistressSpline({ className }: CorridorDistressSplineProps) {
+export default function CorridorDistressSpline({ className, potholesCount = 24, cracksCount = 40 }: CorridorDistressSplineProps) {
   const options: ApexOptions = {
     chart: {
       type: 'area',
       background: 'transparent',
-      toolbar: { show: false },
-      fontFamily: 'monospace',
+      toolbar: {
+        show: false,
+      },
       animations: {
         enabled: true,
         easing: 'easeinout',
-        speed: 800,
+        speed: 600,
       },
+      fontFamily: 'monospace',
     },
-    colors: ['#06b6d4', '#f59e0b'], // Cyan for D40 Potholes, Amber for D20 Cracks
-    dataLabels: { enabled: false },
+    colors: ['#ef4444', '#f97316'],
+    dataLabels: {
+      enabled: false,
+    },
     stroke: {
       curve: 'smooth',
       width: 2,
@@ -32,50 +38,59 @@ export default function CorridorDistressSpline({ className }: CorridorDistressSp
     fill: {
       type: 'gradient',
       gradient: {
-        shade: 'dark',
-        type: 'vertical',
-        shadeIntensity: 0.5,
-        gradientToColors: ['#0891b2', '#d97706'],
-        inverseColors: false,
-        opacityFrom: 0.35,
+        shadeIntensity: 1,
+        opacityFrom: 0.45,
         opacityTo: 0.05,
-        stops: [0, 100],
+        stops: [0, 90, 100],
       },
     },
     grid: {
-      borderColor: 'rgba(51, 65, 85, 0.4)',
-      strokeDashArray: 4,
-      xaxis: { lines: { show: false } },
-      yaxis: { lines: { show: true } },
-      padding: { top: 0, right: 10, bottom: 0, left: 10 },
+      borderColor: '#1e293b',
+      strokeDashArray: 3,
+      xaxis: {
+        lines: {
+          show: true,
+        },
+      },
+      yaxis: {
+        lines: {
+          show: false,
+        },
+      },
+      padding: {
+        top: 0,
+        right: 10,
+        bottom: 0,
+        left: 10,
+      },
     },
     xaxis: {
-      categories: ['17:15', '17:20', '17:25', '17:30', '17:35', '17:40', '17:45'],
+      categories: ['06:00', '08:00', '10:00', '12:00', '14:00', '16:00', 'Now'],
       labels: {
         style: {
-          colors: '#94a3b8',
+          colors: '#64748b',
           fontSize: '10px',
         },
       },
-      axisBorder: { show: false },
-      axisTicks: { show: false },
+      axisBorder: {
+        show: false,
+      },
+      axisTicks: {
+        show: false,
+      },
     },
     yaxis: {
       labels: {
         style: {
-          colors: '#94a3b8',
+          colors: '#64748b',
           fontSize: '10px',
         },
       },
     },
     tooltip: {
       theme: 'dark',
-      x: { show: true },
-      y: {
-        formatter: (val: number) => `${val} events/min`,
-      },
-      style: {
-        fontSize: '11px',
+      x: {
+        show: true,
       },
     },
     legend: {
@@ -92,14 +107,16 @@ export default function CorridorDistressSpline({ className }: CorridorDistressSp
     },
   };
 
+  const p = potholesCount;
+  const c = cracksCount;
   const series = [
     {
       name: 'D40 Potholes (Critical)',
-      data: [4, 8, 15, 12, 22, 18, 25],
+      data: [Math.round(p * 0.16), Math.round(p * 0.32), Math.round(p * 0.6), Math.round(p * 0.48), Math.round(p * 0.88), Math.round(p * 0.72), p],
     },
     {
       name: 'D20 Alligator Cracks',
-      data: [7, 12, 19, 14, 28, 24, 31],
+      data: [Math.round(c * 0.22), Math.round(c * 0.38), Math.round(c * 0.6), Math.round(c * 0.45), Math.round(c * 0.9), Math.round(c * 0.77), c],
     },
   ];
 

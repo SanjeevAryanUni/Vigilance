@@ -14,7 +14,7 @@ try:
 except ImportError:
     GEOALCHEMY_AVAILABLE = False
 
-from poi_data import get_road_weight, get_proximity_weight, haversine_meters
+from poi_data import get_road_weight, get_proximity_weight, haversine_meters, get_contractor
 
 DB_PATH = os.path.join(os.path.dirname(__file__), "vigilance.db")
 DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{DB_PATH}")
@@ -54,6 +54,9 @@ class Cluster(Base):
     road_name = Column(String, default="GST Road, Chennai")
     nearest_poi = Column(String, default="General Area")
     poi_distance_m = Column(Float, default=0.0)
+    contractor_name = Column(String, default="Greater Chennai PWD")
+    contractor_contact = Column(String, default="+91 44 2538 4520")
+    sla_hours = Column(Integer, default=48)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow)
 
@@ -159,6 +162,7 @@ def run_spatial_deduplication(db_session) -> int:
         road_name = det_list[0].road_name
         road_wt = get_road_weight(road_name)
         prox_wt, nearest_poi, poi_dist = get_proximity_weight(center_lat, center_lon)
+        contractor = get_contractor(road_name)
         
         rpi = compute_rpi(max_sev, len(det_list), road_type_weight=road_wt, proximity_weight=prox_wt)
         
@@ -184,6 +188,9 @@ def run_spatial_deduplication(db_session) -> int:
             road_name=road_name,
             nearest_poi=nearest_poi,
             poi_distance_m=poi_dist,
+            contractor_name=contractor.get("name", "Greater Chennai PWD"),
+            contractor_contact=contractor.get("contact", "+91 44 2538 4520"),
+            sla_hours=contractor.get("sla_hours", 48),
             created_at=created_time,
             updated_at=datetime.utcnow()
         )

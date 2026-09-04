@@ -62,6 +62,9 @@ export default function WorkOrdersPage() {
       RPIScore: c.rpi_score,
       Status: c.status,
       RoadName: c.road_name,
+      ContractorName: c.contractor_name || 'L&T Highways Infra Ltd',
+      ContractorContact: c.contractor_contact || '+91 98401 22345',
+      SLAHours: c.sla_hours || 24,
       NearestPOI: c.nearest_poi || 'N/A',
       POIDistanceMeters: c.poi_distance_m || 0,
       FleetPassCount: c.detection_count,
@@ -240,6 +243,7 @@ export default function WorkOrdersPage() {
                   <th className="py-3 px-4 font-semibold">Severity</th>
                   <th className="py-3 px-4 font-semibold">RPI Score</th>
                   <th className="py-3 px-4 font-semibold text-center">Bus Ingests</th>
+                  <th className="py-3 px-4 font-semibold">Contractor & SLA</th>
                   <th className="py-3 px-4 font-semibold">Nearest POI</th>
                   <th className="py-3 px-4 font-semibold">Timestamp</th>
                   <th className="py-3 px-4 font-semibold text-right">Action Status</th>
@@ -248,7 +252,7 @@ export default function WorkOrdersPage() {
               <tbody className="divide-y divide-slate-800/60">
                 {filteredClusters.length === 0 ? (
                   <tr>
-                    <td colSpan={9} className="py-8 text-center text-slate-500">
+                    <td colSpan={10} className="py-8 text-center text-slate-500">
                       No municipal work orders matching the selected filters.
                     </td>
                   </tr>
@@ -277,6 +281,21 @@ export default function WorkOrdersPage() {
                         <span className="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300 font-bold">
                           {cluster.detection_count}
                         </span>
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <div className="flex flex-col gap-0.5">
+                          <div className="flex items-center gap-1.5 font-semibold text-slate-200">
+                            <span>🏗️ {cluster.contractor_name || 'L&T Highways Infra Ltd'}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-[10px]">
+                            <span className="px-1.5 py-0.2 rounded bg-red-950/80 text-red-400 border border-red-800/80 font-bold">
+                              {cluster.sla_hours || 24}h SLA
+                            </span>
+                            <span className="text-slate-500 font-mono">
+                              {cluster.contractor_contact || '+91 98401 22345'}
+                            </span>
+                          </div>
+                        </div>
                       </td>
                       <td className="py-3.5 px-4">
                         {cluster.nearest_poi ? (

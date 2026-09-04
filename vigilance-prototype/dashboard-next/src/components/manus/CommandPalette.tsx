@@ -14,6 +14,8 @@ import {
   CloudRain,
   X,
   ArrowRight,
+  Smartphone,
+  Globe,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -89,6 +91,25 @@ export default function CommandPalette({
             alert('Monsoon simulation active: Elevated distress weight applied to GST Road & OMR.');
           },
         },
+        {
+          id: 'set-backend',
+          title: 'Configure Live Backend API URL (Ngrok / Cloud)',
+          subtitle: 'Connect this dashboard to a live FastAPI / PostGIS instance',
+          icon: Globe,
+          action: () => {
+            onClose();
+            const current = (typeof window !== 'undefined' ? localStorage.getItem('vigilance_api_url') : '') || 'http://localhost:8000';
+            const url = prompt('Enter your live VIGILANCE Backend API URL (e.g., https://your-tunnel.ngrok-free.app or http://localhost:8000):', current);
+            if (url !== null) {
+              if (url.trim()) {
+                localStorage.setItem('vigilance_api_url', url.trim());
+              } else {
+                localStorage.removeItem('vigilance_api_url');
+              }
+              window.location.reload();
+            }
+          },
+        },
       ],
     },
     {
@@ -102,6 +123,16 @@ export default function CommandPalette({
           action: () => {
             onClose();
             router.push('/');
+          },
+        },
+        {
+          id: 'nav-capture',
+          title: 'Mobile Phone Windshield Dashcam (/capture)',
+          subtitle: 'Stream live camera & 5Hz GPS telemetry from your phone',
+          icon: Smartphone,
+          action: () => {
+            onClose();
+            router.push('/capture');
           },
         },
         {

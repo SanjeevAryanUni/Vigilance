@@ -282,6 +282,7 @@ export default function WebGISMap({
           <div><b>Road:</b> ${c.road_name}</div>
           <div><b>RPI Score:</b> <span style="font-weight: bold; color: #dc2626;">${c.rpi_score.toFixed(1)} / 100</span></div>
           <div><b>Fleet Passes:</b> ${c.detection_count} verified passes</div>
+          ${c.contractor_name ? `<div style="color: #0369a1; font-weight: 600;"><b>Contractor:</b> ${c.contractor_name} (${c.sla_hours || 24}h SLA)</div>` : ''}
           ${c.nearest_poi ? `<div><b>Nearest POI:</b> ${c.nearest_poi} (${c.poi_distance_m}m)</div>` : ''}
           <div style="margin-top: 4px;">
             <b>Status:</b> <span style="text-transform: uppercase; font-weight: bold; color: ${

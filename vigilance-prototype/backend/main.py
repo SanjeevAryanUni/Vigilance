@@ -14,6 +14,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from database import init_db, get_db, Detection, Cluster, run_spatial_deduplication, compute_rpi
+from poi_data import match_nearest_road
 from tasks import async_spatial_deduplication
 
 app = FastAPI(title="VIGILANCE Urban Road Intelligence API", version="1.0.0")
@@ -59,7 +60,7 @@ class DetectionIn(BaseModel):
     vehicle_id: str
     lat: float
     lon: float
-    road_name: Optional[str] = "GST Road, Chennai"
+    road_name: Optional[str] = None
     thumbnail_b64: Optional[str] = None
 
 @app.get("/api/health")
@@ -68,6 +69,9 @@ def health():
 
 @app.post("/api/detections")
 async def create_detection(det: DetectionIn, db: Session = Depends(get_db)):
+    # Auto-match road segment if not provided or default
+    road_name = det.road_name if det.road_name and det.road_name != "GST Road, Chennai" else match_nearest_road(det.lat, det.lon)
+
     db_det = Detection(
         defect_type=det.defect_type,
         confidence=det.confidence,
@@ -75,13 +79,16 @@ async def create_detection(det: DetectionIn, db: Session = Depends(get_db)):
         vehicle_id=det.vehicle_id,
         lat=det.lat,
         lon=det.lon,
-        road_name=det.road_name,
+        road_name=road_name,
         thumbnail_b64=det.thumbnail_b64,
         timestamp=datetime.utcnow()
     )
     db.add(db_det)
     db.commit()
     db.refresh(db_det)
+    
+    # Run spatial deduplication immediately for real-time map updates
+    run_spatial_deduplication(db)
     
     # Trigger asynchronous Celery task for spatial deduplication and RPI scoring
     try:
@@ -145,6 +152,9 @@ def get_clusters(db: Session = Depends(get_db)):
             "rpi_score": c.rpi_score,
             "status": c.status,
             "road_name": c.road_name,
+            "contractor_name": getattr(c, "contractor_name", "Greater Chennai PWD"),
+            "contractor_contact": getattr(c, "contractor_contact", "+91 44 2538 4520"),
+            "sla_hours": getattr(c, "sla_hours", 48),
             "nearest_poi": getattr(c, "nearest_poi", "Urban Corridor"),
             "poi_distance_m": getattr(c, "poi_distance_m", 0.0),
             "updated_at": c.updated_at.isoformat()

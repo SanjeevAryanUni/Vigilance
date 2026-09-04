@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ShieldAlert, Radio, RefreshCw, Cpu, Activity, LayoutDashboard, BarChart3, Truck, ClipboardList, Search, Command } from 'lucide-react';
+import { ShieldAlert, Radio, RefreshCw, Cpu, Activity, LayoutDashboard, BarChart3, Truck, ClipboardList, Search, Command, Smartphone } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import ShinyText from '@/components/reactbits/ShinyText';
 
@@ -51,6 +51,7 @@ export default function Header({
     { href: '/analytics', label: 'Analytics', icon: BarChart3 },
     { href: '/fleet', label: 'Fleet Nodes', icon: Truck },
     { href: '/work-orders', label: 'Work Orders', icon: ClipboardList },
+    { href: '/capture', label: 'Mobile Dashcam', icon: Smartphone },
   ];
 
   return (

@@ -133,7 +133,7 @@ export default function CommandCenterPage() {
               </div>
               <span className="text-[10px] text-slate-500">APEXCHARTS REAL-TIME</span>
             </div>
-            <CorridorDistressSpline />
+            <CorridorDistressSpline potholesCount={stats.potholes} cracksCount={stats.cracks} />
           </div>
 
           {/* RPI Concentric Radial Formula Breakdown */}
@@ -145,7 +145,13 @@ export default function CommandCenterPage() {
               </div>
               <span className="text-[10px] text-purple-400 font-bold">4-FACTOR WEIGHT</span>
             </div>
-            <RPIRadialGauge />
+            <RPIRadialGauge
+              rpiScore={
+                clusters.length > 0
+                  ? clusters.reduce((acc, c) => acc + c.rpi_score, 0) / clusters.length
+                  : 84.5
+              }
+            />
           </div>
 
           {/* Real-time Telemetry Ingestion Feed */}
