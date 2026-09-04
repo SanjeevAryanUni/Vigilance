@@ -14,7 +14,7 @@ import CommandPalette from '@/components/manus/CommandPalette';
 import CorridorDistressSpline from '@/components/charts/CorridorDistressSpline';
 import RPIRadialGauge from '@/components/charts/RPIRadialGauge';
 import { Cluster } from '@/types/vigilance';
-import { Activity, AlertOctagon, Camera, Layers, MapPin, Sparkles, TrendingUp, Truck } from 'lucide-react';
+import { Activity, AlertOctagon, Camera, Columns, Layers, Layout, MapPin, ShieldCheck, Sparkles, TrendingUp, Truck, X } from 'lucide-react';
 
 const WebGISMap = dynamic(() => import('@/components/WebGISMap'), {
   ssr: false,
@@ -35,6 +35,8 @@ const EdgeCockpit3D = dynamic(() => import('@/components/EdgeCockpit3D'), {
   ),
 });
 
+type WorkstationMode = 'full-gis' | 'split-ops' | 'full-cockpit';
+
 export default function CommandCenterPage() {
   const {
     stats,
@@ -50,8 +52,10 @@ export default function CommandCenterPage() {
 
   const [selectedCluster, setSelectedCluster] = useState<Cluster | null>(null);
   const [showRPIModal, setShowRPIModal] = useState(false);
+  const [showExecutiveBrief, setShowExecutiveBrief] = useState(false);
   const [showCockpitModal, setShowCockpitModal] = useState(false);
   const [showCommandPalette, setShowCommandPalette] = useState(false);
+  const [workstationMode, setWorkstationMode] = useState<WorkstationMode>('full-gis');
 
   return (
     <div className="flex flex-col h-screen w-screen bg-slate-950 text-slate-100 overflow-hidden font-sans select-none relative">
@@ -121,7 +125,7 @@ export default function CommandCenterPage() {
           </div>
 
           {/* Cinematic ApexCharts: Real-time Corridor Distress Spline */}
-          <div className="bg-slate-900/80 backdrop-blur-xl border border-slate-800/80 rounded-xl p-3 flex flex-col shadow-lg">
+          <div className="bg-slate-900/80 backdrop-blur-xl border border-slate-800/80 rounded-xl p-3 flex flex-col shadow-lg relative group">
             <div className="flex items-center justify-between pb-2 mb-1 border-b border-slate-800/60 font-mono text-xs">
               <div className="flex items-center gap-1.5 font-bold uppercase tracking-wider text-slate-300">
                 <TrendingUp className="w-3.5 h-3.5 text-cyan-400" />
@@ -156,42 +160,98 @@ export default function CommandCenterPage() {
           />
         </aside>
 
-        {/* Center/Right: WebGIS Map Canvas & Tactical Overlays */}
+        {/* Center/Right: WebGIS Map Canvas & Tactical Workstation Area */}
         <main className="flex-1 flex flex-col rounded-xl overflow-hidden border border-slate-800/80 bg-slate-900 relative shadow-2xl">
-          {/* Tactical Top Map Overlay */}
-          <div className="absolute top-3 left-3 z-10 flex flex-wrap items-center gap-2 pointer-events-auto">
-            <div className="bg-slate-950/90 backdrop-blur-md border border-slate-800 px-3 py-1.5 rounded-lg flex items-center gap-2 text-xs font-mono shadow-lg">
-              <MapPin className="w-3.5 h-3.5 text-cyan-400" />
-              <span className="font-bold text-slate-200">Chennai Arterial Spatial Grid</span>
-              <span className="text-slate-500">•</span>
-              <span className="text-[11px] text-slate-400">CARTO Dark Matter</span>
+          {/* Tactical Workstation Header Bar */}
+          <div className="absolute top-3 left-3 right-3 z-20 flex flex-wrap items-center justify-between gap-2 pointer-events-none">
+            {/* Left Controls */}
+            <div className="flex items-center gap-2 pointer-events-auto">
+              <div className="bg-slate-950/90 backdrop-blur-md border border-slate-800 px-3 py-1.5 rounded-lg flex items-center gap-2 text-xs font-mono shadow-lg">
+                <MapPin className="w-3.5 h-3.5 text-cyan-400" />
+                <span className="font-bold text-slate-200">Chennai Arterial Spatial Grid</span>
+                <span className="text-slate-500">•</span>
+                <span className="text-[11px] text-slate-400">EPSG:4326</span>
+              </div>
+
+              {/* Workstation Mode Switcher Tabs */}
+              <div className="hidden xl:flex items-center bg-slate-950/90 border border-slate-800 p-1 rounded-lg text-xs font-mono">
+                <button
+                  onClick={() => setWorkstationMode('full-gis')}
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded transition ${
+                    workstationMode === 'full-gis'
+                      ? 'bg-blue-600 text-white font-bold shadow'
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  <Layout className="w-3 h-3" />
+                  <span>Full GIS Map</span>
+                </button>
+                <button
+                  onClick={() => setWorkstationMode('split-ops')}
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded transition ${
+                    workstationMode === 'split-ops'
+                      ? 'bg-blue-600 text-white font-bold shadow'
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  <Columns className="w-3 h-3" />
+                  <span>Split Tactical Ops</span>
+                </button>
+              </div>
             </div>
 
-            <button
-              onClick={() => setShowCockpitModal(true)}
-              className="bg-cyan-950/80 hover:bg-cyan-900/90 border border-cyan-700/80 text-cyan-300 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 text-xs font-mono transition shadow-lg animate-pulse"
-              title="View live 3D highway edge cockpit perspective"
-            >
-              <Camera className="w-3.5 h-3.5 text-cyan-400" />
-              <span>3D Bus Cockpit</span>
-            </button>
+            {/* Right Action Buttons */}
+            <div className="flex items-center gap-2 pointer-events-auto">
+              <button
+                onClick={() => setShowExecutiveBrief(!showExecutiveBrief)}
+                className="bg-purple-950/80 hover:bg-purple-900/90 border border-purple-800/80 text-purple-300 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 text-xs font-mono transition shadow-lg"
+                title="View SIH26124 Executive Architecture Brief"
+              >
+                <ShieldCheck className="w-3.5 h-3.5 text-purple-400" />
+                <span>BEL Solution Brief</span>
+              </button>
 
-            <button
-              onClick={() => setShowRPIModal(!showRPIModal)}
-              className="bg-blue-950/80 hover:bg-blue-900/90 border border-blue-800/80 text-cyan-300 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 text-xs font-mono transition shadow-lg"
-            >
-              <Sparkles className="w-3 h-3 text-cyan-400" />
-              <span>RPI Formula</span>
-            </button>
+              <button
+                onClick={() => setShowCockpitModal(true)}
+                className="bg-cyan-950/80 hover:bg-cyan-900/90 border border-cyan-700/80 text-cyan-300 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 text-xs font-mono transition shadow-lg animate-pulse"
+                title="View live 3D highway edge cockpit perspective"
+              >
+                <Camera className="w-3.5 h-3.5 text-cyan-400" />
+                <span>3D Bus Cockpit</span>
+              </button>
+
+              <button
+                onClick={() => setShowRPIModal(!showRPIModal)}
+                className="bg-blue-950/80 hover:bg-blue-900/90 border border-blue-800/80 text-cyan-300 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 text-xs font-mono transition shadow-lg"
+              >
+                <Sparkles className="w-3 h-3 text-cyan-400" />
+                <span>RPI Formula</span>
+              </button>
+            </div>
           </div>
 
-          {/* Map Canvas */}
-          <div className="flex-1 w-full h-full">
-            <WebGISMap
-              clusters={clusters}
-              onStatusChange={updateStatus}
-              selectedClusterId={selectedCluster?.id}
-            />
+          {/* Main Content Area (supports Full GIS or Split Tactical Ops) */}
+          <div className="flex-1 w-full h-full flex overflow-hidden">
+            {workstationMode === 'split-ops' && (
+              <div className="w-1/2 h-full border-r border-slate-800 pt-12 p-2 relative bg-slate-950">
+                <div className="absolute top-2 left-3 z-10 text-[10px] font-mono text-cyan-400 font-bold flex items-center gap-1.5">
+                  <Camera className="w-3 h-3 animate-pulse" />
+                  <span>TACTICAL WINDSHIELD 3D HUD</span>
+                </div>
+                <EdgeCockpit3D
+                  vehicleId="BUS-TN01-1042"
+                  roadName="GST Road (NH-32)"
+                />
+              </div>
+            )}
+
+            <div className={`${workstationMode === 'split-ops' ? 'w-1/2' : 'w-full'} h-full relative`}>
+              <WebGISMap
+                clusters={clusters}
+                onStatusChange={updateStatus}
+                selectedClusterId={selectedCluster?.id}
+              />
+            </div>
           </div>
 
           {/* Tactical Bottom Map Legend */}
@@ -233,6 +293,61 @@ export default function CommandCenterPage() {
                   roadName="GST Road, Tambaram (NH-32)"
                   onClose={() => setShowCockpitModal(false)}
                 />
+              </div>
+            </div>
+          )}
+
+          {/* SIH Executive Brief Modal */}
+          {showExecutiveBrief && (
+            <div className="absolute inset-x-8 top-12 bottom-12 z-30 bg-slate-950/95 backdrop-blur-xl border border-purple-700/80 rounded-2xl p-6 shadow-2xl overflow-y-auto custom-scrollbar font-mono text-xs flex flex-col justify-between animate-in fade-in zoom-in-95">
+              <div>
+                <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck className="w-5 h-5 text-purple-400" />
+                    <span className="text-base font-bold text-slate-100">
+                      SIH26124 • BHARAT ELECTRONICS LIMITED (BEL) SOLUTION BRIEF
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => setShowExecutiveBrief(false)}
+                    className="p-1 rounded bg-slate-900 text-slate-400 hover:text-white border border-slate-800"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                  <div className="bg-slate-900/80 border border-slate-800 p-3.5 rounded-xl">
+                    <div className="text-cyan-400 font-bold mb-1">1. SUB-₹3,000 EDGE UNIT</div>
+                    <p className="text-slate-300 text-[11px] leading-relaxed">
+                      Custom INT8 quantized YOLOv8n running on Rockchip RK3588 NPU at 24 FPS (&lt;110MB RAM footprint).
+                      Reuses public transit buses with zero infrastructure CAPEX.
+                    </p>
+                  </div>
+                  <div className="bg-slate-900/80 border border-slate-800 p-3.5 rounded-xl">
+                    <div className="text-amber-400 font-bold mb-1">2. SPATIO-TEMPORAL DBSCAN</div>
+                    <p className="text-slate-300 text-[11px] leading-relaxed">
+                      Asynchronous Celery + Redis pipeline executing PostGIS <code className="text-white">ST_ClusterDBSCAN</code> (15m radius),
+                      eliminating duplicate detections from repeated bus passes.
+                    </p>
+                  </div>
+                  <div className="bg-slate-900/80 border border-slate-800 p-3.5 rounded-xl">
+                    <div className="text-purple-400 font-bold mb-1">3. DYNAMIC RPI TRIAGE</div>
+                    <p className="text-slate-300 text-[11px] leading-relaxed">
+                      Priority score combining Distress Severity (40%), Bus Frequency (25%), Highway Hierarchy (20%), and Emergency POI proximity (15%).
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between text-slate-400 text-[11px]">
+                <span>Status: Fully Built &amp; Deployed (Live WebGIS + Production APIs)</span>
+                <button
+                  onClick={() => setShowExecutiveBrief(false)}
+                  className="px-4 py-1.5 rounded-lg bg-purple-900 text-purple-200 font-bold hover:bg-purple-800 transition"
+                >
+                  Return to Workstation
+                </button>
               </div>
             </div>
           )}
