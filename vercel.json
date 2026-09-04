@@ -1,5 +1,4 @@
 {
   "buildCommand": "cd vigilance-prototype/dashboard-next && npm install && npm run build",
-  "outputDirectory": "vigilance-prototype/dashboard-next/.next",
-  "framework": "nextjs"
+  "outputDirectory": "vigilance-prototype/dashboard-next/.next"
 }

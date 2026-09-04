@@ -1,0 +1,14 @@
+{
+  "name": "vigilance-prototype-root",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "npm --prefix vigilance-prototype/dashboard-next run dev",
+    "build": "cd vigilance-prototype/dashboard-next && npm install && npm run build",
+    "start": "npm --prefix vigilance-prototype/dashboard-next run start",
+    "lint": "npm --prefix vigilance-prototype/dashboard-next run lint"
+  },
+  "dependencies": {
+    "next": "14.2.35"
+  }
+}
