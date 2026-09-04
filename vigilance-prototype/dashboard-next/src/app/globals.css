@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-  --background: #020617;
+  --background: #090d16;
   --foreground: #f8fafc;
 }
 
@@ -13,24 +13,24 @@ body {
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
 }
 
-/* Custom Tactical Scrollbar */
+/* Professional GovTech Scrollbar */
 .custom-scrollbar::-webkit-scrollbar {
   width: 5px;
   height: 5px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.6);
+  background: rgba(15, 23, 42, 0.5);
   border-radius: 4px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(51, 65, 85, 0.8);
+  background: rgba(51, 65, 85, 0.7);
   border-radius: 4px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(6, 182, 212, 0.5);
+  background: rgba(71, 85, 105, 0.9);
 }
 
 /* MapLibre popup and controls customization */
@@ -39,12 +39,16 @@ body {
   color: #f8fafc !important;
   border: 1px solid #334155 !important;
   border-radius: 10px !important;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.7) !important;
-  padding: 10px !important;
+  box-shadow: 0 16px 36px -4px rgba(0, 0, 0, 0.8) !important;
+  padding: 12px !important;
 }
 
 .maplibregl-popup-anchor-bottom .maplibregl-popup-tip {
   border-top-color: #0f172a !important;
+}
+
+.maplibregl-popup-anchor-top .maplibregl-popup-tip {
+  border-bottom-color: #0f172a !important;
 }
 
 .maplibregl-ctrl-group {
@@ -52,10 +56,13 @@ body {
   border: 1px solid #334155 !important;
   border-radius: 8px !important;
   overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
 }
 
 .maplibregl-ctrl-group button {
   border-bottom: 1px solid #1e293b !important;
+  width: 32px !important;
+  height: 32px !important;
 }
 
 .maplibregl-ctrl-group button:last-child {
@@ -67,47 +74,28 @@ body {
 }
 
 .maplibregl-ctrl-group button:hover svg {
-  fill: #06b6d4 !important;
+  fill: #38bdf8 !important;
 }
 
-@keyframes pulse-glow {
+/* MapLibre scale control */
+.maplibregl-ctrl-scale {
+  background-color: rgba(15, 23, 42, 0.85) !important;
+  color: #94a3b8 !important;
+  border: 1px solid #334155 !important;
+  border-radius: 4px !important;
+  font-family: monospace !important;
+  font-size: 10px !important;
+}
+
+@keyframes pulse-subtle {
   0%, 100% {
-    box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
+    opacity: 1;
   }
   50% {
-    box-shadow: 0 0 20px rgba(239, 68, 68, 0.8);
+    opacity: 0.6;
   }
 }
 
-.animate-pulse-glow {
-  animation: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+.animate-pulse-subtle {
+  animation: pulse-subtle 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
-
-@keyframes shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
-}
-
-.animate-shimmer {
-  animation: shimmer 4s linear infinite;
-}
-
-@keyframes radar-ping {
-  0% {
-    transform: scale(0.8);
-    opacity: 0.8;
-  }
-  100% {
-    transform: scale(2.4);
-    opacity: 0;
-  }
-}
-
-.animate-radar-ping {
-  animation: radar-ping 2s cubic-bezier(0, 0.2, 0.8, 1) infinite;
-}
-

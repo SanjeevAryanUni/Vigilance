@@ -38,7 +38,7 @@ export default function RPIRadialGauge({ className, rpiScore = 91.2, factors }: 
             offsetY: -6,
           },
           value: {
-            fontSize: '14px',
+            fontSize: '13px',
             fontWeight: 700,
             color: '#f8fafc',
             formatter: (val: number) => `${val.toFixed(0)}%`,
@@ -46,15 +46,15 @@ export default function RPIRadialGauge({ className, rpiScore = 91.2, factors }: 
           },
           total: {
             show: true,
-            label: 'RPI INDEX',
-            color: '#06b6d4',
+            label: 'AVG RPI',
+            color: '#f8fafc',
             formatter: () => `${normalizedScore.toFixed(1)}`,
           },
         },
       },
     },
-    colors: ['#ef4444', '#f59e0b', '#06b6d4', '#8b5cf6'],
-    labels: ['Severity (40%)', 'Density (25%)', 'Highway (20%)', 'POI Prox (15%)'],
+    colors: ['#ef4444', '#f59e0b', '#3b82f6', '#10b981'],
+    labels: ['Severity (40%)', 'Density (25%)', 'Hierarchy (20%)', 'POI Prox (15%)'],
     stroke: {
       lineCap: 'round',
     },
