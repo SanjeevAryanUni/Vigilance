@@ -41,6 +41,9 @@ cd vigilance-prototype
 * 🌐 **WebGIS Command Center:** `http://localhost:3000`
 * 📱 **Mobile Windshield Dashcam:** `http://localhost:3000/capture`
 * 📚 **REST API Documentation:** `http://localhost:8000/docs`
+* 📐 **RPI Mathematical Methodology:** [`../docs/RPI_METHODOLOGY.md`](../docs/RPI_METHODOLOGY.md)
+* ⚡ **Edge AI Benchmarks:** [`edge/BENCHMARKS.md`](edge/BENCHMARKS.md)
+
 
 ### 📲 Running on an Android Phone (Live Field Telemetry)
 ```bash

@@ -63,9 +63,16 @@ class DetectionIn(BaseModel):
     road_name: Optional[str] = None
     thumbnail_b64: Optional[str] = None
 
+@app.get("/health")
 @app.get("/api/health")
 def health():
-    return {"status": "healthy", "service": "VIGILANCE Backend", "timestamp": datetime.utcnow().isoformat()}
+    return {
+        "status": "healthy",
+        "service": "VIGILANCE Urban Road Intelligence Backend",
+        "version": "1.0.0",
+        "database": "PostgreSQL/PostGIS" if IS_POSTGRES else "SQLite (Local/Fallback)",
+        "timestamp": datetime.utcnow().isoformat()
+    }
 
 @app.post("/api/detections")
 async def create_detection(det: DetectionIn, db: Session = Depends(get_db)):

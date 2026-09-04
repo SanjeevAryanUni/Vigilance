@@ -108,20 +108,31 @@ cd vigilance-prototype
 ./start_demo.sh
 ```
 
-* 🌐 **GIS Dashboard:** `http://localhost:3000`
-* 📚 **Interactive REST API Docs:** `http://localhost:8000/docs`
+* 🌐 **GIS Dashboard (Local):** `http://localhost:3000`
+* 🚀 **Production Deployment:** [vigilance-sih.vercel.app](https://vigilance-sih.vercel.app)
+* 📚 **Interactive REST API Docs:** `http://localhost:8000/docs` (or Render backend: `https://vigilance-backend.onrender.com/docs`)
+* 📐 **RPI Mathematical Methodology:** [`docs/RPI_METHODOLOGY.md`](docs/RPI_METHODOLOGY.md)
+* ⚡ **Edge AI Hardware Benchmarks:** [`vigilance-prototype/edge/BENCHMARKS.md`](vigilance-prototype/edge/BENCHMARKS.md)
+
+---
+
+## 🏛️ Repository Topology & Canonical Source of Truth
+
+* **Canonical Source Repository:** [`https://github.com/SanjeevAryanUni/Vigilance`](https://github.com/SanjeevAryanUni/Vigilance) (Active development, issues, CI workflows)
+* **Vercel Deployment Mirror:** [`https://github.com/SanjeevAryanUni/vigilance-sih`](https://github.com/SanjeevAryanUni/vigilance-sih) (Automated deployment sync to Vercel edge network)
 
 ---
 
 ## 👥 Team VIGILANCE — SRM Institute of Science and Technology
 
-| Name | Role | Department | Registration No. | Email |
-| :--- | :--- | :--- | :--- | :--- |
-| **Sanjeev Aryan** | Team Leader & Full Stack | CINTEL | RA2511047010030 | sa8129@srmist.edu.in |
-| **Parth Jaina** | Edge AI & Computer Vision | CINTEL | RA2511047010069 | pj2752@srmist.edu.in |
-| **Dhiti Mahajan** | Data Science & Geospatial Analytics | DSBS | RA2511056010060 | dm5223@srmist.edu.in |
-| **Shubh Garg** | Backend Architecture & IoT | CINTEL | RA2511047010023 | sg8735@srmist.edu.in |
-| **Prakhar Sharma** | Frontend & WebGIS Engineering | C-TECH | RA2511003010764 | ps1158@srmist.edu.in |
-| **Navdeep Rathe** | Systems Integration & Testing | C-TECH | RA2511003010177 | nr8188@srmist.edu.in |
-| **Dr. Pavithra L** | Faculty Mentor | CINTEL | — | pavithrl3@srmist.edu.in |
-| **Dr. Kishore Anthuvan Sahayaraj** | Industry Mentor | — | — | kishorea1@srmist.edu.in |
+| Name | Role | Department |
+| :--- | :--- | :--- |
+| **Sanjeev Aryan** | Team Leader & Full Stack Architecture | Computational Intelligence (CINTEL) |
+| **Parth Jaina** | Edge AI & Computer Vision | Computational Intelligence (CINTEL) |
+| **Dhiti Mahajan** | Data Science & Geospatial Analytics | Data Science & Business Systems (DSBS) |
+| **Shubh Garg** | Backend Architecture & IoT Streaming | Computational Intelligence (CINTEL) |
+| **Prakhar Sharma** | Frontend & WebGIS Engineering | Computing Technologies (C-TECH) |
+| **Navdeep Rathe** | Systems Integration & Testing | Computing Technologies (C-TECH) |
+| **Dr. Pavithra L** | Faculty Mentor | Computational Intelligence (CINTEL) |
+| **Dr. Kishore Anthuvan Sahayaraj** | Industry Mentor | Industry Advisory Board |
+

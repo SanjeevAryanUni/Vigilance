@@ -3,8 +3,10 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Cluster, ClusterStatus, DashboardStats, DefectType, Detection, Severity, WebSocketMessage } from '@/types/vigilance';
 import { INITIAL_CLUSTERS, INITIAL_DETECTIONS, INITIAL_STATS } from '@/lib/constants';
-import { getClusters, getDetections, getStats, updateClusterStatus, triggerDedup } from '@/lib/api';
+import { getClusters, getDetections, getStats, getHealth, updateClusterStatus, triggerDedup, getApiBase } from '@/lib/api';
 import { useWebSocket } from './useWebSocket';
+
+export type BackendConnectionStatus = 'healthy' | 'cold-starting' | 'unreachable';
 
 export function useDashboardData() {
   const [stats, setStats] = useState<DashboardStats>(INITIAL_STATS);
@@ -12,12 +14,27 @@ export function useDashboardData() {
   const [detections, setDetections] = useState<Detection[]>(INITIAL_DETECTIONS);
   const [isLoading, setIsLoading] = useState(false);
   const [backendAvailable, setBackendAvailable] = useState<boolean | null>(null);
+  const [backendStatus, setBackendStatus] = useState<BackendConnectionStatus>('unreachable');
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const simulationTimerRef = useRef<NodeJS.Timeout>();
 
+  const checkHealth = useCallback(async () => {
+    const health = await getHealth();
+    if (health && health.status === 'healthy') {
+      setBackendStatus('healthy');
+      return true;
+    }
+    return false;
+  }, []);
+
   const loadData = useCallback(async () => {
     setIsLoading(true);
+    const apiBase = getApiBase();
+    
     try {
+      // First check health
+      const isHealthy = await checkHealth();
+
       const [fetchedStats, fetchedDetections, fetchedClusters] = await Promise.all([
         getStats(),
         getDetections(20),
@@ -26,21 +43,27 @@ export function useDashboardData() {
 
       if (fetchedStats && fetchedClusters && fetchedClusters.length > 0) {
         setBackendAvailable(true);
+        setBackendStatus('healthy');
         setStats(fetchedStats);
         if (fetchedDetections && fetchedDetections.length > 0) {
           setDetections(fetchedDetections);
         }
         setClusters(fetchedClusters);
+      } else if (isHealthy) {
+        setBackendAvailable(true);
+        setBackendStatus('healthy');
       } else {
         setBackendAvailable(false);
+        setBackendStatus(apiBase ? 'cold-starting' : 'unreachable');
       }
     } catch (err) {
       setBackendAvailable(false);
+      setBackendStatus(apiBase ? 'cold-starting' : 'unreachable');
     } finally {
       setIsLoading(false);
       setLastUpdated(new Date());
     }
-  }, []);
+  }, [checkHealth]);
 
   const handleWsMessage = useCallback((msg: WebSocketMessage) => {
     if (msg.type === 'new_detection') {
@@ -113,10 +136,10 @@ export function useDashboardData() {
     };
   }, [backendAvailable]);
 
-  // Initial load & periodic polling for stats
+  // Initial load & periodic polling for stats + health check
   useEffect(() => {
     loadData();
-    const interval = setInterval(loadData, 30000);
+    const interval = setInterval(loadData, 20000);
     return () => clearInterval(interval);
   }, [loadData]);
 
@@ -142,6 +165,7 @@ export function useDashboardData() {
     isLoading,
     isConnected,
     backendAvailable,
+    backendStatus,
     lastUpdated,
     refreshData: loadData,
     updateStatus: handleStatusChange,

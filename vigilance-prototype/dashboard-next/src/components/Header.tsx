@@ -3,12 +3,15 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ShieldAlert, Radio, RefreshCw, Cpu, Activity, LayoutDashboard, BarChart3, Truck, ClipboardList, Search, Smartphone } from 'lucide-react';
+import { ShieldAlert, Radio, RefreshCw, Cpu, Activity, LayoutDashboard, BarChart3, Truck, ClipboardList, Search, Smartphone, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { BackendConnectionStatus } from '@/hooks/useDashboardData';
 
 interface HeaderProps {
   activeVehicles?: number;
   isConnected?: boolean;
+  backendAvailable?: boolean | null;
+  backendStatus?: BackendConnectionStatus;
   onRefresh?: () => void;
   onTriggerDedup?: () => Promise<any>;
   onOpenCommandPalette?: () => void;
@@ -17,6 +20,8 @@ interface HeaderProps {
 export default function Header({
   activeVehicles = 5,
   isConnected = false,
+  backendAvailable = null,
+  backendStatus = 'unreachable',
   onRefresh,
   onTriggerDedup,
   onOpenCommandPalette,
@@ -52,6 +57,9 @@ export default function Header({
     { href: '/work-orders', label: 'Work Orders', icon: ClipboardList },
     { href: '/capture', label: 'Mobile Dashcam', icon: Smartphone },
   ];
+
+  const isLive = backendAvailable === true || isConnected;
+  const isColdStarting = backendStatus === 'cold-starting';
 
   return (
     <header className="h-14 bg-slate-900/95 backdrop-blur-md border-b border-slate-800 px-3 lg:px-5 flex items-center justify-between z-30 select-none shrink-0">
@@ -126,23 +134,37 @@ export default function Header({
           <span>Dashcam</span>
         </Link>
 
-        {/* Live WebSocket / Simulation Status */}
+        {/* Live Backend / Demo Status Badge */}
         <div
           className={cn(
             'flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10.5px] font-mono border transition-all',
-            isConnected
+            isLive
               ? 'bg-emerald-950/60 border-emerald-700/60 text-emerald-300'
-              : 'bg-amber-950/60 border-amber-700/60 text-amber-300'
+              : isColdStarting
+              ? 'bg-amber-950/70 border-amber-600/70 text-amber-300 animate-pulse'
+              : 'bg-rose-950/60 border-rose-700/60 text-rose-300'
           )}
-          title={isConnected ? 'Connected to live WebSocket broker' : 'Operating in resilient simulated edge stream mode'}
+          title={
+            isLive
+              ? 'Connected to live FastAPI & PostGIS backend'
+              : isColdStarting
+              ? 'Backend is waking up from sleep (Render free tier cold-start)'
+              : 'Backend unreachable — displaying fallback demo data'
+          }
         >
           <span
             className={cn(
               'w-2 h-2 rounded-full',
-              isConnected ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'
+              isLive
+                ? 'bg-emerald-400 animate-pulse'
+                : isColdStarting
+                ? 'bg-amber-400 animate-ping'
+                : 'bg-rose-400'
             )}
           />
-          <span className="font-semibold">{isConnected ? 'LIVE WS' : 'EDGE SIM'}</span>
+          <span className="font-semibold">
+            {isLive ? 'LIVE BACKEND' : isColdStarting ? 'WAKING BACKEND' : 'DEMO DATA'}
+          </span>
         </div>
 
         {/* Active Fleet Node Count */}

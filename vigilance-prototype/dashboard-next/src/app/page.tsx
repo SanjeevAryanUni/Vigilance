@@ -68,6 +68,7 @@ export default function CommandCenterPage() {
     detections,
     isConnected,
     backendAvailable,
+    backendStatus,
     lastUpdated,
     refreshData,
     updateStatus,
@@ -95,10 +96,39 @@ export default function CommandCenterPage() {
       <Header
         activeVehicles={stats.active_vehicles}
         isConnected={isConnected}
+        backendAvailable={backendAvailable}
+        backendStatus={backendStatus}
         onRefresh={refreshData}
         onTriggerDedup={triggerDedup}
         onOpenCommandPalette={() => setShowCommandPalette(true)}
       />
+
+      {/* Fallback / Demo Data Warning Banner (when backend is cold/sleeping or unreachable) */}
+      {backendAvailable === false && (
+        <div className="bg-amber-950/90 border-b border-amber-600/70 px-4 py-1.5 flex flex-wrap items-center justify-between text-xs font-mono text-amber-200 z-30 shrink-0 gap-2">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse shrink-0" />
+            <span className="font-bold text-amber-300">DEMO MODE (SYNTHETIC TELEMETRY ACTIVE):</span>
+            <span className="text-amber-200/90 text-[11px] hidden sm:inline">
+              Backend service is currently unreachable or sleeping (Render free-tier cold start). Serving cached dataset + client-side simulation.
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={refreshData}
+              className="px-2 py-0.5 bg-amber-900 hover:bg-amber-800 border border-amber-600 rounded text-[11px] font-semibold text-amber-100 cursor-pointer transition"
+            >
+              🔄 Retry Connection
+            </button>
+            <button
+              onClick={() => setShowCommandPalette(true)}
+              className="px-2 py-0.5 bg-slate-900 hover:bg-slate-800 border border-slate-700 rounded text-[11px] text-slate-300 cursor-pointer transition"
+            >
+              ⚙️ Set Live API URL
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Mobile Tab Switcher Bar (visible only on mobile/tablet < lg) */}
       <div className="lg:hidden flex items-center bg-slate-900 border-b border-slate-800 px-3 py-1.5 shrink-0 z-20">
