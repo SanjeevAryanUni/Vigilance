@@ -18,9 +18,9 @@ export const API_BASE = getApiBase();
 
 export async function getHealth(): Promise<{ status: string; service: string; timestamp: string } | null> {
   const base = getApiBase();
-  if (!base) return null;
+  const url = base ? `${base}/api/health` : '/api/health';
   try {
-    const res = await fetch(`${base}/api/health`, { cache: 'no-store' });
+    const res = await fetch(url, { cache: 'no-store' });
     if (!res.ok) return null;
     return await res.json();
   } catch (err) {
@@ -30,9 +30,9 @@ export async function getHealth(): Promise<{ status: string; service: string; ti
 
 export async function getStats(): Promise<DashboardStats | null> {
   const base = getApiBase();
-  if (!base) return null;
+  const url = base ? `${base}/api/stats` : '/api/stats';
   try {
-    const res = await fetch(`${base}/api/stats`, { cache: 'no-store' });
+    const res = await fetch(url, { cache: 'no-store' });
     if (!res.ok) return null;
     return await res.json();
   } catch (err) {
@@ -42,9 +42,9 @@ export async function getStats(): Promise<DashboardStats | null> {
 
 export async function getDetections(limit = 50): Promise<Detection[] | null> {
   const base = getApiBase();
-  if (!base) return null;
+  const url = base ? `${base}/api/detections?limit=${limit}` : `/api/detections?limit=${limit}`;
   try {
-    const res = await fetch(`${base}/api/detections?limit=${limit}`, { cache: 'no-store' });
+    const res = await fetch(url, { cache: 'no-store' });
     if (!res.ok) return null;
     return await res.json();
   } catch (err) {
@@ -54,9 +54,9 @@ export async function getDetections(limit = 50): Promise<Detection[] | null> {
 
 export async function getClusters(): Promise<Cluster[] | null> {
   const base = getApiBase();
-  if (!base) return null;
+  const url = base ? `${base}/api/clusters` : '/api/clusters';
   try {
-    const res = await fetch(`${base}/api/clusters`, { cache: 'no-store' });
+    const res = await fetch(url, { cache: 'no-store' });
     if (!res.ok) return null;
     return await res.json();
   } catch (err) {
@@ -66,9 +66,9 @@ export async function getClusters(): Promise<Cluster[] | null> {
 
 export async function updateClusterStatus(clusterId: number, status: ClusterStatus): Promise<boolean> {
   const base = getApiBase();
-  if (!base) return true; // optimistic local update
+  const url = base ? `${base}/api/clusters/${clusterId}/status?status=${status}` : `/api/clusters/${clusterId}/status?status=${status}`;
   try {
-    const res = await fetch(`${base}/api/clusters/${clusterId}/status?status=${status}`, {
+    const res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status }),
@@ -82,9 +82,9 @@ export async function updateClusterStatus(clusterId: number, status: ClusterStat
 
 export async function triggerDedup(): Promise<{ status: string; clusters_updated: number } | null> {
   const base = getApiBase();
-  if (!base) return { status: 'DEDUP_COMPLETE', clusters_updated: 9 };
+  const url = base ? `${base}/api/trigger-dedup` : '/api/trigger-dedup';
   try {
-    const res = await fetch(`${base}/api/trigger-dedup`, {
+    const res = await fetch(url, {
       method: 'POST',
     });
     if (!res.ok) return null;
@@ -97,15 +97,16 @@ export async function triggerDedup(): Promise<{ status: string; clusters_updated
 
 export async function createDetection(data: Partial<Detection>): Promise<Detection | null> {
   const base = getApiBase();
-  if (!base) return null;
+  const url = base ? `${base}/api/detections` : '/api/detections';
   try {
-    const res = await fetch(`${base}/api/detections`, {
+    const res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
     if (!res.ok) return null;
-    return await res.json();
+    const json = await res.json();
+    return json.data || json;
   } catch (err) {
     console.error('Create detection error:', err);
     return null;

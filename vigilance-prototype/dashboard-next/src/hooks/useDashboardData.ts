@@ -149,9 +149,31 @@ export function useDashboardData() {
   }, [backendAvailable]);
 
   // Initial load & periodic polling for stats + health check
+  // BroadcastChannel for instant local 0ms cross-tab sync between /capture and dashboard
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('BroadcastChannel' in window)) return;
+    const channel = new BroadcastChannel('vigilance_telemetry');
+    channel.onmessage = (event) => {
+      if (event.data?.type === 'NEW_DETECTION' && event.data.data) {
+        const newDet = event.data.data as Detection;
+        setDetections((prev) => [newDet, ...prev.filter((d) => d.id !== newDet.id).slice(0, 19)]);
+        setStats((prev) => ({
+          ...prev,
+          total_detections: prev.total_detections + 1,
+          potholes: newDet.defect_type === 'D40' ? prev.potholes + 1 : prev.potholes,
+          cracks: newDet.defect_type !== 'D40' ? prev.cracks + 1 : prev.cracks,
+          critical_severity: newDet.severity === 'critical' ? prev.critical_severity + 1 : prev.critical_severity,
+        }));
+        setLastUpdated(new Date());
+        loadData();
+      }
+    };
+    return () => channel.close();
+  }, [loadData]);
+
   useEffect(() => {
     loadData();
-    const interval = setInterval(loadData, 20000);
+    const interval = setInterval(loadData, 3000);
     return () => clearInterval(interval);
   }, [loadData]);
 
