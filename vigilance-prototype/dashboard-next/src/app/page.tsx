@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { useDashboardData } from '@/hooks/useDashboardData';
 import Header from '@/components/Header';
@@ -14,7 +15,8 @@ import CommandPalette from '@/components/manus/CommandPalette';
 import CorridorDistressSpline from '@/components/charts/CorridorDistressSpline';
 import RPIRadialGauge from '@/components/charts/RPIRadialGauge';
 import { Cluster } from '@/types/vigilance';
-import { Activity, AlertOctagon, Camera, Columns, Layers, Layout, MapPin, ShieldCheck, Sparkles, TrendingUp, Truck, X } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Activity, AlertOctagon, Camera, Columns, Layers, Layout, MapPin, ShieldCheck, Sparkles, TrendingUp, Truck, X, Smartphone } from 'lucide-react';
 
 const WebGISMap = dynamic(() => import('@/components/WebGISMap'), {
   ssr: false,
@@ -56,6 +58,7 @@ export default function CommandCenterPage() {
   const [showCockpitModal, setShowCockpitModal] = useState(false);
   const [showCommandPalette, setShowCommandPalette] = useState(false);
   const [workstationMode, setWorkstationMode] = useState<WorkstationMode>('full-gis');
+  const [mobileTab, setMobileTab] = useState<'map' | 'telemetry'>('map');
 
   return (
     <div className="flex flex-col h-screen w-screen bg-slate-950 text-slate-100 overflow-hidden font-sans select-none relative">
@@ -71,6 +74,36 @@ export default function CommandCenterPage() {
         onOpenCommandPalette={() => setShowCommandPalette(true)}
       />
 
+      {/* Mobile Tab Switcher Bar (visible only on mobile/tablet < lg) */}
+      <div className="lg:hidden flex items-center bg-slate-900/90 border-b border-slate-800 px-3 py-1.5 shrink-0 z-20">
+        <div className="flex items-center gap-1 p-0.5 bg-slate-950 rounded-lg border border-slate-800 text-xs font-mono w-full">
+          <button
+            onClick={() => setMobileTab('map')}
+            className={cn(
+              'flex-1 py-1.5 px-2 rounded-md flex items-center justify-center gap-1.5 transition font-semibold',
+              mobileTab === 'map'
+                ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md shadow-cyan-600/30'
+                : 'text-slate-400 hover:text-slate-200'
+            )}
+          >
+            <MapPin className="w-3.5 h-3.5" />
+            <span>GIS Map & Cockpit</span>
+          </button>
+          <button
+            onClick={() => setMobileTab('telemetry')}
+            className={cn(
+              'flex-1 py-1.5 px-2 rounded-md flex items-center justify-center gap-1.5 transition font-semibold',
+              mobileTab === 'telemetry'
+                ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md shadow-cyan-600/30'
+                : 'text-slate-400 hover:text-slate-200'
+            )}
+          >
+            <Activity className="w-3.5 h-3.5" />
+            <span>Queue & Stats</span>
+          </button>
+        </div>
+      </div>
+
       {/* 2. Manus Live Agent Thought Stream */}
       <div className="px-3 pt-2">
         <AgentThoughtStream />
@@ -79,7 +112,7 @@ export default function CommandCenterPage() {
       {/* 3. Main Workstation Grid */}
       <div className="flex-1 flex overflow-hidden p-3 gap-3">
         {/* Left Sidebar (Spotlight KPIs, ApexCharts Spline & Radial, Priority Queue) */}
-        <aside className="w-full lg:w-[440px] flex flex-col gap-3 shrink-0 overflow-y-auto custom-scrollbar pr-1">
+        <aside className={cn('w-full lg:w-[440px] flex flex-col gap-3 shrink-0 overflow-y-auto custom-scrollbar pr-1', mobileTab !== 'telemetry' && 'hidden lg:flex')}>
           {/* KPI 2x2 Metric Grid with SpotlightCard and Mini Sparklines */}
           <div className="grid grid-cols-2 gap-2.5">
             <KPICard
@@ -167,7 +200,7 @@ export default function CommandCenterPage() {
         </aside>
 
         {/* Center/Right: WebGIS Map Canvas & Tactical Workstation Area */}
-        <main className="flex-1 flex flex-col rounded-xl overflow-hidden border border-slate-800/80 bg-slate-900 relative shadow-2xl">
+        <main className={cn('flex-1 flex flex-col rounded-xl overflow-hidden border border-slate-800/80 bg-slate-900 relative shadow-2xl min-h-[360px]', mobileTab !== 'map' && 'hidden lg:flex')}>
           {/* Tactical Workstation Header Bar */}
           <div className="absolute top-3 left-3 right-3 z-20 flex flex-wrap items-center justify-between gap-2 pointer-events-none">
             {/* Left Controls */}
@@ -207,15 +240,15 @@ export default function CommandCenterPage() {
             </div>
 
             {/* Right Action Buttons */}
-            <div className="flex items-center gap-2 pointer-events-auto">
-              <button
-                onClick={() => setShowExecutiveBrief(!showExecutiveBrief)}
-                className="bg-purple-950/80 hover:bg-purple-900/90 border border-purple-800/80 text-purple-300 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 text-xs font-mono transition shadow-lg"
-                title="View SIH26124 Executive Architecture Brief"
+            <div className="flex items-center gap-1.5 sm:gap-2 pointer-events-auto">
+              <Link
+                href="/capture"
+                className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 text-xs font-mono transition shadow-lg font-bold active:scale-95"
+                title="Launch phone camera windshield dashcam"
               >
-                <ShieldCheck className="w-3.5 h-3.5 text-purple-400" />
-                <span>BEL Solution Brief</span>
-              </button>
+                <Smartphone className="w-3.5 h-3.5" />
+                <span>Dashcam</span>
+              </Link>
 
               <button
                 onClick={() => setShowCockpitModal(true)}
@@ -223,12 +256,21 @@ export default function CommandCenterPage() {
                 title="View live 3D highway edge cockpit perspective"
               >
                 <Camera className="w-3.5 h-3.5 text-cyan-400" />
-                <span>3D Bus Cockpit</span>
+                <span>3D Cockpit</span>
+              </button>
+
+              <button
+                onClick={() => setShowExecutiveBrief(!showExecutiveBrief)}
+                className="bg-purple-950/80 hover:bg-purple-900/90 border border-purple-800/80 text-purple-300 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 text-xs font-mono transition shadow-lg hidden sm:flex"
+                title="View SIH26124 Executive Architecture Brief"
+              >
+                <ShieldCheck className="w-3.5 h-3.5 text-purple-400" />
+                <span>BEL Brief</span>
               </button>
 
               <button
                 onClick={() => setShowRPIModal(!showRPIModal)}
-                className="bg-blue-950/80 hover:bg-blue-900/90 border border-blue-800/80 text-cyan-300 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 text-xs font-mono transition shadow-lg"
+                className="bg-blue-950/80 hover:bg-blue-900/90 border border-blue-800/80 text-cyan-300 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 text-xs font-mono transition shadow-lg hidden md:flex"
               >
                 <Sparkles className="w-3 h-3 text-cyan-400" />
                 <span>RPI Formula</span>

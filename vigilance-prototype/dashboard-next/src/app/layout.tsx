@@ -18,6 +18,8 @@ export const metadata: Metadata = {
   description: "AI-Powered Mobile Urban Intelligence Platform Using Public Transport Fleet",
 };
 
+import MobileBottomNav from "@/components/MobileBottomNav";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -33,9 +35,10 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-slate-950 text-slate-100`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-slate-950 text-slate-100 pb-14 md:pb-0`}
       >
         {children}
+        <MobileBottomNav />
       </body>
     </html>
   );

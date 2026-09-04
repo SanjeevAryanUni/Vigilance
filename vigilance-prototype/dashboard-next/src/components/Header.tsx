@@ -114,6 +114,15 @@ export default function Header({
           </button>
         )}
 
+        {/* Mobile Direct Dashcam Button */}
+        <Link
+          href="/capture"
+          className="md:hidden flex items-center gap-1.5 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white text-[11px] font-mono font-bold px-2.5 py-1.5 rounded-lg shadow-md shadow-cyan-600/30 active:scale-95 transition"
+        >
+          <Smartphone className="w-3.5 h-3.5" />
+          <span>Dashcam</span>
+        </Link>
+
         {/* Live WebSocket / Simulation Status */}
         <div
           className={cn(
