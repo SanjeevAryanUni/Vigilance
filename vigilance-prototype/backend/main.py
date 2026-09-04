@@ -6,7 +6,8 @@ sys.path.append(os.path.dirname(__file__))
 
 import json
 import asyncio
-from datetime import datetime
+from datetime import datetime, timezone
+from contextlib import asynccontextmanager
 from typing import List, Optional
 from fastapi import FastAPI, Depends, WebSocket, WebSocketDisconnect, Query, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -16,7 +17,12 @@ from sqlalchemy.orm import Session
 from database import init_db, get_db, Detection, Cluster, run_spatial_deduplication, compute_rpi
 from tasks import async_spatial_deduplication
 
-app = FastAPI(title="VIGILANCE Urban Road Intelligence API", version="1.0.0")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    init_db()
+    yield
+
+app = FastAPI(title="VIGILANCE Urban Road Intelligence API", version="1.0.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -48,10 +54,6 @@ class ConnectionManager:
 
 manager = ConnectionManager()
 
-@app.on_event("startup")
-def startup_event():
-    init_db()
-
 class DetectionIn(BaseModel):
     defect_type: str
     confidence: float
@@ -64,7 +66,7 @@ class DetectionIn(BaseModel):
 
 @app.get("/api/health")
 def health():
-    return {"status": "healthy", "service": "VIGILANCE Backend", "timestamp": datetime.utcnow().isoformat()}
+    return {"status": "healthy", "service": "VIGILANCE Backend", "timestamp": datetime.now(timezone.utc).isoformat()}
 
 @app.post("/api/detections")
 async def create_detection(det: DetectionIn, db: Session = Depends(get_db)):
@@ -77,7 +79,7 @@ async def create_detection(det: DetectionIn, db: Session = Depends(get_db)):
         lon=det.lon,
         road_name=det.road_name,
         thumbnail_b64=det.thumbnail_b64,
-        timestamp=datetime.utcnow()
+        timestamp=datetime.now(timezone.utc)
     )
     db.add(db_det)
     db.commit()
@@ -205,7 +207,7 @@ async def update_cluster_status(cluster_id: int, status: str = Query(...), db: S
     if not cluster:
         raise HTTPException(status_code=404, detail="Cluster not found")
     cluster.status = status
-    cluster.updated_at = datetime.utcnow()
+    cluster.updated_at = datetime.now(timezone.utc)
     db.commit()
     
     await manager.broadcast({

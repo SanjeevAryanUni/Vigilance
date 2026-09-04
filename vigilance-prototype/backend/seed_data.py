@@ -1,7 +1,7 @@
 import os
 import sys
 import random
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 # Ensure backend directory is in sys.path
 sys.path.append(os.path.dirname(__file__))
@@ -64,7 +64,7 @@ def seed_demo_data(count: int = 60):
             lat=base_lat + lat_jitter,
             lon=base_lon + lon_jitter,
             road_name=road_name,
-            timestamp=datetime.utcnow() - timedelta(minutes=time_offset)
+            timestamp=datetime.now(timezone.utc) - timedelta(minutes=time_offset)
         )
         db.add(det)
 

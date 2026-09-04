@@ -1,0 +1,37 @@
+services:
+  # FastAPI REST & WebSocket Backend
+  - type: web
+    name: vigilance-backend
+    env: python
+    region: singapore
+    plan: free
+    rootDir: vigilance-prototype/backend
+    buildCommand: pip install -r ../../requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: DATABASE_URL
+        fromDatabase:
+          name: vigilance-postgres
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: vigilance-redis
+          property: connectionString
+
+  # Redis Broker for Celery & Real-Time Caching
+  - type: redis
+    name: vigilance-redis
+    region: singapore
+    plan: free
+    ipAllowList: []
+
+databases:
+  # Managed PostgreSQL with PostGIS extension support
+  - name: vigilance-postgres
+    region: singapore
+    plan: free
+    databaseName: vigilance_db
+    user: vigilance_user

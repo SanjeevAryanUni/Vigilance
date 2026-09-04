@@ -1,7 +1,10 @@
 import os
 import math
 import numpy as np
-from datetime import datetime
+from datetime import datetime, timezone
+
+def utc_now():
+    return datetime.now(timezone.utc)
 
 try:
     from dotenv import load_dotenv
@@ -38,7 +41,7 @@ class Detection(Base):
     confidence = Column(Float)
     severity = Column(String, index=True)         # low, medium, high, critical
     vehicle_id = Column(String, index=True)
-    timestamp = Column(DateTime, default=datetime.utcnow)
+    timestamp = Column(DateTime, default=utc_now)
     lat = Column(Float)
     lon = Column(Float)
     cluster_id = Column(Integer, nullable=True, index=True)
@@ -61,8 +64,8 @@ class Cluster(Base):
     road_name = Column(String, default="GST Road, Chennai")
     nearest_poi = Column(String, default="General Area")
     poi_distance_m = Column(Float, default=0.0)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=utc_now)
+    updated_at = Column(DateTime, default=utc_now)
 
     if GEOALCHEMY_AVAILABLE and IS_POSTGRES:
         geom = Column(Geometry(geometry_type='POINT', srid=4326), nullable=True)
@@ -171,7 +174,7 @@ def run_spatial_deduplication(db_session) -> int:
         
         # Match centroid to nearest previous cluster within 25m to preserve status
         matched_status = "open"
-        created_time = datetime.utcnow()
+        created_time = utc_now()
         for prev_lat, prev_lon, prev_status, prev_created in prev_status_map:
             dist = haversine_meters(center_lat, center_lon, prev_lat, prev_lon)
             if dist <= 25.0:
@@ -192,7 +195,7 @@ def run_spatial_deduplication(db_session) -> int:
             nearest_poi=nearest_poi,
             poi_distance_m=poi_dist,
             created_at=created_time,
-            updated_at=datetime.utcnow()
+            updated_at=utc_now()
         )
         db_session.add(cluster)
         created_clusters += 1
