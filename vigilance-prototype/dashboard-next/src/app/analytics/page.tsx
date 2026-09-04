@@ -57,8 +57,6 @@ export default function AnalyticsPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-slate-950 text-slate-100 font-sans select-none relative">
-      <NoiseOverlay />
-
       <Header
         activeVehicles={stats.active_vehicles}
         isConnected={isConnected}
