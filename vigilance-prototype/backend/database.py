@@ -1,11 +1,21 @@
 import os
 import math
-import numpy as np
+try:
+    import numpy as np
+    NUMPY_AVAILABLE = True
+except ImportError:
+    NUMPY_AVAILABLE = False
+
+try:
+    from sklearn.cluster import DBSCAN
+    SKLEARN_AVAILABLE = True
+except ImportError:
+    SKLEARN_AVAILABLE = False
+
 from datetime import datetime
 from typing import List, Optional, Dict, Any, Tuple
 from sqlalchemy import create_engine, Column, Integer, Float, String, DateTime, Text, text
 from sqlalchemy.orm import declarative_base, sessionmaker
-from sklearn.cluster import DBSCAN
 
 # Support GeoAlchemy2 for PostGIS spatial columns
 try:
@@ -126,12 +136,29 @@ def run_spatial_deduplication(db_session) -> int:
             db = DBSCAN(eps=epsilon_rad, min_samples=1, metric='haversine', algorithm='ball_tree')
             labels = db.fit_predict(np.radians(coords))
     else:
-        # SQLite / Standard In-Process Path
-        coords = np.array([[d.lat, d.lon] for d in detections])
-        coords_rad = np.radians(coords)
-        epsilon_rad = 15.0 / 6371000.0
-        db = DBSCAN(eps=epsilon_rad, min_samples=1, metric='haversine', algorithm='ball_tree')
-        labels = db.fit_predict(coords_rad)
+        if SKLEARN_AVAILABLE and NUMPY_AVAILABLE:
+            # SQLite / Standard In-Process Path via scikit-learn
+            coords = np.array([[d.lat, d.lon] for d in detections])
+            coords_rad = np.radians(coords)
+            epsilon_rad = 15.0 / 6371000.0
+            db = DBSCAN(eps=epsilon_rad, min_samples=1, metric='haversine', algorithm='ball_tree')
+            labels = db.fit_predict(coords_rad)
+        else:
+            # Pure Python Haversine 15m Leader Clustering Fallback
+            labels = []
+            cluster_centers: List[Tuple[float, float]] = []
+            for d in detections:
+                matched_idx = -1
+                for c_idx, (clat, clon) in enumerate(cluster_centers):
+                    if haversine_meters(d.lat, d.lon, clat, clon) <= 15.0:
+                        matched_idx = c_idx
+                        break
+                if matched_idx >= 0:
+                    labels.append(matched_idx)
+                else:
+                    new_idx = len(cluster_centers)
+                    cluster_centers.append((d.lat, d.lon))
+                    labels.append(new_idx)
 
     # Clear existing clusters table
     db_session.query(Cluster).delete()
@@ -149,8 +176,8 @@ def run_spatial_deduplication(db_session) -> int:
     for c_id, det_list in clusters_map.items():
         lats = [d.lat for d in det_list]
         lons = [d.lon for d in det_list]
-        center_lat = float(np.mean(lats))
-        center_lon = float(np.mean(lons))
+        center_lat = float(sum(lats) / len(lats))
+        center_lon = float(sum(lons) / len(lons))
         
         types = [d.defect_type for d in det_list]
         dominant_type = max(set(types), key=types.count)
