@@ -1,0 +1,15 @@
+# VIGILANCE Edge Client - Termux Python dependencies
+# Install on Android phone with:
+#   pip install -r requirements_termux.txt
+
+# Core inference runtime — ONNX model support
+onnxruntime>=1.16.0
+
+# HTTP client — POST detections to FastAPI backend
+requests>=2.31.0
+
+# Image loading and preprocessing (replaces cv2 for Termux compatibility)
+Pillow>=10.0.0
+
+# Numerical computation (already available in most Termux Python installs)
+numpy>=1.24.0

@@ -1,0 +1,11 @@
+# Auto-generated for evaluation only — do not commit
+path: C:/Users/cbec/Vigilance/training/data/synthetic_smoke_test
+train: images/train
+val:   images/val
+
+nc: 4
+names:
+  0: D00
+  1: D10
+  2: D20
+  3: D40
