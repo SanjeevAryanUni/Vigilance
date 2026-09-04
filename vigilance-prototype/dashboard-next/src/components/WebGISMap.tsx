@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import * as maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { Cluster, ClusterStatus } from '@/types/vigilance';
-import { CARTO_DARK_TILES, CHENNAI_CENTER, CHENNAI_POIS, DEFAULT_PITCH, DEFAULT_ZOOM } from '@/lib/constants';
+import { CHENNAI_CENTER, CHENNAI_POIS, DEFAULT_PITCH, DEFAULT_ZOOM } from '@/lib/constants';
 
 interface WebGISMapProps {
   clusters: Cluster[];
@@ -12,6 +12,117 @@ interface WebGISMapProps {
   selectedClusterId?: number | null;
   className?: string;
 }
+
+// All styles use proven raster tile services — zero API keys needed
+const MAP_STYLES: Record<string, { label: string; style: maplibregl.StyleSpecification }> = {
+  osmStandard: {
+    label: '🗺️ Street Map',
+    style: {
+      version: 8,
+      sources: {
+        'osm-tiles': {
+          type: 'raster',
+          tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+          tileSize: 256,
+          attribution: '© OpenStreetMap contributors',
+        },
+      },
+      layers: [
+        {
+          id: 'osm-tiles-layer',
+          type: 'raster',
+          source: 'osm-tiles',
+          minzoom: 0,
+          maxzoom: 19,
+        },
+      ],
+    },
+  },
+  cartoDark: {
+    label: '🌙 Dark Matter',
+    style: {
+      version: 8,
+      sources: {
+        'carto-dark-tiles': {
+          type: 'raster',
+          tiles: [
+            'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+            'https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+            'https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+          ],
+          tileSize: 256,
+          attribution: '© OpenStreetMap contributors, © CARTO',
+        },
+      },
+      layers: [
+        {
+          id: 'carto-dark-layer',
+          type: 'raster',
+          source: 'carto-dark-tiles',
+          minzoom: 0,
+          maxzoom: 20,
+        },
+      ],
+    },
+  },
+  esriSatellite: {
+    label: '🛰️ Satellite',
+    style: {
+      version: 8,
+      sources: {
+        'esri-satellite': {
+          type: 'raster',
+          tiles: [
+            'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+          ],
+          tileSize: 256,
+          attribution: '© Esri, Maxar, Earthstar Geographics',
+        },
+      },
+      layers: [
+        { id: 'esri-satellite-layer', type: 'raster', source: 'esri-satellite', minzoom: 0, maxzoom: 20 },
+      ],
+    },
+  },
+  esriTopo: {
+    label: '🏔️ Topography',
+    style: {
+      version: 8,
+      sources: {
+        'esri-topo': {
+          type: 'raster',
+          tiles: [
+            'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
+          ],
+          tileSize: 256,
+          attribution: '© Esri, HERE, Garmin, OpenStreetMap',
+        },
+      },
+      layers: [
+        { id: 'esri-topo-layer', type: 'raster', source: 'esri-topo', minzoom: 0, maxzoom: 20 },
+      ],
+    },
+  },
+  humanitarian: {
+    label: '🏥 Humanitarian',
+    style: {
+      version: 8,
+      sources: {
+        'hot-tiles': {
+          type: 'raster',
+          tiles: ['https://a.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png'],
+          tileSize: 256,
+          attribution: '© OpenStreetMap contributors, Humanitarian OSM Team',
+        },
+      },
+      layers: [
+        { id: 'hot-tiles-layer', type: 'raster', source: 'hot-tiles', minzoom: 0, maxzoom: 19 },
+      ],
+    },
+  },
+};
+
+const DEFAULT_STYLE = 'osmStandard';
 
 export default function WebGISMap({
   clusters,
@@ -23,55 +134,19 @@ export default function WebGISMap({
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markersRef = useRef<maplibregl.Marker[]>([]);
   const poiMarkersRef = useRef<maplibregl.Marker[]>([]);
+  const clustersRef = useRef<Cluster[]>(clusters);
+  const [currentStyle, setCurrentStyle] = useState<string>(DEFAULT_STYLE);
 
-  // Initialize Map
+  // Keep the ref in sync with the latest clusters prop
   useEffect(() => {
-    if (!mapContainer.current) return;
+    clustersRef.current = clusters;
+  }, [clusters]);
 
-    const map = new maplibregl.Map({
-      container: mapContainer.current,
-      style: {
-        version: 8,
-        sources: {
-          'carto-dark': {
-            type: 'raster',
-            tiles: CARTO_DARK_TILES,
-            tileSize: 256,
-            attribution: '© OpenStreetMap contributors, © CARTO',
-          },
-        },
-        layers: [
-          {
-            id: 'carto-dark-tiles',
-            type: 'raster',
-            source: 'carto-dark',
-            minzoom: 0,
-            maxzoom: 20,
-          },
-        ],
-      },
-      center: CHENNAI_CENTER,
-      zoom: DEFAULT_ZOOM,
-      pitch: DEFAULT_PITCH,
-    });
+  // Helper: render static POI markers (Hospitals & Universities)
+  const addPOIMarkers = (map: maplibregl.Map) => {
+    poiMarkersRef.current.forEach((m) => m.remove());
+    poiMarkersRef.current = [];
 
-    map.addControl(new maplibregl.NavigationControl({ showCompass: true }), 'top-right');
-    map.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-left');
-
-    map.on('load', () => {
-      map.resize();
-    });
-
-    const resizeObserver = new ResizeObserver(() => {
-      map.resize();
-    });
-    if (mapContainer.current) {
-      resizeObserver.observe(mapContainer.current);
-    }
-
-    mapRef.current = map;
-
-    // Render static POIs
     CHENNAI_POIS.forEach((poi) => {
       const el = document.createElement('div');
       el.className = 'poi-marker cursor-pointer select-none';
@@ -79,17 +154,17 @@ export default function WebGISMap({
 
       el.innerHTML = `
         <div style="
-          background: ${isHospital ? 'rgba(239, 68, 68, 0.2)' : 'rgba(59, 130, 246, 0.2)'};
-          border: 1px solid ${isHospital ? '#EF4444' : '#3B82F6'};
+          background: ${isHospital ? 'rgba(239, 68, 68, 0.85)' : 'rgba(59, 130, 246, 0.85)'};
+          border: 1.5px solid white;
           color: white;
-          width: 24px;
-          height: 24px;
+          width: 22px;
+          height: 22px;
           border-radius: 6px;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 13px;
-          box-shadow: 0 0 8px ${isHospital ? 'rgba(239,68,68,0.4)' : 'rgba(59,130,246,0.4)'};
+          font-size: 11px;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.5);
         ">
           ${isHospital ? '🏥' : '🎓'}
         </div>
@@ -112,29 +187,20 @@ export default function WebGISMap({
 
       poiMarkersRef.current.push(marker);
     });
+  };
 
-    return () => {
-      resizeObserver.disconnect();
-      map.remove();
-    };
-  }, []);
-
-  // Update Dynamic Cluster Markers
-  useEffect(() => {
-    const map = mapRef.current;
-    if (!map) return;
-
-    // Clear old cluster markers
+  // Helper: add dynamic hazard cluster markers
+  const addMarkers = (map: maplibregl.Map, clusterData: Cluster[]) => {
     markersRef.current.forEach((m) => m.remove());
     markersRef.current = [];
 
-    clusters.forEach((c) => {
+    clusterData.forEach((c) => {
       const isCrit = c.max_severity?.toLowerCase() === 'critical';
       const isHigh = c.max_severity?.toLowerCase() === 'high';
       const isResolved = c.status === 'resolved';
       const isAssigned = c.status === 'assigned';
 
-      // Marker sizing based on detection passes (18px to 38px)
+      // Marker sizing based on detection passes (22px to 38px)
       const size = Math.min(38, Math.max(22, 20 + c.detection_count * 2.5));
 
       let bgColor = '#3B82F6';
@@ -275,6 +341,67 @@ export default function WebGISMap({
 
       markersRef.current.push(marker);
     });
+  };
+
+  // Initialize Map
+  useEffect(() => {
+    if (!mapContainer.current) return;
+
+    const map = new maplibregl.Map({
+      container: mapContainer.current,
+      style: MAP_STYLES[DEFAULT_STYLE].style,
+      center: CHENNAI_CENTER,
+      zoom: DEFAULT_ZOOM,
+      pitch: DEFAULT_PITCH,
+    });
+
+    map.addControl(new maplibregl.NavigationControl({ showCompass: true }), 'top-right');
+    map.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-left');
+
+    map.on('load', () => {
+      map.resize();
+      addPOIMarkers(map);
+      addMarkers(map, clustersRef.current);
+    });
+
+    const resizeObserver = new ResizeObserver(() => {
+      map.resize();
+    });
+    if (mapContainer.current) {
+      resizeObserver.observe(mapContainer.current);
+    }
+
+    mapRef.current = map;
+
+    return () => {
+      resizeObserver.disconnect();
+      map.remove();
+    };
+  }, []);
+
+  // Handle Dynamic Map Style Switching
+  const handleStyleChange = (styleKey: string) => {
+    setCurrentStyle(styleKey);
+    const map = mapRef.current;
+    if (map && MAP_STYLES[styleKey]) {
+      map.setStyle(MAP_STYLES[styleKey].style);
+      // Re-add all markers after style finishes loading
+      map.once('style.load', () => {
+        addPOIMarkers(map);
+        addMarkers(map, clustersRef.current);
+      });
+    }
+  };
+
+  // Update Dynamic Cluster Markers when clusters change
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    if (map.loaded()) {
+      addMarkers(map, clusters);
+    } else {
+      map.once('load', () => addMarkers(map, clusters));
+    }
   }, [clusters, onStatusChange]);
 
   // Center on selected cluster if specified
@@ -293,6 +420,23 @@ export default function WebGISMap({
   return (
     <div className={`w-full h-full min-h-[480px] relative rounded-xl overflow-hidden border border-slate-800 bg-slate-950 ${className || ''}`}>
       <div ref={mapContainer} className="w-full h-full absolute inset-0" />
+
+      {/* Map Style Switcher Bar (Parth Multi-Layer Integration) */}
+      <div className="absolute top-14 left-3 z-10 flex flex-wrap gap-1 bg-slate-950/90 border border-slate-800/90 backdrop-blur-md p-1.5 rounded-lg shadow-2xl font-mono">
+        {Object.entries(MAP_STYLES).map(([key, item]) => (
+          <button
+            key={key}
+            onClick={() => handleStyleChange(key)}
+            className={`px-2 py-1 text-[11px] font-medium rounded transition-all ${
+              currentStyle === key
+                ? 'bg-blue-600 text-white font-semibold shadow-md shadow-blue-600/40 border border-blue-400/40'
+                : 'text-slate-300 hover:bg-slate-800 hover:text-white border border-transparent'
+            }`}
+          >
+            {item.label}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
