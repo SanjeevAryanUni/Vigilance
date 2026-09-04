@@ -1,0 +1,2 @@
+[tool.vercel]
+entrypoint = "vigilance-prototype.backend.main:app"
