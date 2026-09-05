@@ -26,9 +26,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run Backend Unit Tests (Spatial Clustering & API)
+      - name: Run Complete Test Suite (Unit, Spatial Clustering, RPI & REST API)
         run: |
-          pytest vigilance-prototype/backend/test_spatial_clustering.py vigilance-prototype/backend/test_api.py -v
+          pytest tests/ vigilance-prototype/backend/ -v --tb=short
 
   frontend-build:
     name: Frontend Build & Type Check

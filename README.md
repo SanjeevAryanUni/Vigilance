@@ -39,13 +39,26 @@ By mounting sub-₹3,000 edge camera units on existing public transit fleets (bu
 .
 ├── docker-compose.yml              # 🐳 Multi-Arch PostgreSQL + PostGIS + Redis Stack
 ├── requirements.txt                # 📦 Complete Python Dependencies
+├── requirements-dev.txt            # 🛠️ Development & Testing Dependencies
+├── start_demo.sh                   # ⚡ One-click Linux/macOS Prototype Launcher
+├── start_demo.bat                  # 🪟 One-click Windows Prototype Launcher
 ├── LICENSE                         # ⚖️ MIT License
 ├── README.md                       # 📖 Root Architecture Documentation
 ├── CONTRIBUTING.md                 # 🤝 Team Git Branching Strategy & Workflow
 ├── .gitignore
 │
+├── tests/                          # 🧪 Comprehensive Test Suite (37 Unit & Integration Tests)
+│   ├── conftest.py                 # Pytest Fixtures & In-Memory SQLite Mock
+│   ├── test_rpi.py                 # RPI Mathematical Formulation & Weight Bounds
+│   ├── test_deduplication.py       # 15m Spatial DBSCAN & Status Preservation
+│   ├── test_detection_api.py       # FastAPI REST Endpoints & Input Validation
+│   ├── test_poi_data.py            # Chennai GIS POIs & Road Hierarchy Mapping
+│   ├── test_detector.py            # Edge AI Perception Preprocessing & Simulation
+│   └── test_pipeline.py            # End-to-End Ingestion -> Deduplication -> RPI Pipeline
+│
 ├── vigilance-prototype/            # 🚀 End-to-End Working Prototype
-│   ├── start_demo.sh               # ⚡ One-click Cross-Platform Launcher
+│   ├── start_demo.sh               # ⚡ Prototype Launcher (macOS/Linux)
+│   ├── start_demo.bat              # 🪟 Prototype Launcher (Windows)
 │   ├── README.md
 │   │
 │   ├── edge/                       # 🧠 Edge AI Detection & Telemetry Engine
@@ -59,7 +72,10 @@ By mounting sub-₹3,000 edge camera units on existing public transit fleets (bu
 │   │
 │   ├── backend/                    # ⚙️ Core Backend & Spatial Intelligence
 │   │   ├── main.py                 # FastAPI REST API & WebSocket Server
-│   │   ├── database.py             # Dual-Mode PostGIS / SQLite Spatial DBSCAN
+│   │   ├── models.py               # SQLAlchemy ORM Models (Detection, Cluster)
+│   │   ├── rpi_calculator.py       # Dynamic Repair Prioritization Index Engine
+│   │   ├── dbscan_dedup.py         # 15m Spatial Deduplication & Continuity
+│   │   ├── database.py             # Dual-Mode PostGIS / SQLite Connection & Auto-Migration
 │   │   ├── poi_data.py             # Chennai Arterial Hierarchy & POI Proximity Engine
 │   │   ├── celery_app.py           # Celery Broker Configuration
 │   │   ├── tasks.py                # Asynchronous Deduplication Worker
@@ -102,15 +118,24 @@ By mounting sub-₹3,000 edge camera units on existing public transit fleets (bu
 pip install -r requirements.txt
 ```
 
-### 2. Launch the Prototype (One-Click)
+### 2. Run Automated Verification Tests
 ```bash
-cd vigilance-prototype
-./start_demo.sh
+pytest tests/ -v
 ```
+
+### 3. Launch the Prototype (One-Click)
+* **On macOS / Linux:**
+  ```bash
+  ./start_demo.sh
+  ```
+* **On Windows:**
+  ```cmd
+  start_demo.bat
+  ```
 
 * 🌐 **GIS Dashboard (Local):** `http://localhost:3000`
 * 🚀 **Production Deployment:** [vigilance-sih.vercel.app](https://vigilance-sih.vercel.app)
-* 📚 **Interactive REST API Docs:** `http://localhost:8000/docs` (or Render backend: `https://vigilance-backend.onrender.com/docs`)
+* 📚 **Interactive REST API Docs:** `http://localhost:8000/docs`
 * 📐 **RPI Mathematical Methodology:** [`docs/RPI_METHODOLOGY.md`](docs/RPI_METHODOLOGY.md)
 * ⚡ **Edge AI Hardware Benchmarks:** [`vigilance-prototype/edge/BENCHMARKS.md`](vigilance-prototype/edge/BENCHMARKS.md)
 

@@ -46,7 +46,7 @@ class RoadDamageDetector:
             if not os.path.exists(pt_path):
                 pt_path = os.path.join(os.path.dirname(__file__), "..", "yolov8n.pt")
             
-            if os.path.exists(pt_path) or not os.path.isabs(pt_path):
+            if os.path.exists(pt_path):
                 self.pt_model = YOLO(pt_path)
                 self.engine_type = "pytorch_yolov8"
                 print(f"✓ Ultralytics PyTorch Engine initialized: {pt_path}")
@@ -189,25 +189,31 @@ class RoadDamageDetector:
 
         # Simulated Perception Loop
         if random.random() < 0.35:
-            defect_type = random.choice(["D40", "D00", "D10", "D20"])
-            conf = round(random.uniform(0.78, 0.96), 2)
-            if defect_type == "D40":
-                sev = "critical" if random.random() > 0.4 else "high"
-            elif defect_type == "D20":
-                sev = "high" if random.random() > 0.3 else "medium"
-            elif defect_type == "D10":
-                sev = "medium" if random.random() > 0.3 else "high"
-            else:
-                sev = "medium" if random.random() > 0.4 else "low"
-            
-            detections.append({
-                "defect_type": defect_type,
-                "confidence": conf,
-                "severity": sev,
-                "vehicle_id": vehicle_id,
-                "lat": lat + random.gauss(0, 0.00002),
-                "lon": lon + random.gauss(0, 0.00002),
-                "timestamp": datetime.utcnow().isoformat()
-            })
+            return self._simulate_detection(lat, lon, vehicle_id)
 
         return detections
+
+    def _simulate_detection(self, lat: float = 13.0067, lon: float = 80.2030, vehicle_id: str = "BUS-TN01-1042") -> List[Dict[str, Any]]:
+        """Generates realistic synthetic perception telemetry for edge simulation and testing."""
+        defect_type = random.choice(["D40", "D00", "D10", "D20"])
+        conf = round(random.uniform(0.78, 0.96), 2)
+        if defect_type == "D40":
+            sev = "critical" if random.random() > 0.4 else "high"
+        elif defect_type == "D20":
+            sev = "high" if random.random() > 0.3 else "medium"
+        elif defect_type == "D10":
+            sev = "medium" if random.random() > 0.3 else "high"
+        else:
+            sev = "medium" if random.random() > 0.4 else "low"
+        
+        return [{
+            "defect_type": defect_type,
+            "confidence": conf,
+            "severity": sev,
+            "vehicle_id": vehicle_id,
+            "lat": lat + random.gauss(0, 0.00002),
+            "lon": lon + random.gauss(0, 0.00002),
+            "bbox": [0.35, 0.45, 0.25, 0.20],
+            "timestamp": datetime.utcnow().isoformat()
+        }]
+

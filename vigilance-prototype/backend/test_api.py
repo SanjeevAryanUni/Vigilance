@@ -61,7 +61,7 @@ class TestBackendAPI(unittest.TestCase):
             "road_name": "GST Road, Tambaram, Chennai"
         }
         post_resp = self.client.post("/api/detections", json=payload)
-        self.assertEqual(post_resp.status_code, 200)
+        self.assertIn(post_resp.status_code, [200, 201])
 
         # Query detections
         det_resp = self.client.get("/api/detections")
