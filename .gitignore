@@ -27,6 +27,7 @@ ENV/
 # Large Model Weights (Generated via export_onnx.py or train_road_damage.py)
 *.pt
 *.onnx
+!vigilance-prototype/dashboard-next/public/models/*.onnx
 
 # Node / Next.js Frontend
 node_modules/
