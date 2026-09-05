@@ -118,6 +118,12 @@ class RoadDamageDetector:
                             _, buffer = cv2.imencode('.jpg', crop)
                             thumb_b64 = base64.b64encode(buffer).decode('utf-8')
 
+                        norm_x = round((x1 / w) * 100, 1)
+                        norm_y = round((y1 / h) * 100, 1)
+                        norm_w = round(((x2 - x1) / w) * 100, 1)
+                        norm_h = round(((y2 - y1) / h) * 100, 1)
+                        lbl_text = f"{defect_type}: {self.class_names.get(target_cls, defect_type).split('(')[1].rstrip(')') if '(' in self.class_names.get(target_cls, '') else defect_type}"
+
                         detections.append({
                             "defect_type": defect_type,
                             "confidence": round(conf, 2),
@@ -126,6 +132,11 @@ class RoadDamageDetector:
                             "lat": lat,
                             "lon": lon,
                             "bbox": [x1, y1, x2, y2],
+                            "x": norm_x,
+                            "y": norm_y,
+                            "w": norm_w,
+                            "h": norm_h,
+                            "label": lbl_text,
                             "timestamp": datetime.utcnow().isoformat(),
                             "thumbnail_b64": thumb_b64
                         })
@@ -152,6 +163,12 @@ class RoadDamageDetector:
                             _, buffer = cv2.imencode('.jpg', crop)
                             thumb_b64 = base64.b64encode(buffer).decode('utf-8')
 
+                        norm_x = round((x1 / w) * 100, 1)
+                        norm_y = round((y1 / h) * 100, 1)
+                        norm_w = round(((x2 - x1) / w) * 100, 1)
+                        norm_h = round(((y2 - y1) / h) * 100, 1)
+                        lbl_text = f"{defect_type}: {self.class_names.get(cls_id, defect_type).split('(')[1].rstrip(')') if '(' in self.class_names.get(cls_id, '') else defect_type}"
+
                         detections.append({
                             "defect_type": defect_type,
                             "confidence": round(conf, 2),
@@ -160,6 +177,11 @@ class RoadDamageDetector:
                             "lat": lat,
                             "lon": lon,
                             "bbox": [x1, y1, x2, y2],
+                            "x": norm_x,
+                            "y": norm_y,
+                            "w": norm_w,
+                            "h": norm_h,
+                            "label": lbl_text,
                             "timestamp": datetime.utcnow().isoformat(),
                             "thumbnail_b64": thumb_b64
                         })

@@ -63,6 +63,65 @@ class DetectionIn(BaseModel):
     road_name: Optional[str] = None
     thumbnail_b64: Optional[str] = None
 
+class DetectFrameIn(BaseModel):
+    image_b64: str
+    lat: Optional[float] = 12.8231
+    lon: Optional[float] = 80.0442
+    vehicle_id: Optional[str] = "MOBILE-NODE-01"
+
+_detector_instance = None
+
+def get_detector():
+    global _detector_instance
+    if _detector_instance is None:
+        try:
+            edge_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "edge"))
+            if edge_dir not in sys.path:
+                sys.path.insert(0, edge_dir)
+            from detector import RoadDamageDetector
+            _detector_instance = RoadDamageDetector(conf_threshold=0.25)
+        except Exception as e:
+            print(f"Warning initializing RoadDamageDetector: {e}")
+    return _detector_instance
+
+@app.post("/api/detect")
+async def detect_frame(payload: DetectFrameIn):
+    det = get_detector()
+    if det is None:
+        raise HTTPException(status_code=503, detail="Edge AI detector could not be initialized")
+    
+    try:
+        import base64
+        import numpy as np
+        import cv2
+
+        b64_str = payload.image_b64
+        if "," in b64_str:
+            b64_str = b64_str.split(",", 1)[1]
+        
+        img_bytes = base64.b64decode(b64_str)
+        nparr = np.frombuffer(img_bytes, np.uint8)
+        frame = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        if frame is None:
+            raise HTTPException(status_code=400, detail="Could not decode image frame")
+        
+        detections = det.infer_frame(
+            frame=frame,
+            lat=payload.lat,
+            lon=payload.lon,
+            vehicle_id=payload.vehicle_id
+        )
+        return {
+            "status": "success",
+            "engine": det.engine_type,
+            "count": len(detections),
+            "detections": detections
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.get("/health")
 @app.get("/api/health")
 def health():

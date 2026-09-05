@@ -1,5 +1,5 @@
 # RDD2022 Road Damage Dataset Configuration
-path: ./data
+path: /Users/sanjeev/Documents/SIH/training/data
 train: images/train
 val: images/val
 

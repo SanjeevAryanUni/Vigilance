@@ -53,3 +53,11 @@ tmp/
 *.tmp
 extracted_ps_summary.txt
 sih2026_ps_raw.html
+
+# Datasets and Training Artifacts
+RDD2022/
+training/data/images/
+training/data/labels/
+training/data/*.cache
+training/runs/
+training/.config/
