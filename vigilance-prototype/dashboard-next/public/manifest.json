@@ -1,0 +1,17 @@
+{
+  "name": "VIGILANCE — Urban Road Intelligence",
+  "short_name": "VIGILANCE",
+  "description": "AI-Powered Mobile Urban Road Intelligence Platform Using Public Transport Fleets",
+  "start_url": "/capture",
+  "display": "standalone",
+  "background_color": "#030712",
+  "theme_color": "#030712",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ]
+}

@@ -64,6 +64,32 @@ export default function MobileCapturePage() {
   const [isOnnxLoaded, setIsOnnxLoaded] = useState(false);
   const [modelStatusText, setModelStatusText] = useState('Initializing Edge AI...');
 
+  const [vibrationGated, setVibrationGated] = useState(false);
+  const isVibratingRef = useRef(false);
+
+  // Accelerometer Vibration Frame Gating (DeviceMotion API)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const handleMotion = (event: DeviceMotionEvent) => {
+      const acc = event.accelerationIncludingGravity;
+      if (acc) {
+        const x = Math.abs(acc.x ?? 0);
+        const y = Math.abs(acc.y ?? 0);
+        const zDelta = Math.abs((acc.z ?? 9.8) - 9.8);
+        if (x > 18 || y > 18 || zDelta > 8) {
+          isVibratingRef.current = true;
+          setVibrationGated(true);
+          setTimeout(() => {
+            isVibratingRef.current = false;
+            setVibrationGated(false);
+          }, 450);
+        }
+      }
+    };
+    window.addEventListener('devicemotion', handleMotion);
+    return () => window.removeEventListener('devicemotion', handleMotion);
+  }, []);
+
   // Initialize BroadcastChannel for instant local 0ms sync with dashboard
   useEffect(() => {
     if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
@@ -265,6 +291,10 @@ export default function MobileCapturePage() {
 
     const runInference = async () => {
       if (isInferencing) return;
+      if (isVibratingRef.current) {
+        // Accelerometer Frame Gating: chassis vibration detected, skip blurred frame
+        return;
+      }
       const video = videoRef.current;
       if (!video || video.readyState < 2) return;
 
@@ -505,6 +535,14 @@ export default function MobileCapturePage() {
           >
             {soundEnabled ? <Volume2 className="w-3.5 h-3.5 text-cyan-400" /> : <VolumeX className="w-3.5 h-3.5 text-slate-500" />}
           </button>
+          <div className={`hidden sm:flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[10px] font-mono font-bold ${
+            vibrationGated 
+              ? 'bg-amber-950/80 border-amber-600 text-amber-300 animate-pulse' 
+              : 'bg-slate-800/80 border-slate-700 text-slate-300'
+          }`}>
+            <span className={`w-1.5 h-1.5 rounded-full ${vibrationGated ? 'bg-amber-400' : 'bg-cyan-400'}`} />
+            <span>{vibrationGated ? 'SHOCK GATED' : 'IMU STABLE'}</span>
+          </div>
           {streamActive ? (
             <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-950/80 border border-emerald-700/80 text-emerald-300 text-[10px] font-mono font-bold">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
