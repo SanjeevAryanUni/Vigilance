@@ -16,19 +16,31 @@ if %ERRORLEVEL% EQU 0 (
     echo ⚠️ Docker not detected in PATH. Using local SQLite database.
 )
 
+:: Detect Python Virtual Environment
+if exist "%~dp0.venv-cuda\Scripts\python.exe" (
+    set "PYTHON_EXE=%~dp0.venv-cuda\Scripts\python.exe"
+    echo ⚡ Using GPU-accelerated Python environment (.venv-cuda)
+) else if exist "%~dp0.venv\Scripts\python.exe" (
+    set "PYTHON_EXE=%~dp0.venv\Scripts\python.exe"
+    echo 🐍 Using Python environment (.venv)
+) else (
+    set "PYTHON_EXE=py"
+    echo 🐍 Using system Python
+)
+
 :: Start Backend API
 echo 🖥️ Starting FastAPI backend on http://localhost:8000...
-start "VIGILANCE Backend" cmd /k "cd vigilance-prototype && py -m uvicorn backend.main:app --host 0.0.0.0 --port 8000"
+start "VIGILANCE Backend" cmd /k "cd vigilance-prototype && ^"%PYTHON_EXE%^" -m uvicorn backend.main:app --host 0.0.0.0 --port 8000"
 timeout /t 2 /nobreak >nul
 
 :: Start MQTT Listener
 echo 📥 Starting MQTT Listener...
-start "VIGILANCE MQTT Listener" cmd /k "cd vigilance-prototype && py backend\mqtt_listener.py"
+start "VIGILANCE MQTT Listener" cmd /k "cd vigilance-prototype && ^"%PYTHON_EXE%^" backend\mqtt_listener.py"
 timeout /t 1 /nobreak >nul
 
 :: Start Fleet Simulator
 echo 🚌 Starting Fleet Simulation (5 Vehicles via MQTT)...
-start "VIGILANCE Fleet Simulator" cmd /k "cd vigilance-prototype\edge && py simulate_fleet.py"
+start "VIGILANCE Fleet Simulator" cmd /k "cd vigilance-prototype\edge && ^"%PYTHON_EXE%^" simulate_fleet.py"
 
 :: Check and Start Frontend if node/npm is available
 where npm >nul 2>nul
