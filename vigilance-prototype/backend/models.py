@@ -69,3 +69,71 @@ class Cluster(Base):
 
     if GEOALCHEMY_AVAILABLE and IS_POSTGRES:
         geom = Column(Geometry(geometry_type='POINT', srid=4326), nullable=True)
+
+
+class TrafficObservation(Base):
+    """
+    Fleet traffic flow & pedestrian density observation.
+    Captures vehicle counts, pedestrian counts, and localized corridor congestion.
+    """
+    __tablename__ = "traffic_observations"
+
+    id = Column(Integer, primary_key=True, index=True)
+    lat = Column(Float, nullable=False, index=True)
+    lon = Column(Float, nullable=False, index=True)
+    vehicle_count = Column(Integer, default=0)
+    pedestrian_count = Column(Integer, default=0)
+    density = Column(String, default="free_flow")  # free_flow, light, moderate, heavy, gridlock
+    speed_kmh = Column(Float, nullable=True)
+    road_name = Column(String, nullable=True, index=True)
+    vehicle_id = Column(String, nullable=True, index=True)  # reporting bus ID
+    timestamp = Column(DateTime, default=datetime.utcnow, index=True)
+
+    if GEOALCHEMY_AVAILABLE and IS_POSTGRES:
+        geom = Column(Geometry(geometry_type='POINT', srid=4326), nullable=True)
+
+
+class IncidentReport(Base):
+    """
+    Real-time safety and enforcement incident telemetry (rash driving, hit-and-run, ANPR events).
+    """
+    __tablename__ = "incidents"
+
+    id = Column(Integer, primary_key=True, index=True)
+    incident_type = Column(String, nullable=False, index=True)  # rash_driving, hit_and_run, speeding, wrong_way, plate_detected
+    plate_text = Column(String, nullable=True, index=True)
+    plate_confidence = Column(Float, nullable=True)
+    vehicle_class = Column(String, nullable=True)  # car, truck, motorcycle, bus
+    lat = Column(Float, nullable=False, index=True)
+    lon = Column(Float, nullable=False, index=True)
+    road_name = Column(String, nullable=True, index=True)
+    speed_kmh = Column(Float, nullable=True)
+    reporter_vehicle_id = Column(String, nullable=True, index=True)
+    image_b64 = Column(Text, nullable=True)
+    timestamp = Column(DateTime, default=datetime.utcnow, index=True)
+    status = Column(String, default="reported", index=True)  # reported, verified, actioned
+
+    if GEOALCHEMY_AVAILABLE and IS_POSTGRES:
+        geom = Column(Geometry(geometry_type='POINT', srid=4326), nullable=True)
+
+
+class FleetPosition(Base):
+    """
+    Live telematics position from public transit vehicles via MQTT/HTTP heartbeats.
+    """
+    __tablename__ = "fleet_positions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    vehicle_id = Column(String, nullable=False, index=True)
+    lat = Column(Float, nullable=False, index=True)
+    lon = Column(Float, nullable=False, index=True)
+    speed_kmh = Column(Float, default=0.0)
+    heading = Column(Float, nullable=True)
+    road_name = Column(String, nullable=True, index=True)
+    status = Column(String, default="active", index=True)  # active, idle, maintenance
+    last_detection_type = Column(String, nullable=True)
+    timestamp = Column(DateTime, default=datetime.utcnow, index=True)
+
+    if GEOALCHEMY_AVAILABLE and IS_POSTGRES:
+        geom = Column(Geometry(geometry_type='POINT', srid=4326), nullable=True)
+

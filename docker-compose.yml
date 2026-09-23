@@ -2,20 +2,20 @@ version: '3.8'
 
 services:
   postgis:
-    image: postgis/postgis:15-3.4
+    image: postgis/postgis:16-3.4
     container_name: vigilance_postgis
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-vigilance_secure_2026}
-      POSTGRES_DB: ${POSTGRES_DB:-vigilance_db}
+      POSTGRES_DB: vigilance
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-vigilance2026}
     ports:
       - "5432:5432"
     volumes:
-      - postgis_data:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-vigilance_db}"]
-      interval: 5s
+      test: ["CMD-SHELL", "pg_isready -U postgres -d vigilance"]
+      interval: 10s
       timeout: 5s
       retries: 5
 
@@ -25,14 +25,22 @@ services:
     restart: unless-stopped
     ports:
       - "6379:6379"
-    volumes:
-      - redis_data:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
+      interval: 10s
       timeout: 3s
       retries: 5
 
+  mosquitto:
+    image: eclipse-mosquitto:2
+    container_name: vigilance_mqtt
+    restart: unless-stopped
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
+    command: mosquitto -c /mosquitto/config/mosquitto.conf
+
 volumes:
-  postgis_data:
-  redis_data:
+  pgdata:

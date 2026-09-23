@@ -112,3 +112,120 @@ export async function createDetection(data: Partial<Detection>): Promise<Detecti
     return null;
   }
 }
+
+export async function getTrafficStats(): Promise<{ vehicles_24h: number; pedestrians_24h: number; avg_speed_kmh: number; active_monitors: number } | null> {
+  const base = getApiBase();
+  const url = base ? `${base}/api/traffic/stats` : '/api/traffic/stats';
+  try {
+    const res = await fetch(url, { cache: 'no-store' });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (err) {
+    return null;
+  }
+}
+
+export async function getCongestion(): Promise<any[] | null> {
+  const base = getApiBase();
+  const url = base ? `${base}/api/congestion` : '/api/congestion';
+  try {
+    const res = await fetch(url, { cache: 'no-store' });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (err) {
+    return null;
+  }
+}
+
+export async function getCongestionHeatmap(): Promise<any[] | null> {
+  const base = getApiBase();
+  const url = base ? `${base}/api/heatmap/congestion` : '/api/heatmap/congestion';
+  try {
+    const res = await fetch(url, { cache: 'no-store' });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (err) {
+    return null;
+  }
+}
+
+export async function getIncidents(): Promise<any[] | null> {
+  const base = getApiBase();
+  const url = base ? `${base}/api/incidents` : '/api/incidents';
+  try {
+    const res = await fetch(url, { cache: 'no-store' });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (err) {
+    return null;
+  }
+}
+
+export async function reportIncident(data: any): Promise<any | null> {
+  const base = getApiBase();
+  const url = base ? `${base}/api/incidents` : '/api/incidents';
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (err) {
+    return null;
+  }
+}
+
+export async function getOdMatrix(): Promise<{ matrix: Record<string, Record<string, number>>; pairs: any[]; stops: string[]; total_trips: number } | null> {
+  const base = getApiBase();
+  const url = base ? `${base}/api/analytics/od-matrix` : '/api/analytics/od-matrix';
+  try {
+    const res = await fetch(url, { cache: 'no-store' });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (err) {
+    return null;
+  }
+}
+
+export async function getRouteDelays(): Promise<any[] | null> {
+  const base = getApiBase();
+  const url = base ? `${base}/api/analytics/delays` : '/api/analytics/delays';
+  try {
+    const res = await fetch(url, { cache: 'no-store' });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (err) {
+    return null;
+  }
+}
+
+export async function getFleetPositions(): Promise<any[] | null> {
+  const base = getApiBase();
+  const url = base ? `${base}/api/fleet/positions` : '/api/fleet/positions';
+  try {
+    const res = await fetch(url, { cache: 'no-store' });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (err) {
+    return null;
+  }
+}
+
+export async function ingestTraffic(data: any): Promise<any | null> {
+  const base = getApiBase();
+  const url = base ? `${base}/api/traffic` : '/api/traffic';
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (err) {
+    return null;
+  }
+}
+

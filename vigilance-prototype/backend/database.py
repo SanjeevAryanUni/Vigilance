@@ -13,7 +13,7 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 
 # Import domain models, RPI calculator, and spatial deduplication from decoupled modules
-from models import Base, Detection, Cluster, GEOALCHEMY_AVAILABLE, IS_POSTGRES
+from models import Base, Detection, Cluster, TrafficObservation, IncidentReport, FleetPosition, GEOALCHEMY_AVAILABLE, IS_POSTGRES
 from rpi_calculator import compute_rpi, get_rpi_breakdown
 from dbscan_dedup import run_spatial_deduplication
 from poi_data import haversine_meters, get_road_weight, get_proximity_weight, get_contractor, match_nearest_road
