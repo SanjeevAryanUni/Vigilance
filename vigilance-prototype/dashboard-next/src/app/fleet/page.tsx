@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import Header from '@/components/Header';
 import ConnectionStatus from '@/components/ConnectionStatus';
@@ -15,6 +15,7 @@ import FleetRadarChart from '@/components/charts/FleetRadarChart';
 import { useDashboardData } from '@/hooks/useDashboardData';
 import { Truck, Radio, Navigation, Activity, ShieldCheck, MapPin, Gauge, Camera, Sliders } from 'lucide-react';
 import { formatTimeAgo } from '@/lib/utils';
+import { getFleetPositions } from '@/lib/api';
 
 const EdgeCockpit3D = dynamic(() => import('@/components/EdgeCockpit3D'), {
   ssr: false,
@@ -25,72 +26,101 @@ const EdgeCockpit3D = dynamic(() => import('@/components/EdgeCockpit3D'), {
   ),
 });
 
+const DEFAULT_FLEET = [
+  {
+    id: 'BUS-TN01-1042',
+    type: 'MTC Public Transit Bus',
+    route: 'Route 21G: Tambaram ➔ Broadway via NH-32 GST Road',
+    speedKmh: 42,
+    lat: 12.9516,
+    lon: 80.1462,
+    status: 'active',
+    lastPing: '2s ago',
+    cameraModel: 'Sony IMX335 1080p HDR',
+    edgeSoC: 'Rockchip RK3588 NPU (6 TOPS)',
+  },
+  {
+    id: 'BUS-TN02-3891',
+    type: 'MTC Public Transit Bus',
+    route: 'Route 570: CMBT ➔ Siruseri IT Park via Kathipara & OMR',
+    speedKmh: 38,
+    lat: 13.0067,
+    lon: 80.2030,
+    status: 'active',
+    lastPing: '4s ago',
+    cameraModel: 'Sony IMX335 1080p HDR',
+    edgeSoC: 'Raspberry Pi 4 + Coral TPU',
+  },
+  {
+    id: 'MUNICIPAL-TRUCK-07',
+    type: 'GCC Waste Management Truck',
+    route: 'Zone M-12: SRM Potheri & Chengalpattu Sanitation Route',
+    speedKmh: 28,
+    lat: 12.8231,
+    lon: 80.0442,
+    status: 'active',
+    lastPing: '1s ago',
+    cameraModel: 'Aptina AR0230 Low-Light CMOS',
+    edgeSoC: 'Orange Pi 5 ARM Cortex-A76',
+  },
+  {
+    id: 'PATROL-VAN-12',
+    type: 'Municipal Patrol Unit',
+    route: 'Route PV-04: Anna Salai CBD & Greams Road Night Patrol',
+    speedKmh: 34,
+    lat: 13.0604,
+    lon: 80.2496,
+    status: 'active',
+    lastPing: '6s ago',
+    cameraModel: 'Sony Starvis 2 Low-Light',
+    edgeSoC: 'Jetson Nano 4GB (Maxwell GPU)',
+  },
+  {
+    id: 'BUS-TN22-5501',
+    type: 'MTC Express Bus',
+    route: 'Route 19B: T. Nagar ➔ Kelambakkam Express Corridor',
+    speedKmh: 45,
+    lat: 12.9719,
+    lon: 80.2500,
+    status: 'active',
+    lastPing: '3s ago',
+    cameraModel: 'OmniVision OV2710 Wide-Angle',
+    edgeSoC: 'Rockchip RK3566 NPU (0.8 TOPS)',
+  },
+];
+
 export default function FleetPage() {
   const { stats, detections, isConnected, backendAvailable, lastUpdated, refreshData, triggerDedup } =
     useDashboardData();
 
+  const [fleetVehicles, setFleetVehicles] = useState(DEFAULT_FLEET);
   const [selectedVehicleId, setSelectedVehicleId] = useState<string>('BUS-TN01-1042');
   const [showCommandPalette, setShowCommandPalette] = useState(false);
 
-  const FLEET_VEHICLES = [
-    {
-      id: 'BUS-TN01-1042',
-      type: 'MTC Public Transit Bus',
-      route: 'Route 21G: Tambaram ➔ Broadway via NH-32 GST Road',
-      speedKmh: 42,
-      lat: 12.9516,
-      lon: 80.1462,
-      status: 'active',
-      cameraModel: 'Sony IMX335 1080p HDR',
-      edgeSoC: 'Rockchip RK3588 NPU (6 TOPS)',
-    },
-    {
-      id: 'BUS-TN02-3891',
-      type: 'MTC Public Transit Bus',
-      route: 'Route 570: CMBT ➔ Siruseri IT Park via Kathipara & OMR',
-      speedKmh: 38,
-      lat: 13.0067,
-      lon: 80.2030,
-      status: 'active',
-      cameraModel: 'Sony IMX335 1080p HDR',
-      edgeSoC: 'Raspberry Pi 4 + Coral TPU',
-    },
-    {
-      id: 'MUNICIPAL-TRUCK-07',
-      type: 'GCC Waste Management Truck',
-      route: 'Zone M-12: SRM Potheri & Chengalpattu Sanitation Route',
-      speedKmh: 28,
-      lat: 12.8231,
-      lon: 80.0442,
-      status: 'active',
-      cameraModel: 'Aptina AR0230 Low-Light CMOS',
-      edgeSoC: 'Orange Pi 5 ARM Cortex-A76',
-    },
-    {
-      id: 'PATROL-VAN-12',
-      type: 'Municipal Patrol Unit',
-      route: 'Route PV-04: Anna Salai CBD & Greams Road Night Patrol',
-      speedKmh: 34,
-      lat: 13.0604,
-      lon: 80.2496,
-      status: 'active',
-      cameraModel: 'Sony Starvis 2 Low-Light',
-      edgeSoC: 'Jetson Nano 4GB (Maxwell GPU)',
-    },
-    {
-      id: 'BUS-TN22-5501',
-      type: 'MTC Express Bus',
-      route: 'Route 19B: T. Nagar ➔ Kelambakkam Express Corridor',
-      speedKmh: 45,
-      lat: 12.9719,
-      lon: 80.2500,
-      status: 'active',
-      cameraModel: 'OmniVision OV2710 Wide-Angle',
-      edgeSoC: 'Rockchip RK3566 NPU (0.8 TOPS)',
-    },
-  ];
+  useEffect(() => {
+    getFleetPositions().then((positions) => {
+      if (positions && positions.length > 0) {
+        setFleetVehicles((prev) =>
+          prev.map((v) => {
+            const match = positions.find((p) => p.vehicle_id === v.id);
+            if (match) {
+              return {
+                ...v,
+                speedKmh: match.speed_kmh ?? v.speedKmh,
+                lat: match.lat ?? v.lat,
+                lon: match.lon ?? v.lon,
+                status: match.status ?? v.status,
+                lastPing: match.last_ping ?? 'just now',
+              };
+            }
+            return v;
+          })
+        );
+      }
+    });
+  }, [lastUpdated]);
 
-  const activeVehicle = FLEET_VEHICLES.find((v) => v.id === selectedVehicleId) || FLEET_VEHICLES[0];
+  const activeVehicle = fleetVehicles.find((v) => v.id === selectedVehicleId) || fleetVehicles[0];
 
   return (
     <div className="flex flex-col min-h-screen bg-slate-950 text-slate-100 font-sans select-none relative">
@@ -177,7 +207,7 @@ export default function FleetPage() {
               </div>
               {/* Quick Vehicle Switcher Tabs */}
               <div className="flex items-center gap-1 bg-slate-900 border border-slate-800 p-1 rounded-lg overflow-x-auto text-[10px] font-mono">
-                {FLEET_VEHICLES.map((v) => (
+                {fleetVehicles.map((v) => (
                   <button
                     key={v.id}
                     onClick={() => setSelectedVehicleId(v.id)}
@@ -237,7 +267,7 @@ export default function FleetPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {FLEET_VEHICLES.map((veh) => {
+            {fleetVehicles.map((veh) => {
               const vehicleDetections = detections.filter((d) => d.vehicle_id === veh.id);
               const latestDet = vehicleDetections[0];
               const isSelected = selectedVehicleId === veh.id;
@@ -258,8 +288,14 @@ export default function FleetPage() {
                       <div>
                         <div className="flex items-center gap-2">
                           <span className="font-bold text-slate-100 font-mono text-sm">{veh.id}</span>
-                          <span className="px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800 text-[10px] font-mono font-semibold">
-                            ONLINE
+                          <span
+                            className={`px-1.5 py-0.5 rounded border text-[10px] font-mono font-semibold uppercase ${
+                              veh.status === 'active'
+                                ? 'bg-emerald-950 text-emerald-300 border-emerald-800'
+                                : 'bg-slate-800 text-slate-400 border-slate-700'
+                            }`}
+                          >
+                            {veh.status}
                           </span>
                         </div>
                         <p className="text-[11px] text-slate-400 font-mono mt-0.5">{veh.type}</p>

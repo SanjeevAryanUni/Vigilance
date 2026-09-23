@@ -20,7 +20,7 @@ def check_dataset_exists():
     train_dir = os.path.join(TRAINING_DIR, "data", "images", "train")
     return os.path.exists(train_dir) and len(os.listdir(train_dir)) > 0
 
-def run_fine_tuning(epochs=15, imgsz=640, batch=16, device="mps", weights=None, resume=False, smoke_test=False):
+def run_fine_tuning(epochs=50, imgsz=960, batch=8, device="mps", weights=None, resume=False, smoke_test=False):
     print("==================================================")
     print("🚗 VIGILANCE: RDD2022 Road Damage Model Training")
     print(f"Target: YOLOv8n on 4 Classes (D00, D10, D20, D40)")
@@ -55,8 +55,11 @@ def run_fine_tuning(epochs=15, imgsz=640, batch=16, device="mps", weights=None, 
     # Check device availability
     import torch
     if device == "mps" and not torch.backends.mps.is_available():
-        print("⚠️  MPS not available, falling back to CPU.")
-        device = "cpu"
+        if torch.cuda.is_available():
+            device = "0"
+        else:
+            print("⚠️  MPS and CUDA not available, falling back to CPU.")
+            device = "cpu"
 
     print(f"\n🚀 Launching fine-tuning on {device.upper()} (resume={resume})...")
     if resume:
@@ -70,13 +73,23 @@ def run_fine_tuning(epochs=15, imgsz=640, batch=16, device="mps", weights=None, 
             device=device,
             project=RUNS_DIR,
             name=project_name,
-            patience=8,
+            patience=15,
             save=True,
             exist_ok=True,
             workers=2,
             plots=True,
             lr0=0.001,
             lrf=0.01,
+            # Enhanced augmentation for challenging road conditions
+            mosaic=1.0,
+            mixup=0.15,
+            degrees=10.0,
+            translate=0.2,
+            scale=0.9,
+            fliplr=0.5,
+            hsv_h=0.015,
+            hsv_s=0.7,
+            hsv_v=0.4,
         )
 
     best_pt = os.path.join(RUNS_DIR, project_name, "weights", "best.pt")
@@ -102,8 +115,9 @@ def run_fine_tuning(epochs=15, imgsz=640, batch=16, device="mps", weights=None, 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--epochs", type=int, default=15)
-    parser.add_argument("--batch", type=int, default=16)
+    parser.add_argument("--epochs", type=int, default=50)
+    parser.add_argument("--batch", type=int, default=8)
+    parser.add_argument("--imgsz", type=int, default=960)
     parser.add_argument("--device", type=str, default="mps")
     parser.add_argument("--weights", type=str, default=None, help="Path to checkpoint weights")
     parser.add_argument("--resume", action="store_true", help="Resume training from last.pt")

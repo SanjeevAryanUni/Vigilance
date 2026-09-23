@@ -97,55 +97,13 @@ export function useDashboardData() {
 
   const { isConnected } = useWebSocket(handleWsMessage);
 
-  // Fallback realistic edge perception simulation when backend is offline
+  // Keep static placeholders when backend is offline — no fake data generation
   useEffect(() => {
     if (backendAvailable === false || backendAvailable === null) {
-      simulationTimerRef.current = setInterval(() => {
-        const vehicles = ['BUS-TN01-1042', 'BUS-TN02-3891', 'MUNICIPAL-TRUCK-07', 'PATROL-VAN-12', 'BUS-TN22-5501'];
-        const defects: DefectType[] = ['D40', 'D20', 'D10', 'D00'];
-        const roads = [
-          'GST Road, Tambaram (NH-32)',
-          'Anna Salai (Mount Road)',
-          'Guindy Kathipara Junction',
-          'SRM / Potheri Highway',
-          'Old Mahabalipuram Road (OMR)',
-        ];
-
-        const defect = defects[Math.floor(Math.random() * defects.length)];
-        const road = roads[Math.floor(Math.random() * roads.length)];
-        const vehicle = vehicles[Math.floor(Math.random() * vehicles.length)];
-        const isCrit = defect === 'D40' && Math.random() > 0.35;
-        const sev: Severity = isCrit ? 'critical' : defect === 'D40' || defect === 'D20' ? 'high' : 'medium';
-
-        const mockDetection: Detection = {
-          id: Date.now(),
-          defect_type: defect,
-          confidence: Number((0.82 + Math.random() * 0.16).toFixed(2)),
-          severity: sev,
-          vehicle_id: vehicle,
-          road_name: road,
-          lat: 13.0067 + (Math.random() - 0.5) * 0.08,
-          lon: 80.2030 + (Math.random() - 0.5) * 0.08,
-          cluster_id: Math.floor(Math.random() * 9) + 1,
-          timestamp: new Date().toISOString(),
-          thumbnail_b64: null,
-        };
-
-        setDetections((prev) => [mockDetection, ...prev.slice(0, 19)]);
-        setStats((prev) => ({
-          ...prev,
-          total_detections: prev.total_detections + 1,
-          potholes: defect === 'D40' ? prev.potholes + 1 : prev.potholes,
-          cracks: defect !== 'D40' ? prev.cracks + 1 : prev.cracks,
-          critical_severity: isCrit ? prev.critical_severity + 1 : prev.critical_severity,
-        }));
-        setLastUpdated(new Date());
-      }, 4500);
+      // Backend offline state: Keep INITIAL_CLUSTERS / INITIAL_STATS as reference benchmarks
+      // Real-time telemetry comes from /capture BroadcastChannel or live API polling
     }
-
-    return () => {
-      if (simulationTimerRef.current) clearInterval(simulationTimerRef.current);
-    };
+    return () => {};
   }, [backendAvailable]);
 
   // Initial load & periodic polling for stats + health check

@@ -29,10 +29,15 @@ export const metadata: Metadata = {
     description: "AI-Powered Mobile Urban Road Intelligence Platform Using Public Transport Fleet",
     type: "website",
   },
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Vigilance",
+  },
   icons: {
     icon: "/favicon.ico",
   },
-  manifest: "/manifest.json",
 };
 
 export default function RootLayout({

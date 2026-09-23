@@ -12,6 +12,7 @@ import CommandPalette from '@/components/manus/CommandPalette';
 import SpotlightCard from '@/components/reactbits/SpotlightCard';
 import CorridorDistressSpline from '@/components/charts/CorridorDistressSpline';
 import RPIRadialGauge from '@/components/charts/RPIRadialGauge';
+import TrafficAnalyticsSection from '@/components/charts/TrafficAnalyticsSection';
 import { useDashboardData } from '@/hooks/useDashboardData';
 import { CHENNAI_ROADS, DEFECT_INFO } from '@/lib/constants';
 import { BarChart3, TrendingUp, AlertTriangle, Layers, Truck, ShieldCheck, MapPin, Sparkles, Eye } from 'lucide-react';
@@ -244,6 +245,9 @@ export default function AnalyticsPage() {
             </table>
           </div>
         </div>
+
+        {/* Real-Time Urban Traffic Congestion, Route Delays & OD Matrix */}
+        <TrafficAnalyticsSection />
 
         {/* Fleet Vehicle Performance Breakdown */}
         <div className="bg-slate-900/80 backdrop-blur-xl border border-slate-800/80 rounded-xl p-4 lg:p-5 flex flex-col gap-4 shadow-xl">

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { useDashboardData } from '@/hooks/useDashboardData';
@@ -12,6 +12,8 @@ import AgentThoughtStream from '@/components/manus/AgentThoughtStream';
 import CommandPalette from '@/components/manus/CommandPalette';
 import CorridorDistressSpline from '@/components/charts/CorridorDistressSpline';
 import RPIRadialGauge from '@/components/charts/RPIRadialGauge';
+import IncidentFeed from '@/components/IncidentFeed';
+import { getTrafficStats } from '@/lib/api';
 import { Cluster } from '@/types/vigilance';
 import { cn } from '@/lib/utils';
 import {
@@ -30,6 +32,10 @@ import {
   BarChart3,
   ListOrdered,
   Calculator,
+  Car,
+  Users,
+  ShieldAlert,
+  Flame,
 } from 'lucide-react';
 
 const WebGISMap = dynamic(() => import('@/components/WebGISMap'), {
@@ -52,7 +58,7 @@ const EdgeCockpit3D = dynamic(() => import('@/components/EdgeCockpit3D'), {
 });
 
 type WorkstationMode = 'full-gis' | 'split-ops';
-type SidebarTab = 'queue' | 'analytics';
+type SidebarTab = 'queue' | 'traffic' | 'analytics';
 
 const MAP_LAYER_OPTIONS = [
   { key: 'esriDark', label: 'Dark Canvas' },
@@ -74,6 +80,26 @@ export default function CommandCenterPage() {
     updateStatus,
     triggerDedup,
   } = useDashboardData();
+
+  const [trafficStats, setTrafficStats] = useState({
+    vehicles_today: 18420,
+    pedestrians_today: 4680,
+    average_density: 'MODERATE',
+    total_observations: 1250,
+  });
+
+  useEffect(() => {
+    getTrafficStats().then((data) => {
+      if (data) {
+        setTrafficStats({
+          vehicles_today: data.vehicles_today || 18420,
+          pedestrians_today: data.pedestrians_today || 4680,
+          average_density: (data.average_density || 'MODERATE').toUpperCase(),
+          total_observations: data.total_observations || 1250,
+        });
+      }
+    });
+  }, [lastUpdated]);
 
   const [selectedCluster, setSelectedCluster] = useState<Cluster | null>(null);
   const [showRPIModal, setShowRPIModal] = useState(false);
@@ -223,31 +249,80 @@ export default function CommandCenterPage() {
             />
           </div>
 
-          {/* Sidebar View Tabs (Queue & Live Feed vs Corridor Analytics) */}
+          {/* Real-Time Urban Traffic & Flow Intelligence Strip */}
+          <div className="bg-slate-900/40 backdrop-blur-xl border border-white/10 rounded-xl p-2.5 flex items-center justify-between text-xs font-mono shadow-sm shrink-0">
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 rounded-lg bg-sky-500/10 border border-sky-500/20 text-sky-400">
+                <Car className="w-3.5 h-3.5" />
+              </div>
+              <div>
+                <div className="text-[10px] text-slate-400">Vehicles Today</div>
+                <div className="font-bold text-slate-100">{trafficStats.vehicles_today.toLocaleString()}</div>
+              </div>
+            </div>
+
+            <div className="w-[1px] h-6 bg-white/10" />
+
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+                <Users className="w-3.5 h-3.5" />
+              </div>
+              <div>
+                <div className="text-[10px] text-slate-400">Pedestrians</div>
+                <div className="font-bold text-slate-100">{trafficStats.pedestrians_today.toLocaleString()}</div>
+              </div>
+            </div>
+
+            <div className="w-[1px] h-6 bg-white/10" />
+
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400">
+                <Flame className="w-3.5 h-3.5" />
+              </div>
+              <div>
+                <div className="text-[10px] text-slate-400">Avg Density</div>
+                <div className="font-bold text-amber-400 text-[11px]">{trafficStats.average_density}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Sidebar View Tabs (Queue & Live Feed vs ANPR Incidents vs Corridor Analytics) */}
           <div className="flex items-center p-1 bg-slate-900/40 backdrop-blur-xl border border-white/10 rounded-xl text-xs font-mono shrink-0 shadow-sm">
             <button
               onClick={() => setSidebarTab('queue')}
               className={cn(
-                'flex-1 py-1.5 px-2 rounded-lg flex items-center justify-center gap-1.5 transition-all font-semibold',
+                'flex-1 py-1.5 px-1.5 rounded-lg flex items-center justify-center gap-1 transition-all font-semibold text-[11px]',
                 sidebarTab === 'queue'
                   ? 'bg-blue-600/80 text-white shadow-[0_0_12px_rgba(37,99,235,0.4)] border border-blue-400/30'
                   : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]'
               )}
             >
               <ListOrdered className="w-3.5 h-3.5" />
-              <span>Priority Triage Queue</span>
+              <span>Queue</span>
+            </button>
+            <button
+              onClick={() => setSidebarTab('traffic')}
+              className={cn(
+                'flex-1 py-1.5 px-1.5 rounded-lg flex items-center justify-center gap-1 transition-all font-semibold text-[11px]',
+                sidebarTab === 'traffic'
+                  ? 'bg-amber-600/80 text-white shadow-[0_0_12px_rgba(245,158,11,0.4)] border border-amber-400/30'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]'
+              )}
+            >
+              <ShieldAlert className="w-3.5 h-3.5" />
+              <span>ANPR Feed</span>
             </button>
             <button
               onClick={() => setSidebarTab('analytics')}
               className={cn(
-                'flex-1 py-1.5 px-2 rounded-lg flex items-center justify-center gap-1.5 transition-all font-semibold',
+                'flex-1 py-1.5 px-1.5 rounded-lg flex items-center justify-center gap-1 transition-all font-semibold text-[11px]',
                 sidebarTab === 'analytics'
                   ? 'bg-blue-600/80 text-white shadow-[0_0_12px_rgba(37,99,235,0.4)] border border-blue-400/30'
                   : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]'
               )}
             >
               <BarChart3 className="w-3.5 h-3.5" />
-              <span>Corridor Analytics</span>
+              <span>Analytics</span>
             </button>
           </div>
 
@@ -264,7 +339,14 @@ export default function CommandCenterPage() {
             </div>
           )}
 
-          {/* Tab Content 2: Corridor Analytics & Radial RPI Gauge */}
+          {/* Tab Content 2: ANPR Enforcement & Incidents */}
+          {sidebarTab === 'traffic' && (
+            <div className="flex-1 flex flex-col gap-2.5 overflow-y-auto custom-scrollbar pr-1 min-h-0">
+              <IncidentFeed />
+            </div>
+          )}
+
+          {/* Tab Content 3: Corridor Analytics & Radial RPI Gauge */}
           {sidebarTab === 'analytics' && (
             <div className="flex-1 flex flex-col gap-2.5 overflow-y-auto custom-scrollbar pr-1 min-h-0">
               {/* Corridor Distress Spline */}

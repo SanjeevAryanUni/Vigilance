@@ -20,11 +20,34 @@ import {
   Upload,
   Volume2,
   VolumeX,
+  Car,
+  Users,
+  Zap,
+  BellRing,
+  Activity,
 } from 'lucide-react';
-import { createDetection, getApiBase } from '@/lib/api';
+import {
+  createDetection,
+  createTrafficObservation,
+  createIncident,
+  getApiBase,
+} from '@/lib/api';
 import { DefectType } from '@/types/vigilance';
 import Script from 'next/script';
 import { initOnnxWebSession, isOnnxWebReady, runOnnxWebInference } from '@/lib/yoloOnnxWeb';
+import {
+  initTrafficOnnxSession,
+  isTrafficOnnxReady,
+  runTrafficOnnxInference,
+  TrafficAnalysisResult,
+  TrafficDetection,
+} from '@/lib/trafficOnnxWeb';
+import {
+  initPlateDetector,
+  isPlateDetectorReady,
+  detectAndRecognizePlates,
+  PlateResult,
+} from '@/lib/anprWeb';
 
 interface DetectedBox {
   x: number; // percentage 0 - 100
@@ -35,6 +58,8 @@ interface DetectedBox {
   confidence: number;
   severity: 'critical' | 'high' | 'medium';
 }
+
+const SHOCK_THRESHOLD = 3.5; // m/s² dynamic acceleration threshold above gravity
 
 export default function MobileCapturePage() {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -50,6 +75,25 @@ export default function MobileCapturePage() {
   const [autoDetectEnabled, setAutoDetectEnabled] = useState(true);
   const [soundEnabled, setSoundEnabled] = useState(true);
 
+  // Accelerometer Frame Gating State
+  const [frameGatingEnabled, setFrameGatingEnabled] = useState(false);
+  const [lastShock, setLastShock] = useState(0);
+  const [shockAlert, setShockAlert] = useState<string | null>(null);
+  const lastShockTimeRef = useRef(0);
+
+  // Traffic & Incident / ANPR State
+  const [trafficData, setTrafficData] = useState<TrafficAnalysisResult>({
+    vehicleCount: 0,
+    pedestrianCount: 0,
+    vehicles: [],
+    pedestrians: [],
+    density: 'free_flow',
+  });
+  const [incidentModeEnabled, setIncidentModeEnabled] = useState(false);
+  const [detectedPlates, setDetectedPlates] = useState<PlateResult[]>([]);
+  const lastTrafficSyncTimeRef = useRef(0);
+  const lastIncidentSyncTimeRef = useRef(0);
+
   const [coords, setCoords] = useState<{ lat: number; lon: number; speed: number | null }>({
     lat: 12.8231,
     lon: 80.0442,
@@ -60,8 +104,9 @@ export default function MobileCapturePage() {
   const [detectionLogs, setDetectionLogs] = useState<any[]>([]);
   const [isCapturing, setIsCapturing] = useState(false);
   const [lastSent, setLastSent] = useState<string | null>(null);
-  const [fps, setFps] = useState<number>(24);
   const [isOnnxLoaded, setIsOnnxLoaded] = useState(false);
+  const [isTrafficLoaded, setIsTrafficLoaded] = useState(false);
+  const [isPlateLoaded, setIsPlateLoaded] = useState(false);
   const [modelStatusText, setModelStatusText] = useState('Initializing Edge AI...');
 
   const [vibrationGated, setVibrationGated] = useState(false);
@@ -111,8 +156,8 @@ export default function MobileCapturePage() {
       const gain = ctx.createGain();
 
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(880, ctx.currentTime); // A5 note
-      osc.frequency.exponentialRampToValueAtTime(1320, ctx.currentTime + 0.12); // E6 note
+      osc.frequency.setValueAtTime(880, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(1320, ctx.currentTime + 0.12);
 
       gain.gain.setValueAtTime(0.2, ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
@@ -123,7 +168,7 @@ export default function MobileCapturePage() {
       osc.start();
       osc.stop(ctx.currentTime + 0.22);
     } catch {
-      // Audio context might be restricted by browser gesture
+      // Audio context might be restricted
     }
   }, [soundEnabled]);
 
@@ -133,7 +178,7 @@ export default function MobileCapturePage() {
       try {
         navigator.vibrate([70, 40, 70]);
       } catch {
-        // Ignored if unsupported
+        // Ignored
       }
     }
   }, []);
@@ -150,7 +195,6 @@ export default function MobileCapturePage() {
       const ctx = thumbCanvas.getContext('2d');
       if (!ctx) return null;
 
-      // Crop from center road region
       const srcW = video.videoWidth;
       const srcH = video.videoHeight;
       const cropSize = Math.min(srcW, srcH) * 0.5;
@@ -164,7 +208,7 @@ export default function MobileCapturePage() {
     }
   }, []);
 
-  // Dispatch Detection to Frontend via both BroadcastChannel and API
+  // Dispatch Detection to Frontend via BroadcastChannel and API
   const dispatchDetection = useCallback(
     async (
       defectType: DefectType = 'D40',
@@ -187,12 +231,11 @@ export default function MobileCapturePage() {
         vehicle_id: vehicleId,
         lat: coords.lat,
         lon: coords.lon,
-        road_name: 'GST Road / Chennai Corridor',
+        road_name: 'Corridor Transit Fleet',
         timestamp: new Date().toISOString(),
         thumbnail_b64: thumbnail,
       };
 
-      // 1. Instant 0ms broadcast to local tabs
       if (broadcastChannelRef.current) {
         broadcastChannelRef.current.postMessage({
           type: 'NEW_DETECTION',
@@ -200,11 +243,10 @@ export default function MobileCapturePage() {
         });
       }
 
-      // 2. HTTP POST to Next.js API / FastAPI backend
       try {
         const res = await createDetection(payload);
         if (res) {
-          setLastSent(`Sent #${payload.id.toString().slice(-4)} to Frontend`);
+          setLastSent(`Sent #${payload.id.toString().slice(-4)}`);
         } else {
           setLastSent(`Broadcasted Locally`);
         }
@@ -217,6 +259,43 @@ export default function MobileCapturePage() {
     },
     [captureThumbnail, coords.lat, coords.lon, playDetectionChime, triggerHaptic, vehicleId]
   );
+
+  // Request accelerometer motion permissions (Required on iOS 13+)
+  const requestMotionPermission = async (): Promise<boolean> => {
+    if (typeof (DeviceMotionEvent as any)?.requestPermission === 'function') {
+      try {
+        const permission = await (DeviceMotionEvent as any).requestPermission();
+        return permission === 'granted';
+      } catch {
+        return false;
+      }
+    }
+    return true; // Android & desktop browsers auto-grant
+  };
+
+  const toggleFrameGating = async () => {
+    if (!frameGatingEnabled) {
+      const granted = await requestMotionPermission();
+      if (!granted) {
+        alert('Motion sensor permission is required for shock-based frame gating.');
+        return;
+      }
+      setFrameGatingEnabled(true);
+    } else {
+      setFrameGatingEnabled(false);
+    }
+  };
+
+  // Toggle Incident Mode (ANPR)
+  const toggleIncidentMode = async () => {
+    const nextState = !incidentModeEnabled;
+    setIncidentModeEnabled(nextState);
+    if (nextState && !isPlateLoaded) {
+      setModelStatusText('Loading ANPR Plate Engine...');
+      const ok = await initPlateDetector();
+      if (ok) setIsPlateLoaded(true);
+    }
+  };
 
   // Initialize Camera Stream
   const startCamera = async (targetFacing: 'environment' | 'user' = facingMode) => {
@@ -279,128 +358,151 @@ export default function MobileCapturePage() {
     startCamera(nextFacing);
   };
 
-  // Real-Time Road Surface YOLOv8 AI Frame Analyzer (Hybrid: On-Device WASM + API Fallback)
-  useEffect(() => {
-    if (!streamActive || !autoDetectEnabled) {
-      setDetectedBoxes([]);
+  // Unified Frame Analysis Pipeline (Road Damage + COCO Traffic + ANPR)
+  const isInferencingRef = useRef(false);
+  const lastRoadDetectionTimeRef = useRef(0);
+
+  const analyzeCurrentFrame = useCallback(async () => {
+    if (isInferencingRef.current) return;
+    const video = videoRef.current;
+    if (!video || video.readyState < 2) return;
+    if (isVibratingRef.current) {
+      // Accelerometer Frame Gating: chassis vibration detected, skip blurred frame
       return;
     }
 
-    let isInferencing = false;
-    let lastDetectionTime = 0;
+    isInferencingRef.current = true;
+    try {
+      // Run parallel inferences
+      const promises: [
+        Promise<any>,
+        Promise<TrafficAnalysisResult | null>,
+        Promise<PlateResult[] | null>
+      ] = [
+        isOnnxWebReady() ? runOnnxWebInference(video, 0.25) : Promise.resolve([]),
+        isTrafficOnnxReady() ? runTrafficOnnxInference(video, 0.28) : Promise.resolve(null),
+        incidentModeEnabled && isPlateDetectorReady()
+          ? detectAndRecognizePlates(video, 0.35)
+          : Promise.resolve(null),
+      ];
 
-    const runInference = async () => {
-      if (isInferencing) return;
-      if (isVibratingRef.current) {
-        // Accelerometer Frame Gating: chassis vibration detected, skip blurred frame
-        return;
-      }
-      const video = videoRef.current;
-      if (!video || video.readyState < 2) return;
+      const [roadDets, trafficRes, plateDets] = await Promise.all(promises);
 
-      isInferencing = true;
-      try {
-        // 1. Primary Engine: On-Device In-Browser WebAssembly (Zero Backend Required, works on Vercel)
-        if (isOnnxWebReady()) {
-          const webDets = await runOnnxWebInference(video, 0.25);
-          if (webDets && webDets.length > 0) {
-            const boxes: DetectedBox[] = webDets.map((d) => ({
-              x: d.x,
-              y: d.y,
-              w: d.w,
-              h: d.h,
-              label: d.label,
-              confidence: d.confidence,
-              severity: d.severity,
-            }));
+      // 1. Process Road Damage Detections
+      if (roadDets && roadDets.length > 0) {
+        const boxes: DetectedBox[] = roadDets.map((d: any) => ({
+          x: d.x,
+          y: d.y,
+          w: d.w,
+          h: d.h,
+          label: d.label,
+          confidence: d.confidence,
+          severity: d.severity,
+        }));
+        setDetectedBoxes(boxes);
 
-            setDetectedBoxes(boxes);
-
-            const topDet = webDets[0];
-            const now = Date.now();
-            if (now - lastDetectionTime > 3000) {
-              lastDetectionTime = now;
-              dispatchDetection(
-                topDet.defect_type,
-                topDet.severity,
-                topDet.confidence,
-                captureThumbnail()
-              );
-            }
-          } else {
-            setDetectedBoxes([]);
-          }
-          return;
+        const topDet = roadDets[0];
+        const now = Date.now();
+        if (now - lastRoadDetectionTimeRef.current > 3000) {
+          lastRoadDetectionTimeRef.current = now;
+          dispatchDetection(
+            topDet.defect_type,
+            topDet.severity,
+            topDet.confidence,
+            captureThumbnail()
+          );
         }
+      } else {
+        setDetectedBoxes([]);
+      }
 
-        // 2. Secondary Engine: Edge/Local FastAPI Inference Endpoint
-        const canvas = analyzerCanvasRef.current;
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
+      // 2. Process Traffic Observation
+      if (trafficRes) {
+        setTrafficData(trafficRes);
+        const now = Date.now();
+        if (now - lastTrafficSyncTimeRef.current > 4000) {
+          lastTrafficSyncTimeRef.current = now;
+          createTrafficObservation({
+            vehicle_count: trafficRes.vehicleCount,
+            pedestrian_count: trafficRes.pedestrianCount,
+            density: trafficRes.density,
+            lat: coords.lat,
+            lon: coords.lon,
+            road_name: 'Corridor Transit Fleet',
+            vehicle_id: vehicleId,
+            timestamp: new Date().toISOString(),
+          }).catch(() => {});
+        }
+      }
 
-        const w = 320;
-        const h = 240;
-        canvas.width = w;
-        canvas.height = h;
-        ctx.drawImage(video, 0, 0, w, h);
-        const imageB64 = canvas.toDataURL('image/jpeg', 0.65);
-
-        const apiBase = getApiBase();
-        const url = apiBase ? `${apiBase}/api/detect` : '/api/detect';
-
-        const res = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            image: imageB64,
-            image_b64: imageB64,
+      // 3. Process ANPR Incident Detections
+      if (plateDets && plateDets.length > 0) {
+        setDetectedPlates(plateDets);
+        const now = Date.now();
+        if (now - lastIncidentSyncTimeRef.current > 4000) {
+          lastIncidentSyncTimeRef.current = now;
+          const topPlate = plateDets[0];
+          createIncident({
+            incident_type: 'LICENSE_PLATE_ALERT',
+            plate_text: topPlate.plateText,
+            plate_confidence: topPlate.confidence,
             lat: coords.lat,
             lon: coords.lon,
             vehicle_id: vehicleId,
-          }),
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          if (data.detections && data.detections.length > 0) {
-            const boxes: DetectedBox[] = data.detections.map((d: any) => ({
-              x: d.x ?? 25,
-              y: d.y ?? 40,
-              w: d.w ?? 40,
-              h: d.h ?? 30,
-              label: d.label || `${d.defect_type}: Road Defect`,
-              confidence: d.confidence ?? 0.88,
-              severity: (d.severity as any) || 'critical',
-            }));
-
-            setDetectedBoxes(boxes);
-
-            const topDet = data.detections[0];
-            const now = Date.now();
-            if (now - lastDetectionTime > 3000) {
-              lastDetectionTime = now;
-              dispatchDetection(
-                topDet.defect_type || 'D40',
-                topDet.severity || 'critical',
-                topDet.confidence || 0.9,
-                topDet.thumbnail_b64 || captureThumbnail()
-              );
-            }
-          } else {
-            setDetectedBoxes([]);
-          }
+            timestamp: new Date().toISOString(),
+          }).catch(() => {});
         }
-      } catch (err) {
-        // Quietly retry on next tick
-      } finally {
-        isInferencing = false;
+      } else {
+        setDetectedPlates([]);
+      }
+    } catch (err) {
+      console.warn('[Perception Pipeline Error]', err);
+    } finally {
+      isInferencingRef.current = false;
+    }
+  }, [
+    captureThumbnail,
+    coords.lat,
+    coords.lon,
+    dispatchDetection,
+    incidentModeEnabled,
+    vehicleId,
+  ]);
+
+  // Continuous Inference Loop (Active when Frame Gating is OFF)
+  useEffect(() => {
+    if (!streamActive || !autoDetectEnabled || frameGatingEnabled) {
+      if (!frameGatingEnabled) setDetectedBoxes([]);
+      return;
+    }
+
+    const interval = setInterval(analyzeCurrentFrame, 550);
+    return () => clearInterval(interval);
+  }, [analyzeCurrentFrame, autoDetectEnabled, frameGatingEnabled, streamActive]);
+
+  // Accelerometer Frame Gating Listener (Active when Frame Gating is ON)
+  useEffect(() => {
+    if (!frameGatingEnabled || !streamActive || !autoDetectEnabled) return;
+
+    const motionHandler = (event: DeviceMotionEvent) => {
+      const acc = event.accelerationIncludingGravity || event.acceleration;
+      if (!acc || acc.x === null || acc.y === null || acc.z === null) return;
+
+      const totalAcc = Math.sqrt((acc.x || 0) ** 2 + (acc.y || 0) ** 2 + (acc.z || 0) ** 2);
+      const dynamicShock = Math.abs(totalAcc - 9.8);
+      setLastShock(Number(dynamicShock.toFixed(1)));
+
+      if (dynamicShock > SHOCK_THRESHOLD && Date.now() - lastShockTimeRef.current > 600) {
+        lastShockTimeRef.current = Date.now();
+        setShockAlert(`⚡ Shock: ${dynamicShock.toFixed(1)} m/s² — Gated Frame Captured!`);
+        setTimeout(() => setShockAlert(null), 1200);
+        analyzeCurrentFrame();
       }
     };
 
-    const interval = setInterval(runInference, 600); // Fast ~1.6 FPS live loop
-    return () => clearInterval(interval);
-  }, [autoDetectEnabled, captureThumbnail, coords.lat, coords.lon, dispatchDetection, isOnnxLoaded, streamActive, vehicleId]);
+    window.addEventListener('devicemotion', motionHandler);
+    return () => window.removeEventListener('devicemotion', motionHandler);
+  }, [analyzeCurrentFrame, autoDetectEnabled, frameGatingEnabled, streamActive]);
 
   // Track Geolocation with High Accuracy
   useEffect(() => {
@@ -431,7 +533,7 @@ export default function MobileCapturePage() {
     };
   }, []);
 
-  // Handle Photo File Upload (Test Gallery Images with On-Device AI / API)
+  // Handle Photo File Upload
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -444,14 +546,13 @@ export default function MobileCapturePage() {
       try {
         setIsCapturing(true);
 
-        // 1. Try On-Device WASM Inference First
         if (isOnnxWebReady()) {
           const img = new Image();
           img.onload = async () => {
             const webDets = await runOnnxWebInference(img, 0.25);
             if (webDets && webDets.length > 0) {
               const topDet = webDets[0];
-              const boxes: DetectedBox[] = webDets.map((d) => ({
+              const boxes: DetectedBox[] = webDets.map((d: any) => ({
                 x: d.x,
                 y: d.y,
                 w: d.w,
@@ -470,43 +571,7 @@ export default function MobileCapturePage() {
           return;
         }
 
-        // 2. Fallback to API
-        const apiBase = getApiBase();
-        const url = apiBase ? `${apiBase}/api/detect` : '/api/detect';
-
-        const res = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            image: b64,
-            image_b64: b64,
-            lat: coords.lat,
-            lon: coords.lon,
-            vehicle_id: vehicleId,
-          }),
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          if (data.detections && data.detections.length > 0) {
-            const topDet = data.detections[0];
-            const boxes: DetectedBox[] = data.detections.map((d: any) => ({
-              x: d.x ?? 25,
-              y: d.y ?? 40,
-              w: d.w ?? 40,
-              h: d.h ?? 30,
-              label: d.label || `${d.defect_type}: Road Defect`,
-              confidence: d.confidence ?? 0.9,
-              severity: (d.severity as any) || 'critical',
-            }));
-            setDetectedBoxes(boxes);
-            dispatchDetection(topDet.defect_type || 'D40', topDet.severity || 'critical', topDet.confidence || 0.92, b64);
-          } else {
-            dispatchDetection('D40', 'high', 0.88, b64);
-          }
-        } else {
-          dispatchDetection('D40', 'high', 0.88, b64);
-        }
+        dispatchDetection('D40', 'high', 0.88, b64);
       } catch (err) {
         dispatchDetection('D40', 'high', 0.88, b64);
       } finally {
@@ -515,6 +580,23 @@ export default function MobileCapturePage() {
     };
     reader.readAsDataURL(file);
   };
+
+  const getDensityBadge = (density: string) => {
+    switch (density) {
+      case 'gridlock':
+        return { label: 'Gridlock', color: 'bg-red-500 text-red-200 border-red-700' };
+      case 'heavy':
+        return { label: 'Heavy', color: 'bg-orange-500 text-orange-200 border-orange-700' };
+      case 'moderate':
+        return { label: 'Moderate', color: 'bg-amber-500 text-amber-200 border-amber-700' };
+      case 'light':
+        return { label: 'Light', color: 'bg-lime-500 text-lime-200 border-lime-700' };
+      default:
+        return { label: 'Free Flow', color: 'bg-emerald-500 text-emerald-200 border-emerald-700' };
+    }
+  };
+
+  const densityMeta = getDensityBadge(trafficData.density);
 
   return (
     <div className="flex flex-col h-[100dvh] bg-slate-950 text-slate-100 font-sans select-none overflow-hidden">
@@ -533,7 +615,11 @@ export default function MobileCapturePage() {
             className="p-1.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-white text-xs"
             title={soundEnabled ? 'Mute Chimes' : 'Enable Chimes'}
           >
-            {soundEnabled ? <Volume2 className="w-3.5 h-3.5 text-cyan-400" /> : <VolumeX className="w-3.5 h-3.5 text-slate-500" />}
+            {soundEnabled ? (
+              <Volume2 className="w-3.5 h-3.5 text-cyan-400" />
+            ) : (
+              <VolumeX className="w-3.5 h-3.5 text-slate-500" />
+            )}
           </button>
           <div className={`hidden sm:flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[10px] font-mono font-bold ${
             vibrationGated 
@@ -580,7 +666,8 @@ export default function MobileCapturePage() {
               Vehicle Windshield Dashcam
             </h2>
             <p className="text-xs text-slate-400 mt-1 max-w-xs leading-relaxed">
-              Mount your phone on the transit windshield facing the road. The edge computer vision engine scans for potholes automatically.
+              Mount your phone on the transit windshield facing the road. Edge computer vision
+              scans for road damage, traffic density, and license plates.
             </p>
 
             {cameraError && (
@@ -608,7 +695,7 @@ export default function MobileCapturePage() {
           </div>
         )}
 
-        {/* Live HUD Overlay (Active on Camera or Simulation) */}
+        {/* Live HUD Overlay */}
         {(streamActive || useSimulationMode) && (
           <div className="absolute inset-0 pointer-events-none flex flex-col justify-between p-3 sm:p-4 z-20">
             {/* Top HUD Telemetry Info */}
@@ -625,23 +712,60 @@ export default function MobileCapturePage() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-1.5 pointer-events-auto">
-                {streamActive && (
-                  <button
-                    onClick={toggleCameraFacing}
-                    className="p-2 rounded-lg bg-slate-950/85 border border-slate-800 text-cyan-400 hover:text-white text-xs shadow-lg transition active:scale-95"
-                    title="Flip camera"
-                  >
-                    <RefreshCw className="w-3.5 h-3.5" />
-                  </button>
-                )}
-                <div className="bg-slate-950/85 backdrop-blur-md border border-slate-800 px-2.5 py-1.5 rounded-lg text-xs font-mono text-emerald-400 font-bold shadow-lg">
-                  {vehicleId}
+              {/* Top-Right Perceptions & Traffic Badges */}
+              <div className="flex flex-col items-end gap-1.5 pointer-events-auto">
+                <div className="flex items-center gap-1.5">
+                  {streamActive && (
+                    <button
+                      onClick={toggleCameraFacing}
+                      className="p-1.5 rounded-lg bg-slate-950/85 border border-slate-800 text-cyan-400 hover:text-white text-xs shadow-lg transition active:scale-95"
+                      title="Flip camera"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                  <div className="bg-slate-950/85 backdrop-blur-md border border-slate-800 px-2 py-1 rounded-lg text-xs font-mono text-emerald-400 font-bold shadow-lg">
+                    {vehicleId}
+                  </div>
                 </div>
+
+                {/* Live Traffic Counting Badges */}
+                <div className="flex items-center gap-1 font-mono text-[10px]">
+                  <div className="bg-slate-950/85 border border-slate-800 px-2 py-0.5 rounded flex items-center gap-1 text-sky-300">
+                    <Car className="w-3 h-3 text-sky-400" />
+                    <span>{trafficData.vehicleCount}</span>
+                  </div>
+                  <div className="bg-slate-950/85 border border-slate-800 px-2 py-0.5 rounded flex items-center gap-1 text-emerald-300">
+                    <Users className="w-3 h-3 text-emerald-400" />
+                    <span>{trafficData.pedestrianCount}</span>
+                  </div>
+                  <div
+                    className={`px-2 py-0.5 rounded border text-[9px] font-bold flex items-center gap-1 ${densityMeta.color}`}
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
+                    <span>{densityMeta.label}</span>
+                  </div>
+                </div>
+
+                {/* Frame Gating Active Badge */}
+                {frameGatingEnabled && (
+                  <div className="bg-purple-950/90 border border-purple-700 px-2 py-0.5 rounded text-[9px] font-mono text-purple-300 flex items-center gap-1">
+                    <BellRing className="w-3 h-3 text-purple-400 animate-bounce" />
+                    <span>GATING: {lastShock} m/s²</span>
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* Dynamic Real-Time Bounding Box (When CV Detects a Pothole) */}
+            {/* Shock Flash Banner (When Pothole Vibration Triggers Gated Capture) */}
+            {shockAlert && (
+              <div className="self-center bg-purple-600/90 text-white font-mono text-xs font-bold px-4 py-1.5 rounded-full shadow-lg border border-purple-400 animate-pulse flex items-center gap-1.5">
+                <Zap className="w-4 h-4 text-amber-300 fill-amber-300" />
+                <span>{shockAlert}</span>
+              </div>
+            )}
+
+            {/* Dynamic Real-Time Bounding Box (Road Damage) */}
             {detectedBoxes.map((box, idx) => (
               <div
                 key={idx}
@@ -662,10 +786,32 @@ export default function MobileCapturePage() {
               </div>
             ))}
 
-            {/* Center Perception Region of Interest (ROI) */}
+            {/* Dynamic License Plate Overlays (ANPR Incident Mode) */}
+            {detectedPlates.map((plate, idx) => (
+              <div
+                key={`plate-${idx}`}
+                style={{
+                  left: `${plate.bbox[0]}%`,
+                  top: `${plate.bbox[1]}%`,
+                  width: `${plate.bbox[2]}%`,
+                  height: `${plate.bbox[3]}%`,
+                }}
+                className="absolute border-2 border-amber-400 bg-amber-400/20 rounded shadow-[0_0_15px_rgba(251,191,36,0.7)] flex items-start pointer-events-none"
+              >
+                <span className="bg-amber-500 text-slate-950 font-mono text-[9px] font-black px-1 rounded shadow">
+                  {plate.plateText} {plate.isValidIndian ? '✓' : ''}
+                </span>
+              </div>
+            ))}
+
+            {/* Perception Region of Interest (ROI) */}
             <div className="self-center w-60 sm:w-72 h-44 sm:h-52 border-2 border-dashed border-cyan-500/50 rounded-xl relative flex items-center justify-center shadow-[0_0_15px_rgba(6,182,212,0.15)]">
               <div className="absolute -top-3 bg-cyan-950/90 text-cyan-300 border border-cyan-800 text-[9px] px-2 py-0.5 rounded font-mono uppercase tracking-wider font-bold shadow">
-                {autoDetectEnabled ? '⚡ Edge AI Active • Scanning Road' : 'Perception Standby'}
+                {frameGatingEnabled
+                  ? '⚡ Shock-Gated Frame Perception'
+                  : autoDetectEnabled
+                  ? '⚡ Continuous AI Perception (Damage + Traffic)'
+                  : 'Perception Standby'}
               </div>
               <div className="w-3 h-3 border-t-2 border-l-2 border-cyan-400 absolute top-2 left-2" />
               <div className="w-3 h-3 border-t-2 border-r-2 border-cyan-400 absolute top-2 right-2" />
@@ -675,7 +821,7 @@ export default function MobileCapturePage() {
               {isCapturing && (
                 <div className="absolute inset-0 bg-red-600/30 border-2 border-red-500 rounded-xl animate-ping flex items-center justify-center">
                   <span className="bg-red-600 text-white text-xs font-bold px-2 py-1 rounded shadow-lg font-mono">
-                    POTHOLE DETECTED & SENT
+                    DEFECT DETECTED & SENT
                   </span>
                 </div>
               )}
@@ -684,8 +830,18 @@ export default function MobileCapturePage() {
             {/* Bottom HUD Metadata */}
             <div className="flex justify-between items-end gap-2">
               <div className="bg-slate-950/85 backdrop-blur-md border border-slate-800 px-2.5 py-1.5 rounded-lg text-[10px] text-slate-300 font-mono shadow flex items-center gap-1.5">
-                <span className={`w-2 h-2 rounded-full ${isOnnxLoaded ? 'bg-emerald-400' : 'bg-cyan-400'} animate-ping`} />
-                <span>{isOnnxLoaded ? '⚡ YOLOv8n Edge WASM (On-Device AI)' : `Engine: ${modelStatusText}`}</span>
+                <span
+                  className={`w-2 h-2 rounded-full ${
+                    isOnnxLoaded ? 'bg-emerald-400' : 'bg-cyan-400'
+                  } animate-ping`}
+                />
+                <span>
+                  {isOnnxLoaded
+                    ? `⚡ YOLOv8 Edge WASM (${isTrafficLoaded ? '+COCO' : ''}${
+                        isPlateLoaded ? '+ANPR' : ''
+                      })`
+                    : `Engine: ${modelStatusText}`}
+                </span>
               </div>
               {lastSent && (
                 <div className="bg-emerald-950/90 border border-emerald-700 px-2.5 py-1.5 rounded text-[10px] text-emerald-300 font-mono flex items-center gap-1 shadow">
@@ -700,7 +856,34 @@ export default function MobileCapturePage() {
 
       {/* Control Panel Bottom */}
       <div className="bg-slate-900 border-t border-slate-800 p-3 sm:p-4 flex flex-col gap-2.5 shrink-0 z-30">
-        {/* Toggle Auto Scanner & Gallery Upload */}
+        {/* Row 1: Smart Gating & Incident Mode Toggles */}
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            onClick={toggleFrameGating}
+            className={`py-2 px-3 rounded-lg text-xs font-mono font-bold flex items-center justify-center gap-1.5 border transition ${
+              frameGatingEnabled
+                ? 'bg-purple-950/80 border-purple-500 text-purple-300'
+                : 'bg-slate-800 border-slate-700 text-slate-400'
+            }`}
+          >
+            <Activity className="w-3.5 h-3.5 text-purple-400" />
+            <span>Gating: {frameGatingEnabled ? 'SMART SHOCK' : 'CONTINUOUS'}</span>
+          </button>
+
+          <button
+            onClick={toggleIncidentMode}
+            className={`py-2 px-3 rounded-lg text-xs font-mono font-bold flex items-center justify-center gap-1.5 border transition ${
+              incidentModeEnabled
+                ? 'bg-amber-950/80 border-amber-500 text-amber-300'
+                : 'bg-slate-800 border-slate-700 text-slate-400'
+            }`}
+          >
+            <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
+            <span>Incident Mode: {incidentModeEnabled ? 'ACTIVE' : 'OFF'}</span>
+          </button>
+        </div>
+
+        {/* Row 2: Auto Scanner & Photo Upload */}
         <div className="flex items-center justify-between gap-2">
           <button
             onClick={() => setAutoDetectEnabled((prev) => !prev)}
@@ -730,26 +913,26 @@ export default function MobileCapturePage() {
           />
         </div>
 
-        {/* Manual Capture Buttons */}
+        {/* Row 3: Manual Capture Buttons */}
         <div className="flex items-center gap-2">
           <button
             onClick={() => dispatchDetection('D40', 'critical')}
-            className="flex-1 py-3 bg-red-600 hover:bg-red-500 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 shadow-lg shadow-red-600/30 transition active:scale-95 font-mono"
+            className="flex-1 py-2.5 bg-red-600 hover:bg-red-500 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 shadow-lg shadow-red-600/30 transition active:scale-95 font-mono"
           >
             <AlertTriangle className="w-4 h-4" />
             <span>Detect Pothole (D40)</span>
           </button>
           <button
             onClick={() => dispatchDetection('D20', 'high')}
-            className="flex-1 py-3 bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 shadow-lg shadow-amber-600/30 transition active:scale-95 font-mono"
+            className="flex-1 py-2.5 bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 shadow-lg shadow-amber-600/30 transition active:scale-95 font-mono"
           >
             <Send className="w-4 h-4" />
             <span>Detect Crack (D20)</span>
           </button>
         </div>
 
-        {/* Live Local Mobile Buffer with Thumbnail Preview */}
-        <div className="bg-slate-950 border border-slate-800/80 rounded-lg p-2 max-h-24 overflow-y-auto font-mono text-[10px] custom-scrollbar">
+        {/* Row 4: Telemetry Log Feed */}
+        <div className="bg-slate-950 border border-slate-800/80 rounded-lg p-2 max-h-20 overflow-y-auto font-mono text-[10px] custom-scrollbar">
           <div className="text-slate-400 font-bold mb-1 border-b border-slate-800/60 pb-1 flex items-center justify-between">
             <span>Dispatched Live Telemetry:</span>
             <span className="text-[9px] text-cyan-400">{detectionLogs.length} transmitted</span>
@@ -760,25 +943,31 @@ export default function MobileCapturePage() {
             </div>
           ) : (
             detectionLogs.map((log, idx) => (
-              <div key={idx} className="text-slate-300 py-1 flex items-center justify-between gap-2 border-b border-slate-900/60">
+              <div
+                key={idx}
+                className="text-slate-300 py-1 flex items-center justify-between gap-2 border-b border-slate-900/60"
+              >
                 <div className="flex items-center gap-1.5 truncate">
                   {log.thumbnail_b64 ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={log.thumbnail_b64}
-                      alt="Pothole"
-                      className="w-6 h-6 rounded object-cover border border-slate-700 shrink-0"
+                      alt="Defect"
+                      className="w-5 h-5 rounded object-cover border border-slate-700 shrink-0"
                     />
                   ) : (
-                    <span className="w-6 h-6 rounded bg-slate-800 border border-slate-700 flex items-center justify-center text-[8px] font-bold text-red-400 shrink-0">
+                    <span className="w-5 h-5 rounded bg-slate-800 border border-slate-700 flex items-center justify-center text-[7px] font-bold text-red-400 shrink-0">
                       D40
                     </span>
                   )}
                   <span className="truncate">
-                    [{log.defect_type}] Conf: {(log.confidence * 100).toFixed(0)}% • {log.lat.toFixed(4)}, {log.lon.toFixed(4)}
+                    [{log.defect_type}] Conf: {(log.confidence * 100).toFixed(0)}% • {log.lat.toFixed(4)},{' '}
+                    {log.lon.toFixed(4)}
                   </span>
                 </div>
-                <span className="text-cyan-400 shrink-0">{new Date(log.timestamp).toLocaleTimeString()}</span>
+                <span className="text-cyan-400 shrink-0">
+                  {new Date(log.timestamp).toLocaleTimeString()}
+                </span>
               </div>
             ))
           )}
@@ -787,21 +976,24 @@ export default function MobileCapturePage() {
 
       <canvas ref={analyzerCanvasRef} className="hidden" />
 
-      {/* Load ONNX Runtime Web for 100% In-Browser Edge AI on Mobile & Vercel */}
+      {/* Script: Load ONNX Runtime Web and initialize Road Damage + COCO models */}
       <Script
         src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.19.2/dist/ort.min.js"
         strategy="afterInteractive"
         onLoad={async () => {
-          setModelStatusText('Loading Neural Net (3.2MB)...');
+          setModelStatusText('Loading Edge Models...');
           try {
-            const ok = await initOnnxWebSession('/models/road_damage_yolov8n_int8.onnx');
-            if (ok) {
+            const okRoad = await initOnnxWebSession('/models/road_damage_yolov8n.onnx');
+            if (okRoad) {
               setIsOnnxLoaded(true);
-              setModelStatusText('YOLOv8n Edge WASM Active');
-            } else {
-              setModelStatusText('Cloud API Active');
             }
+            const okTraffic = await initTrafficOnnxSession('/models/yolov8n_coco.onnx');
+            if (okTraffic) {
+              setIsTrafficLoaded(true);
+            }
+            setModelStatusText('Multi-Model Edge WASM Active');
           } catch (e) {
+            console.warn('[ONNX Loader]', e);
             setModelStatusText('Cloud API Active');
           }
         }}

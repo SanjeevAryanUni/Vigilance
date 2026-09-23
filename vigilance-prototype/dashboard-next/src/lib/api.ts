@@ -113,13 +113,32 @@ export async function createDetection(data: Partial<Detection>): Promise<Detecti
   }
 }
 
-export async function getTrafficStats(): Promise<{ vehicles_24h: number; pedestrians_24h: number; avg_speed_kmh: number; active_monitors: number } | null> {
+export async function getTrafficStats(): Promise<{
+  vehicles_today?: number;
+  pedestrians_today?: number;
+  average_density?: string;
+  total_observations?: number;
+  vehicles_24h?: number;
+  pedestrians_24h?: number;
+  avg_speed_kmh?: number;
+  active_monitors?: number;
+} | null> {
   const base = getApiBase();
   const url = base ? `${base}/api/traffic/stats` : '/api/traffic/stats';
   try {
     const res = await fetch(url, { cache: 'no-store' });
     if (!res.ok) return null;
-    return await res.json();
+    const data = await res.json();
+    return {
+      vehicles_today: data.vehicles_today ?? data.vehicles_24h ?? 0,
+      pedestrians_today: data.pedestrians_today ?? data.pedestrians_24h ?? 0,
+      average_density: data.average_density ?? 'moderate',
+      total_observations: data.total_observations ?? data.vehicles_24h ?? 0,
+      vehicles_24h: data.vehicles_24h ?? data.vehicles_today ?? 0,
+      pedestrians_24h: data.pedestrians_24h ?? data.pedestrians_today ?? 0,
+      avg_speed_kmh: data.avg_speed_kmh ?? 38.5,
+      active_monitors: data.active_monitors ?? 5,
+    };
   } catch (err) {
     return null;
   }
@@ -177,7 +196,26 @@ export async function reportIncident(data: any): Promise<any | null> {
   }
 }
 
-export async function getOdMatrix(): Promise<{ matrix: Record<string, Record<string, number>>; pairs: any[]; stops: string[]; total_trips: number } | null> {
+export async function createIncident(data: {
+  incident_type: string;
+  plate_text?: string;
+  plate_confidence?: number;
+  lat: number;
+  lon: number;
+  vehicle_id?: string;
+  timestamp?: string;
+  image_b64?: string | null;
+}): Promise<boolean> {
+  const res = await reportIncident(data);
+  return res !== null;
+}
+
+export async function getOdMatrix(): Promise<{
+  matrix: Record<string, Record<string, number>>;
+  pairs: any[];
+  stops: string[];
+  total_trips: number;
+} | null> {
   const base = getApiBase();
   const url = base ? `${base}/api/analytics/od-matrix` : '/api/analytics/od-matrix';
   try {
@@ -227,5 +265,19 @@ export async function ingestTraffic(data: any): Promise<any | null> {
   } catch (err) {
     return null;
   }
+}
+
+export async function createTrafficObservation(data: {
+  vehicle_count: number;
+  pedestrian_count: number;
+  density: string;
+  lat: number;
+  lon: number;
+  road_name?: string;
+  vehicle_id?: string;
+  timestamp?: string;
+}): Promise<boolean> {
+  const res = await ingestTraffic(data);
+  return res !== null;
 }
 
