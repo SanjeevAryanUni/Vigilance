@@ -54,6 +54,14 @@ def export_and_quantize(model_path=None):
     compression = ((fp32_size - int8_size) / fp32_size) * 100.0
     print(f"✓ INT8 ONNX generated: {int8_onnx_dest} ({int8_size:.2f} MB)")
     print(f"✨ Compression Ratio: {compression:.1f}% size reduction for edge deployment!")
+
+    # 4. Sync to Dashboard Public Assets
+    dashboard_models_dir = os.path.join(BASE_DIR, "..", "dashboard-next", "public", "models")
+    if os.path.exists(dashboard_models_dir):
+        import shutil
+        shutil.copy2(fp32_onnx_dest, os.path.join(dashboard_models_dir, "road_damage_yolov8n.onnx"))
+        shutil.copy2(int8_onnx_dest, os.path.join(dashboard_models_dir, "road_damage_yolov8n_int8.onnx"))
+        print(f"✓ Synced models to Dashboard web runtime: {dashboard_models_dir}")
     print(f"==================================================")
     return int8_onnx_dest
 

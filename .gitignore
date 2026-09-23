@@ -16,6 +16,7 @@ htmlcov/
 .env
 .env.local
 .venv/
+.venv-cuda/
 env/
 venv/
 ENV/
@@ -63,6 +64,7 @@ sih2026_ps_raw.html
 RDD2022/
 training/data/images/
 training/data/labels/
-training/data/*.cache
+training/data/**/*.cache
+*.cache
 training/runs/
 training/.config/
