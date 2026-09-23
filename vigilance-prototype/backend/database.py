@@ -44,6 +44,12 @@ def init_db(target_engine=None):
             with eng.connect() as conn:
                 conn.execute(text("CREATE EXTENSION IF NOT EXISTS postgis;"))
                 conn.commit()
+                for table in ["detections", "clusters", "traffic_observations", "incidents", "fleet_positions"]:
+                    try:
+                        conn.execute(text(f"ALTER TABLE {table} ADD COLUMN IF NOT EXISTS geom geometry(Point, 4326);"))
+                        conn.commit()
+                    except Exception:
+                        pass
         except Exception:
             pass
 
