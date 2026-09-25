@@ -705,7 +705,6 @@ def get_fleet_positions(db: Session = Depends(get_db)):
     ]
 
 
-<<<<<<< HEAD
 # ====================================================================
 # GAP 2: PWD Municipal Audit Report Endpoints
 # ====================================================================
