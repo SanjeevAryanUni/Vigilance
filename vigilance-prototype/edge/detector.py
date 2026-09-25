@@ -83,7 +83,12 @@ class RoadDamageDetector:
                 # Parse boxes
                 boxes = raw_out[:4, :].T # (8400, 4) in cx, cy, w, h
                 scores_all = raw_out[4:, :].T # (8400, num_classes)
-                
+
+                cand_boxes = []
+                cand_scores = []
+                cand_classes = []
+                cand_coords = []
+
                 for i in range(len(boxes)):
                     cls_scores = scores_all[i]
                     cls_id = int(np.argmax(cls_scores))
@@ -93,56 +98,70 @@ class RoadDamageDetector:
                         cx, cy, bw, bh = boxes[i]
                         x1 = int((cx - bw / 2) * (w / 640.0))
                         y1 = int((cy - bh / 2) * (h / 640.0))
-                        x2 = int((cx + bw / 2) * (w / 640.0))
-                        y2 = int((cy + bh / 2) * (h / 640.0))
-                        
-                        bbox_area = ((x2 - x1) * (y2 - y1)) / (w * h)
-                        target_cls = cls_id % 4 # Map to 4 standard classes
-                        
-                        if target_cls == 3:
-                            defect_type = "D40"
-                            sev = "critical" if bbox_area > 0.03 else "high"
-                        elif target_cls == 2:
-                            defect_type = "D20"
-                            sev = "high" if bbox_area > 0.02 else "medium"
-                        elif target_cls == 1:
-                            defect_type = "D10"
-                            sev = "high" if bbox_area > 0.04 else "medium"
-                        else:
-                            defect_type = "D00"
-                            sev = "medium" if bbox_area > 0.03 else "low"
+                        bw_px = int(bw * (w / 640.0))
+                        bh_px = int(bh * (h / 640.0))
+                        cand_boxes.append([x1, y1, bw_px, bh_px])
+                        cand_scores.append(conf)
+                        cand_classes.append(cls_id)
+                        cand_coords.append((x1, y1, x1 + bw_px, y1 + bh_px))
 
-                        crop = frame[max(0, y1):min(h, y2), max(0, x1):min(w, x2)]
-                        thumb_b64 = None
-                        if crop.size > 0:
-                            _, buffer = cv2.imencode('.jpg', crop)
-                            thumb_b64 = base64.b64encode(buffer).decode('utf-8')
+                indices = []
+                if cand_boxes:
+                    indices = cv2.dnn.NMSBoxes(cand_boxes, cand_scores, score_threshold=self.conf_threshold, nms_threshold=0.45)
+                    if len(indices) > 0:
+                        indices = np.array(indices).flatten()
 
-                        norm_x = round((x1 / w) * 100, 1)
-                        norm_y = round((y1 / h) * 100, 1)
-                        norm_w = round(((x2 - x1) / w) * 100, 1)
-                        norm_h = round(((y2 - y1) / h) * 100, 1)
-                        lbl_text = f"{defect_type}: {self.class_names.get(target_cls, defect_type).split('(')[1].rstrip(')') if '(' in self.class_names.get(target_cls, '') else defect_type}"
+                for idx in indices[:10]: # Top non-overlapping detections
+                    conf = cand_scores[idx]
+                    cls_id = cand_classes[idx]
+                    x1, y1, x2, y2 = cand_coords[idx]
+                    
+                    bbox_area = ((x2 - x1) * (y2 - y1)) / (w * h) if (w * h) > 0 else 0
+                    target_cls = cls_id % 4 # Map to 4 standard classes
+                    
+                    if target_cls == 3:
+                        defect_type = "D40"
+                        sev = "critical" if bbox_area > 0.03 else "high"
+                    elif target_cls == 2:
+                        defect_type = "D20"
+                        sev = "high" if bbox_area > 0.02 else "medium"
+                    elif target_cls == 1:
+                        defect_type = "D10"
+                        sev = "high" if bbox_area > 0.04 else "medium"
+                    else:
+                        defect_type = "D00"
+                        sev = "medium" if bbox_area > 0.03 else "low"
 
-                        detections.append({
-                            "defect_type": defect_type,
-                            "confidence": round(conf, 2),
-                            "severity": sev,
-                            "vehicle_id": vehicle_id,
-                            "lat": lat,
-                            "lon": lon,
-                            "bbox": [x1, y1, x2, y2],
-                            "x": norm_x,
-                            "y": norm_y,
-                            "w": norm_w,
-                            "h": norm_h,
-                            "label": lbl_text,
-                            "timestamp": datetime.utcnow().isoformat(),
-                            "thumbnail_b64": thumb_b64
-                        })
-                        if len(detections) >= 5: # Limit max detections per frame
-                            break
+                    crop = frame[max(0, y1):min(h, y2), max(0, x1):min(w, x2)]
+                    thumb_b64 = None
+                    if crop.size > 0:
+                        _, buffer = cv2.imencode('.jpg', crop)
+                        thumb_b64 = base64.b64encode(buffer).decode('utf-8')
+
+                    norm_x = round((x1 / w) * 100, 1)
+                    norm_y = round((y1 / h) * 100, 1)
+                    norm_w = round(((x2 - x1) / w) * 100, 1)
+                    norm_h = round(((y2 - y1) / h) * 100, 1)
+                    lbl_text = f"{defect_type}: {self.class_names.get(target_cls, defect_type).split('(')[1].rstrip(')') if '(' in self.class_names.get(target_cls, '') else defect_type}"
+
+                    detections.append({
+                        "defect_type": defect_type,
+                        "confidence": round(conf, 2),
+                        "severity": sev,
+                        "vehicle_id": vehicle_id,
+                        "lat": lat,
+                        "lon": lon,
+                        "bbox": [x1, y1, x2, y2],
+                        "x": norm_x,
+                        "y": norm_y,
+                        "w": norm_w,
+                        "h": norm_h,
+                        "label": lbl_text,
+                        "timestamp": datetime.utcnow().isoformat(),
+                        "thumbnail_b64": thumb_b64
+                    })
                 return detections
+
 
             elif self.pt_model is not None:
                 # Run PyTorch YOLOv8
