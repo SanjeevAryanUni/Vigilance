@@ -37,7 +37,31 @@
 
 ---
 
-## ⏱️ MINUTE-BY-MINUTE LIVE RUNBOOK
+## ⚡ 2-MINUTE RAPID ELEVATOR PITCH (WALK-BY EVALUATION)
+
+> **When judges have only 120 seconds:**
+
+1. **00:00 - 00:20 (The Problem):**
+   > *"Respected Judges, municipal corporations in India spend ₹2.5 Lakh Crore on road repairs with zero objective prioritization — repairing roads based on complaint noise rather than structural severity. VIGILANCE turns everyday public transit buses into autonomous road-auditing perception units."*
+
+2. **00:20 - 00:50 (Live WebGIS Command Center & RPI):**
+   > *(Point to `http://localhost:3000`)*
+   > *"Notice our command center: 5Hz edge telemetry is aggregated via DBSCAN into clusters within 15 meters to eliminate duplicate reports. Our 4-factor Road Priority Index (RPI) ranks incidents by defect severity (40%), pass density (25%), road hierarchy (20%), and proximity to schools/hospitals (15%)."*
+
+3. **00:50 - 01:20 (Edge Hardware Efficiency & Zero Bandwidth):**
+   > *(Point to Edge AI Cockpit in sidebar)*
+   > *"All neural inference runs INT8 quantized on a ₹2,950 Raspberry Pi Zero 2W or any driver's Android phone at 28ms. We transmit only 200-byte lightweight GPS telemetry — saving 99.8% cellular bandwidth compared to streaming video."*
+
+4. **01:20 - 01:45 (Automated Contractor SLA Dispatch):**
+   > *(Click 'Dispatch PWD' button on cluster marker)*
+   > *"Once confirmed, work orders are automatically routed to responsible PWD contractors with 24h/48h SLA countdowns, and Monday morning audit reports export directly to IRC-standard PDF."*
+
+5. **01:45 - 02:00 (Technical Proof):**
+   > *"48/48 automated test suites passing, multi-city deployment ready across Chennai, Bengaluru, and Delhi NCR. We welcome your technical questions."*
+
+---
+
+## ⏱️ MINUTE-BY-MINUTE LIVE RUNBOOK (FULL 6-MINUTE SESSION)
 
 ```
 ┌───────────────┬──────────────────────────────┬────────────────────────────┐
@@ -151,7 +175,7 @@
 **Screen:** Architectural Overview Slide
 
 > "To conclude: VIGILANCE is not a concept; it is an end-to-end engineered system:
-> - **46 automated test suites** passing with 100% test coverage.
+> - **48 automated test suites** passing with 100% test coverage.
 > - **Sub-₹3,000 edge hardware cost** (Raspberry Pi 4 / mobile phone).
 > - **Offline-first operation** with SQLite local spooling and auto-sync.
 > - **Multi-city production scalability** across Chennai, Bangalore, and Delhi.

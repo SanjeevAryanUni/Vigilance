@@ -213,28 +213,39 @@ export default function WebGISMap({
 
       const bgColor = isResolved ? '#10b981' : isCrit ? '#ef4444' : isHigh ? '#f59e0b' : '#3b82f6';
       const borderColor = isResolved ? '#34d399' : isCrit ? '#f87171' : isHigh ? '#fbbf24' : '#60a5fa';
+      const glowColor = isResolved ? 'rgba(16, 185, 129, 0.4)' : isCrit ? 'rgba(239, 68, 68, 0.5)' : isHigh ? 'rgba(245, 158, 11, 0.4)' : 'rgba(59, 130, 246, 0.35)';
 
       const el = document.createElement('div');
-      el.className = 'cluster-marker cursor-pointer';
+      el.className = 'cluster-marker cursor-pointer group transition-transform duration-200 hover:scale-125';
 
       el.innerHTML = `
-        <div style="position: relative; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">
+        <div style="position: relative; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;">
           ${
             isCrit
+              ? `<div class="animate-radar-ping" style="
+                  position: absolute;
+                  inset: -4px;
+                  border-radius: 50%;
+                  background: ${bgColor};
+                  opacity: 0.55;
+                  pointer-events: none;
+                "></div>`
+              : isHigh
               ? `<div style="
                   position: absolute;
-                  inset: -3px;
+                  inset: -2px;
                   border-radius: 50%;
                   background: ${bgColor};
                   opacity: 0.35;
-                  animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+                  animation: ping 2.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+                  pointer-events: none;
                 "></div>`
               : ''
           }
           <div style="
             position: relative;
-            width: 26px;
-            height: 26px;
+            width: 28px;
+            height: 28px;
             background: ${bgColor};
             color: white;
             border-radius: 50%;
@@ -242,11 +253,12 @@ export default function WebGISMap({
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 11px;
+            font-size: 11.5px;
             font-weight: 800;
             font-family: monospace;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.6);
-            transition: transform 0.2s ease-in-out;
+            box-shadow: 0 0 14px ${glowColor}, 0 4px 12px rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px);
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
           ">
             ${c.detection_count}
           </div>
@@ -401,14 +413,18 @@ export default function WebGISMap({
     }
   }, [clusters, onStatusChange]);
 
-  // Center on selected cluster if specified
+  // Center on selected cluster with 3D cinematic flyTo
   useEffect(() => {
     if (!selectedClusterId || !mapRef.current) return;
     const target = clusters.find((c) => c.id === selectedClusterId);
     if (target) {
       mapRef.current.flyTo({
         center: [target.centroid_lon, target.centroid_lat],
-        zoom: 14.5,
+        zoom: 16,
+        pitch: 52,
+        bearing: 18,
+        speed: 1.2,
+        curve: 1.4,
         essential: true,
       });
     }

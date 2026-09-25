@@ -14,6 +14,9 @@ import CommandPalette from '@/components/manus/CommandPalette';
 import CorridorDistressSpline from '@/components/charts/CorridorDistressSpline';
 import RPIRadialGauge from '@/components/charts/RPIRadialGauge';
 import IncidentFeed from '@/components/IncidentFeed';
+import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatedLayout } from '@/components/AnimatedLayout';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { getTrafficStats } from '@/lib/api';
 import { Cluster } from '@/types/vigilance';
 import { cn } from '@/lib/utils';
@@ -93,20 +96,20 @@ export default function CommandCenterPage() {
   } = useDashboardData();
 
   const [trafficStats, setTrafficStats] = useState({
-    vehicles_today: 18420,
-    pedestrians_today: 4680,
-    average_density: 'MODERATE',
-    total_observations: 1250,
+    vehicles_today: 0,
+    pedestrians_today: 0,
+    average_density: 'LIVE',
+    total_observations: 0,
   });
 
   useEffect(() => {
     getTrafficStats().then((data) => {
       if (data) {
         setTrafficStats({
-          vehicles_today: data.vehicles_today || 18420,
-          pedestrians_today: data.pedestrians_today || 4680,
-          average_density: (data.average_density || 'MODERATE').toUpperCase(),
-          total_observations: data.total_observations || 1250,
+          vehicles_today: data.vehicles_today ?? data.vehicles_24h ?? 0,
+          pedestrians_today: data.pedestrians_today ?? data.pedestrians_24h ?? 0,
+          average_density: (data.average_density || 'NORMAL').toUpperCase(),
+          total_observations: data.total_observations ?? data.vehicles_24h ?? 0,
         });
       }
     });
@@ -129,11 +132,12 @@ export default function CommandCenterPage() {
       : 84.5;
 
   return (
-    <div className="flex flex-col h-[100dvh] w-screen bg-[#030712] text-slate-100 overflow-hidden font-sans select-none relative">
-      {/* Ambient Glowing Background Orbs (Diffuses through frosted glass panels) */}
-      <div className="absolute -top-40 -left-40 w-96 h-96 bg-blue-600/15 rounded-full blur-[128px] pointer-events-none z-0" />
-      <div className="absolute top-1/2 -right-40 w-96 h-96 bg-indigo-600/12 rounded-full blur-[128px] pointer-events-none z-0" />
-      <div className="absolute -bottom-40 left-1/3 w-96 h-96 bg-emerald-600/10 rounded-full blur-[128px] pointer-events-none z-0" />
+    <AnimatedLayout>
+      <div className="flex flex-col h-[100dvh] w-screen bg-[#030712] text-slate-100 overflow-hidden font-sans select-none relative">
+        {/* Ambient Glowing Background Orbs (Diffuses through frosted glass panels) */}
+        <div className="absolute -top-40 -left-40 w-96 h-96 bg-blue-600/15 rounded-full blur-[128px] pointer-events-none z-0" />
+        <div className="absolute top-1/2 -right-40 w-96 h-96 bg-indigo-600/12 rounded-full blur-[128px] pointer-events-none z-0" />
+        <div className="absolute -bottom-40 left-1/3 w-96 h-96 bg-emerald-600/10 rounded-full blur-[128px] pointer-events-none z-0" />
 
       {/* 1. Master Header Bar */}
       <Header
@@ -338,56 +342,77 @@ export default function CommandCenterPage() {
             </button>
           </div>
 
-          {/* Tab Content 1: Priority Queue & Live Telemetry Feed */}
-          {sidebarTab === 'queue' && (
-            <div className="flex-1 flex flex-col gap-2.5 overflow-y-auto custom-scrollbar pr-1 min-h-0">
-              {/* Edge AI Hardware Cockpit — GAP 3 Proof */}
-              <HardwareCockpit />
-              <ClusterTable
-                clusters={clusters}
-                onStatusChange={updateStatus}
-                onSelectCluster={(c) => setSelectedCluster(c)}
-                maxItems={10}
-              />
-              <TelemetryFeed detections={detections} maxItems={8} />
-            </div>
-          )}
+          {/* Tab Content with Fluid Animations */}
+          <AnimatePresence mode="wait">
+            {sidebarTab === 'queue' && (
+              <motion.div
+                key="queue"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.18, ease: 'easeOut' }}
+                className="flex-1 flex flex-col gap-2.5 overflow-y-auto custom-scrollbar pr-1 min-h-0"
+              >
+                {/* Edge AI Hardware Cockpit — GAP 3 Proof */}
+                <HardwareCockpit />
+                <ClusterTable
+                  clusters={clusters}
+                  onStatusChange={updateStatus}
+                  onSelectCluster={(c) => setSelectedCluster(c)}
+                  maxItems={10}
+                />
+                <TelemetryFeed detections={detections} maxItems={8} />
+              </motion.div>
+            )}
 
-          {/* Tab Content 2: ANPR Enforcement & Incidents */}
-          {sidebarTab === 'traffic' && (
-            <div className="flex-1 flex flex-col gap-2.5 overflow-y-auto custom-scrollbar pr-1 min-h-0">
-              <IncidentFeed />
-            </div>
-          )}
+            {sidebarTab === 'traffic' && (
+              <motion.div
+                key="traffic"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.18, ease: 'easeOut' }}
+                className="flex-1 flex flex-col gap-2.5 overflow-y-auto custom-scrollbar pr-1 min-h-0"
+              >
+                <IncidentFeed />
+              </motion.div>
+            )}
 
-          {/* Tab Content 3: Corridor Analytics & Radial RPI Gauge */}
-          {sidebarTab === 'analytics' && (
-            <div className="flex-1 flex flex-col gap-2.5 overflow-y-auto custom-scrollbar pr-1 min-h-0">
-              {/* Corridor Distress Spline */}
-              <div className="bg-slate-900/40 backdrop-blur-xl border border-white/10 rounded-2xl p-3.5 flex flex-col shadow-[0_8px_32px_0_rgba(0,0,0,0.37),inset_0_1px_0_0_rgba(255,255,255,0.08)]">
-                <div className="flex items-center justify-between pb-2 mb-1 border-b border-white/10 font-mono text-xs">
-                  <div className="flex items-center gap-1.5 font-bold uppercase tracking-wider text-slate-200">
-                    <TrendingUp className="w-3.5 h-3.5 text-blue-400" />
-                    <span>Corridor Distress Velocity</span>
+            {sidebarTab === 'analytics' && (
+              <motion.div
+                key="analytics"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.18, ease: 'easeOut' }}
+                className="flex-1 flex flex-col gap-2.5 overflow-y-auto custom-scrollbar pr-1 min-h-0"
+              >
+                {/* Corridor Distress Spline */}
+                <div className="bg-slate-900/40 backdrop-blur-xl border border-white/10 rounded-2xl p-3.5 flex flex-col shadow-[0_8px_32px_0_rgba(0,0,0,0.37),inset_0_1px_0_0_rgba(255,255,255,0.08)]">
+                  <div className="flex items-center justify-between pb-2 mb-1 border-b border-white/10 font-mono text-xs">
+                    <div className="flex items-center gap-1.5 font-bold uppercase tracking-wider text-slate-200">
+                      <TrendingUp className="w-3.5 h-3.5 text-blue-400" />
+                      <span>Corridor Distress Velocity</span>
+                    </div>
+                    <span className="text-[10px] text-slate-400 font-semibold bg-white/[0.05] px-1.5 py-0.5 rounded border border-white/10">24H TIMELINE</span>
                   </div>
-                  <span className="text-[10px] text-slate-400 font-semibold bg-white/[0.05] px-1.5 py-0.5 rounded border border-white/10">24H TIMELINE</span>
+                  <CorridorDistressSpline potholesCount={stats.potholes} cracksCount={stats.cracks} />
                 </div>
-                <CorridorDistressSpline potholesCount={stats.potholes} cracksCount={stats.cracks} />
-              </div>
 
-              {/* RPI Concentric Radial Formula Breakdown */}
-              <div className="bg-slate-900/40 backdrop-blur-xl border border-white/10 rounded-2xl p-3.5 flex flex-col shadow-[0_8px_32px_0_rgba(0,0,0,0.37),inset_0_1px_0_0_rgba(255,255,255,0.08)]">
-                <div className="flex items-center justify-between pb-1 border-b border-white/10 font-mono text-xs">
-                  <div className="flex items-center gap-1.5 font-bold uppercase tracking-wider text-slate-200">
-                    <Calculator className="w-3.5 h-3.5 text-amber-400" />
-                    <span>RPI Multi-Factor Breakdown</span>
+                {/* RPI Concentric Radial Formula Breakdown */}
+                <div className="bg-slate-900/40 backdrop-blur-xl border border-white/10 rounded-2xl p-3.5 flex flex-col shadow-[0_8px_32px_0_rgba(0,0,0,0.37),inset_0_1px_0_0_rgba(255,255,255,0.08)]">
+                  <div className="flex items-center justify-between pb-1 border-b border-white/10 font-mono text-xs">
+                    <div className="flex items-center gap-1.5 font-bold uppercase tracking-wider text-slate-200">
+                      <Calculator className="w-3.5 h-3.5 text-amber-400" />
+                      <span>RPI Multi-Factor Breakdown</span>
+                    </div>
+                    <span className="text-[10px] text-slate-400 font-mono bg-white/[0.05] px-1.5 py-0.5 rounded border border-white/10">4-WEIGHT FORMULA</span>
                   </div>
-                  <span className="text-[10px] text-slate-400 font-mono bg-white/[0.05] px-1.5 py-0.5 rounded border border-white/10">4-WEIGHT FORMULA</span>
+                  <RPIRadialGauge rpiScore={avgRpi} />
                 </div>
-                <RPIRadialGauge rpiScore={avgRpi} />
-              </div>
-            </div>
-          )}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </aside>
 
         {/* Center/Right: WebGIS Map Canvas & Unified Workstation Area */}
@@ -513,21 +538,25 @@ export default function CommandCenterPage() {
                   <Camera className="w-3 h-3 text-blue-400" />
                   <span>3D WINDSHIELD HUD</span>
                 </div>
-                <EdgeCockpit3D
-                  vehicleId="BUS-TN01-1042"
-                  roadName="GST Road (NH-32)"
-                />
+                <ErrorBoundary fallbackTitle="3D Windshield Cockpit Error">
+                  <EdgeCockpit3D
+                    vehicleId="BUS-TN01-1042"
+                    roadName="GST Road (NH-32)"
+                  />
+                </ErrorBoundary>
               </div>
             )}
 
             <div className={`${workstationMode === 'split-ops' ? 'w-1/2' : 'w-full'} h-full relative`}>
-              <WebGISMap
-                clusters={clusters}
-                onStatusChange={updateStatus}
-                selectedClusterId={selectedCluster?.id}
-                activeMapStyle={activeMapStyle}
-                onMapStyleChange={setActiveMapStyle}
-              />
+              <ErrorBoundary fallbackTitle="GIS Map Canvas Error">
+                <WebGISMap
+                  clusters={clusters}
+                  onStatusChange={updateStatus}
+                  selectedClusterId={selectedCluster?.id}
+                  activeMapStyle={activeMapStyle}
+                  onMapStyleChange={setActiveMapStyle}
+                />
+              </ErrorBoundary>
             </div>
 
             {/* Bottom Map Legend (Frosted Glass positioning) */}
@@ -561,144 +590,175 @@ export default function CommandCenterPage() {
             </div>
           </div>
 
-          {/* 3D Edge Cockpit Modal Overlay */}
-          {showCockpitModal && (
-            <div className="absolute inset-4 z-30 flex flex-col bg-slate-950/80 backdrop-blur-3xl rounded-2xl border border-white/15 shadow-[0_25px_60px_rgba(0,0,0,0.8),inset_0_1px_0_0_rgba(255,255,255,0.15)] overflow-hidden animate-in fade-in zoom-in-95">
-              <div className="flex-1 w-full h-full relative">
-                <EdgeCockpit3D
-                  vehicleId="BUS-TN01-1042"
-                  roadName="GST Road, Tambaram (NH-32)"
-                  onClose={() => setShowCockpitModal(false)}
-                />
-              </div>
-            </div>
-          )}
+          {/* Modals & Overlays wrapped in AnimatePresence */}
+          <AnimatePresence>
+            {/* 3D Edge Cockpit Modal Overlay */}
+            {showCockpitModal && (
+              <motion.div
+                key="cockpitModal"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.22, ease: 'easeOut' }}
+                className="absolute inset-4 z-30 flex flex-col bg-slate-950/80 backdrop-blur-3xl rounded-2xl border border-white/15 shadow-[0_25px_60px_rgba(0,0,0,0.8),inset_0_1px_0_0_rgba(255,255,255,0.15)] overflow-hidden"
+              >
+                <div className="flex-1 w-full h-full relative">
+                  <EdgeCockpit3D
+                    vehicleId="BUS-TN01-1042"
+                    roadName="GST Road, Tambaram (NH-32)"
+                    onClose={() => setShowCockpitModal(false)}
+                  />
+                </div>
+              </motion.div>
+            )}
 
-          {/* Live Edge Video Camera Grid Modal Overlay */}
-          {showCameraGridModal && (
-            <div className="absolute inset-4 z-30 flex flex-col bg-slate-950/90 backdrop-blur-3xl rounded-2xl border border-white/15 shadow-[0_25px_60px_rgba(0,0,0,0.8),inset_0_1px_0_0_rgba(255,255,255,0.15)] overflow-hidden animate-in fade-in zoom-in-95">
-              <div className="flex-1 w-full h-full relative p-2 flex items-center justify-center">
-                <VideoCameraGrid
-                  isModal
-                  onClose={() => setShowCameraGridModal(false)}
-                />
-              </div>
-            </div>
-          )}
+            {/* Live Edge Video Camera Grid Modal Overlay */}
+            {showCameraGridModal && (
+              <motion.div
+                key="cameraGridModal"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.22, ease: 'easeOut' }}
+                className="absolute inset-4 z-30 flex flex-col bg-slate-950/90 backdrop-blur-3xl rounded-2xl border border-white/15 shadow-[0_25px_60px_rgba(0,0,0,0.8),inset_0_1px_0_0_rgba(255,255,255,0.15)] overflow-hidden"
+              >
+                <div className="flex-1 w-full h-full relative p-2 flex items-center justify-center">
+                  <VideoCameraGrid
+                    isModal
+                    onClose={() => setShowCameraGridModal(false)}
+                  />
+                </div>
+              </motion.div>
+            )}
 
-          {/* SIH Executive Brief Modal */}
-          {showExecutiveBrief && (
-            <div className="absolute inset-x-6 top-8 bottom-8 z-30 bg-slate-950/80 backdrop-blur-3xl border border-white/15 rounded-2xl p-6 shadow-[0_25px_60px_rgba(0,0,0,0.8),inset_0_1px_0_0_rgba(255,255,255,0.15)] overflow-y-auto custom-scrollbar font-mono text-xs flex flex-col justify-between animate-in fade-in zoom-in-95">
-              <div>
-                <div className="flex items-center justify-between pb-3 border-b border-white/10">
-                  <div className="flex items-center gap-2">
-                    <ShieldCheck className="w-5 h-5 text-purple-400" />
-                    <span className="text-sm font-bold text-slate-100">
-                      SIH26124 • BHARAT ELECTRONICS LIMITED (BEL) EXECUTIVE BRIEF
-                    </span>
+            {/* SIH Executive Brief Modal */}
+            {showExecutiveBrief && (
+              <motion.div
+                key="executiveBriefModal"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.22, ease: 'easeOut' }}
+                className="absolute inset-x-6 top-8 bottom-8 z-30 bg-slate-950/80 backdrop-blur-3xl border border-white/15 rounded-2xl p-6 shadow-[0_25px_60px_rgba(0,0,0,0.8),inset_0_1px_0_0_rgba(255,255,255,0.15)] overflow-y-auto custom-scrollbar font-mono text-xs flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-center justify-between pb-3 border-b border-white/10">
+                    <div className="flex items-center gap-2">
+                      <ShieldCheck className="w-5 h-5 text-purple-400" />
+                      <span className="text-sm font-bold text-slate-100">
+                        SIH26124 • BHARAT ELECTRONICS LIMITED (BEL) EXECUTIVE BRIEF
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => setShowExecutiveBrief(false)}
+                      className="p-1 rounded-lg hover:bg-white/[0.08] text-slate-400 hover:text-slate-100 transition"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
                   </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
+                    <div className="bg-slate-900/50 backdrop-blur-md p-4 rounded-xl border border-white/10 shadow-xs">
+                      <h4 className="font-bold text-blue-400 mb-1.5">Problem Context</h4>
+                      <p className="text-slate-300 leading-relaxed text-[11px]">
+                        Municipal corporations lose ₹2.5L Cr annually to undetected road distress. VIGILANCE converts existing public transit bus fleets into continuous 5Hz edge AI perception units.
+                      </p>
+                    </div>
+                    <div className="bg-slate-900/50 backdrop-blur-md p-4 rounded-xl border border-white/10 shadow-xs">
+                      <h4 className="font-bold text-emerald-400 mb-1.5">Hardware Efficiency</h4>
+                      <p className="text-slate-300 leading-relaxed text-[11px]">
+                        Runs INT8 quantized YOLOv8-Nano on Raspberry Pi Zero 2W (BOM: ₹2,950/bus) or driver Android smartphones via Termux at zero added hardware cost.
+                      </p>
+                    </div>
+                    <div className="bg-slate-900/50 backdrop-blur-md p-4 rounded-xl border border-white/10 shadow-xs">
+                      <h4 className="font-bold text-amber-400 mb-1.5">DBSCAN Spatial Consensus</h4>
+                      <p className="text-slate-300 leading-relaxed text-[11px]">
+                        Multiple bus passes across corridors are merged within a 15m radius via great-circle haversine clustering to eradicate false positives.
+                      </p>
+                    </div>
+                    <div className="bg-slate-900/50 backdrop-blur-md p-4 rounded-xl border border-white/10 shadow-xs">
+                      <h4 className="font-bold text-rose-400 mb-1.5">Automated SLA Dispatch</h4>
+                      <p className="text-slate-300 leading-relaxed text-[11px]">
+                        Clusters calculate RPI and automatically dispatch work orders to responsible road contractors with 24h/48h resolution SLA countdowns.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-3 border-t border-white/10 flex justify-between items-center text-slate-400 text-[10px]">
+                  <span>VIGILANCE SIH 2026 • SRM Institute of Science and Technology</span>
                   <button
                     onClick={() => setShowExecutiveBrief(false)}
-                    className="p-1 rounded-lg hover:bg-white/[0.08] text-slate-400 hover:text-slate-100 transition"
+                    className="px-4 py-1.5 bg-blue-600/90 hover:bg-blue-500 text-white font-bold rounded-xl border border-blue-400/30 shadow-[0_0_15px_rgba(37,99,235,0.3)] transition"
                   >
-                    <X className="w-4 h-4" />
+                    Close Brief
                   </button>
                 </div>
+              </motion.div>
+            )}
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
-                  <div className="bg-slate-900/50 backdrop-blur-md p-4 rounded-xl border border-white/10 shadow-xs">
-                    <h4 className="font-bold text-blue-400 mb-1.5">Problem Context</h4>
-                    <p className="text-slate-300 leading-relaxed text-[11px]">
-                      Municipal corporations lose ₹2.5L Cr annually to undetected road distress. VIGILANCE converts existing public transit bus fleets into continuous 5Hz edge AI perception units.
-                    </p>
+            {/* RPI Formula Modal */}
+            {showRPIModal && (
+              <motion.div
+                key="rpiModal"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.22, ease: 'easeOut' }}
+                className="absolute inset-x-8 top-12 bottom-12 z-30 bg-slate-950/80 backdrop-blur-3xl border border-white/15 rounded-2xl p-6 shadow-[0_25px_60px_rgba(0,0,0,0.8),inset_0_1px_0_0_rgba(255,255,255,0.15)] overflow-y-auto custom-scrollbar font-mono text-xs flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-center justify-between pb-3 border-b border-white/10">
+                    <div className="flex items-center gap-2">
+                      <Calculator className="w-5 h-5 text-amber-400" />
+                      <span className="text-sm font-bold text-slate-100">
+                        ROAD PRIORITY INDEX (RPI) FORMULATION SPECIFICATION
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => setShowRPIModal(false)}
+                      className="p-1 rounded-lg hover:bg-white/[0.08] text-slate-400 hover:text-slate-100 transition"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
                   </div>
-                  <div className="bg-slate-900/50 backdrop-blur-md p-4 rounded-xl border border-white/10 shadow-xs">
-                    <h4 className="font-bold text-emerald-400 mb-1.5">Hardware Efficiency</h4>
-                    <p className="text-slate-300 leading-relaxed text-[11px]">
-                      Runs INT8 quantized YOLOv8-Nano on Raspberry Pi Zero 2W (BOM: ₹2,950/bus) or driver Android smartphones via Termux at zero added hardware cost.
-                    </p>
-                  </div>
-                  <div className="bg-slate-900/50 backdrop-blur-md p-4 rounded-xl border border-white/10 shadow-xs">
-                    <h4 className="font-bold text-amber-400 mb-1.5">DBSCAN Spatial Consensus</h4>
-                    <p className="text-slate-300 leading-relaxed text-[11px]">
-                      Multiple bus passes across corridors are merged within a 15m radius via great-circle haversine clustering to eradicate false positives.
-                    </p>
-                  </div>
-                  <div className="bg-slate-900/50 backdrop-blur-md p-4 rounded-xl border border-white/10 shadow-xs">
-                    <h4 className="font-bold text-rose-400 mb-1.5">Automated SLA Dispatch</h4>
-                    <p className="text-slate-300 leading-relaxed text-[11px]">
-                      Clusters calculate RPI and automatically dispatch work orders to responsible road contractors with 24h/48h resolution SLA countdowns.
-                    </p>
+
+                  <div className="my-4 bg-slate-900/50 backdrop-blur-md border border-white/10 p-4 rounded-xl font-mono text-slate-200">
+                    <div className="text-amber-400 font-bold mb-2">RPI Formula:</div>
+                    <div className="p-3 bg-slate-950/70 rounded-lg border border-white/10 text-xs shadow-inner">
+                      RPI = (Severity × 0.40) + (Density × 0.25) + (Hierarchy × 0.20) + (POI Proximity × 0.15)
+                    </div>
+                    <div className="grid grid-cols-2 gap-3 mt-3 text-[11px] text-slate-400">
+                      <div>• <b>Severity (40%):</b> D40 Pothole = 1.0, D20 Alligator = 0.8, D00 Crack = 0.5</div>
+                      <div>• <b>Density (25%):</b> Fleet passes / 10 (capped at 1.0)</div>
+                      <div>• <b>Hierarchy (20%):</b> NH/Expressway = 1.0, Arterial = 0.8, Local = 0.4</div>
+                      <div>• <b>POI Proximity (15%):</b> &lt;500m to Hospital/School = 1.0, &lt;1km = 0.7</div>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="pt-3 border-t border-white/10 flex justify-between items-center text-slate-400 text-[10px]">
-                <span>VIGILANCE SIH 2026 • SRM Institute of Science and Technology</span>
-                <button
-                  onClick={() => setShowExecutiveBrief(false)}
-                  className="px-4 py-1.5 bg-blue-600/90 hover:bg-blue-500 text-white font-bold rounded-xl border border-blue-400/30 shadow-[0_0_15px_rgba(37,99,235,0.3)] transition"
-                >
-                  Close Brief
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* RPI Formula Modal */}
-          {showRPIModal && (
-            <div className="absolute inset-x-8 top-12 bottom-12 z-30 bg-slate-950/80 backdrop-blur-3xl border border-white/15 rounded-2xl p-6 shadow-[0_25px_60px_rgba(0,0,0,0.8),inset_0_1px_0_0_rgba(255,255,255,0.15)] overflow-y-auto custom-scrollbar font-mono text-xs flex flex-col justify-between animate-in fade-in zoom-in-95">
-              <div>
-                <div className="flex items-center justify-between pb-3 border-b border-white/10">
-                  <div className="flex items-center gap-2">
-                    <Calculator className="w-5 h-5 text-amber-400" />
-                    <span className="text-sm font-bold text-slate-100">
-                      ROAD PRIORITY INDEX (RPI) FORMULATION SPECIFICATION
-                    </span>
-                  </div>
+                <div className="pt-3 border-t border-white/10 flex justify-end">
                   <button
                     onClick={() => setShowRPIModal(false)}
-                    className="p-1 rounded-lg hover:bg-white/[0.08] text-slate-400 hover:text-slate-100 transition"
+                    className="px-4 py-1.5 bg-white/[0.06] hover:bg-white/[0.12] text-slate-200 font-bold rounded-xl border border-white/15 backdrop-blur-md transition shadow-xs"
                   >
-                    <X className="w-4 h-4" />
+                    Dismiss
                   </button>
                 </div>
-
-                <div className="my-4 bg-slate-900/50 backdrop-blur-md border border-white/10 p-4 rounded-xl font-mono text-slate-200">
-                  <div className="text-amber-400 font-bold mb-2">RPI Formula:</div>
-                  <div className="p-3 bg-slate-950/70 rounded-lg border border-white/10 text-xs shadow-inner">
-                    RPI = (Severity × 0.40) + (Density × 0.25) + (Hierarchy × 0.20) + (POI Proximity × 0.15)
-                  </div>
-                  <div className="grid grid-cols-2 gap-3 mt-3 text-[11px] text-slate-400">
-                    <div>• <b>Severity (40%):</b> D40 Pothole = 1.0, D20 Alligator = 0.8, D00 Crack = 0.5</div>
-                    <div>• <b>Density (25%):</b> Fleet passes / 10 (capped at 1.0)</div>
-                    <div>• <b>Hierarchy (20%):</b> NH/Expressway = 1.0, Arterial = 0.8, Local = 0.4</div>
-                    <div>• <b>POI Proximity (15%):</b> &lt;500m to Hospital/School = 1.0, &lt;1km = 0.7</div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="pt-3 border-t border-white/10 flex justify-end">
-                <button
-                  onClick={() => setShowRPIModal(false)}
-                  className="px-4 py-1.5 bg-white/[0.06] hover:bg-white/[0.12] text-slate-200 font-bold rounded-xl border border-white/15 backdrop-blur-md transition shadow-xs"
-                >
-                  Dismiss
-                </button>
-              </div>
-            </div>
-          )}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </main>
       </div>
 
-      {/* 4. Command Palette Dialog */}
-      <CommandPalette
-        isOpen={showCommandPalette}
-        onClose={() => setShowCommandPalette(false)}
-        onTriggerDedup={triggerDedup}
-        onRefreshData={refreshData}
-      />
-    </div>
-
+        {/* 4. Command Palette Dialog */}
+        <CommandPalette
+          isOpen={showCommandPalette}
+          onClose={() => setShowCommandPalette(false)}
+          onTriggerDedup={triggerDedup}
+          onRefreshData={refreshData}
+        />
+      </div>
+    </AnimatedLayout>
   );
 }

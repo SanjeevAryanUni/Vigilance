@@ -12,6 +12,7 @@
     "@ducanh2912/next-pwa": "^10.2.9",
     "animejs": "^4.5.0",
     "apexcharts": "^7.1.0",
+    "framer-motion": "^13.4.4",
     "lucide-react": "^1.37.0",
     "maplibre-gl": "^6.6.0",
     "next": "14.2.35",

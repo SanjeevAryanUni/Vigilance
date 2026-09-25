@@ -1,7 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import { LucideIcon } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import RollingNumber from '@/components/reactbits/RollingNumber';
 import KPISparkline from '@/components/charts/KPISparkline';
@@ -19,11 +20,11 @@ interface KPICardProps {
 }
 
 const SPOTLIGHT_BORDER_MAP = {
-  blue: 'hover:border-blue-400/40 hover:shadow-[0_8px_30px_rgba(37,99,235,0.2)]',
-  cyan: 'hover:border-sky-400/40 hover:shadow-[0_8px_30px_rgba(56,189,248,0.2)]',
-  amber: 'hover:border-amber-400/40 hover:shadow-[0_8px_30px_rgba(245,158,11,0.2)]',
-  red: 'hover:border-rose-400/40 hover:shadow-[0_8px_30px_rgba(244,63,94,0.2)]',
-  emerald: 'hover:border-emerald-400/40 hover:shadow-[0_8px_30px_rgba(16,185,129,0.2)]',
+  blue: 'hover:border-blue-400/40 hover:shadow-[0_8px_30px_rgba(37,99,235,0.25)]',
+  cyan: 'hover:border-sky-400/40 hover:shadow-[0_8px_30px_rgba(56,189,248,0.25)]',
+  amber: 'hover:border-amber-400/40 hover:shadow-[0_8px_30px_rgba(245,158,11,0.25)]',
+  red: 'hover:border-rose-400/40 hover:shadow-[0_8px_30px_rgba(244,63,94,0.25)]',
+  emerald: 'hover:border-emerald-400/40 hover:shadow-[0_8px_30px_rgba(16,185,129,0.25)]',
 };
 
 const SPARKLINE_COLOR_MAP = {
@@ -46,14 +47,43 @@ export default function KPICard({
 }: KPICardProps) {
   const sparkline = sparklineData || [12, 19, 15, 28, 22, 34, 42];
   const isNumeric = typeof value === 'number';
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [isHovered, setIsHovered] = useState(false);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    setMousePos({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    });
+  };
 
   return (
-    <div
+    <motion.div
+      ref={cardRef}
+      onMouseMove={handleMouseMove}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={{ y: -3, transition: { duration: 0.2, ease: 'easeOut' } }}
+      transition={{ duration: 0.35, ease: 'easeOut' }}
       className={cn(
-        'p-3.5 rounded-2xl bg-slate-900/40 backdrop-blur-xl border border-white/10 flex flex-col justify-between transition-all duration-300 group shadow-[0_4px_24px_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.10)]',
+        'relative overflow-hidden p-3.5 rounded-2xl bg-slate-900/50 backdrop-blur-xl border border-white/10 flex flex-col justify-between transition-colors duration-200 group shadow-[0_4px_24px_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.10)]',
         SPOTLIGHT_BORDER_MAP[spotlightColor] || 'hover:border-white/20'
       )}
     >
+      {/* Interactive Cursor Spotlight */}
+      {isHovered && (
+        <div
+          className="pointer-events-none absolute -inset-px rounded-2xl opacity-60 transition-opacity duration-300"
+          style={{
+            background: `radial-gradient(180px circle at ${mousePos.x}px ${mousePos.y}px, rgba(34, 211, 238, 0.12), transparent 80%)`,
+          }}
+        />
+      )}
       {/* Header: Title & Icon */}
       <div className="flex items-center justify-between">
         <span className="text-[10.5px] uppercase tracking-wider font-mono font-semibold text-slate-400">
@@ -94,7 +124,7 @@ export default function KPICard({
           {subtitle}
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }
 

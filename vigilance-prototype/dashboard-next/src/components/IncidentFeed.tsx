@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { AlertTriangle, ShieldAlert, CheckCircle, Clock } from 'lucide-react';
 
 export interface IncidentItem {
@@ -76,35 +77,44 @@ export default function IncidentFeed({ incidents = DEFAULT_INCIDENTS }: { incide
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-800/50">
-            {incidents.map((inc) => (
-              <tr key={inc.id} className="hover:bg-slate-800/30 transition">
-                <td className="py-2 font-bold text-amber-300">
-                  <span className="px-1.5 py-0.5 rounded bg-amber-950/60 border border-amber-800/80 text-[10px]">
-                    {inc.plate}
-                  </span>
-                </td>
-                <td className="py-2 text-slate-200">
-                  <div>{inc.type}</div>
-                  <div className="text-[9px] text-slate-400">{inc.timestamp} • {(inc.confidence * 100).toFixed(0)}% conf</div>
-                </td>
-                <td className="py-2 text-slate-400 truncate max-w-[120px] text-[10px]">
-                  {inc.location}
-                </td>
-                <td className="py-2 text-right">
-                  <span
-                    className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase ${
-                      inc.status === 'flagged'
-                        ? 'bg-rose-950 text-rose-300 border border-rose-800'
-                        : inc.status === 'investigating'
-                        ? 'bg-amber-950 text-amber-300 border border-amber-800'
-                        : 'bg-emerald-950 text-emerald-300 border border-emerald-800'
-                    }`}
-                  >
-                    {inc.status}
-                  </span>
-                </td>
-              </tr>
-            ))}
+            <AnimatePresence mode="popLayout">
+              {incidents.map((inc, i) => (
+                <motion.tr
+                  key={inc.id}
+                  initial={{ opacity: 0, y: -6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2, delay: i * 0.04 }}
+                  className="hover:bg-slate-800/40 transition-colors"
+                >
+                  <td className="py-2 font-bold text-amber-300">
+                    <span className="px-1.5 py-0.5 rounded bg-amber-950/70 border border-amber-700/80 text-[10.5px] font-mono tracking-wider shadow-xs">
+                      {inc.plate}
+                    </span>
+                  </td>
+                  <td className="py-2 text-slate-200">
+                    <div className="font-medium text-slate-100">{inc.type}</div>
+                    <div className="text-[9px] text-slate-400 font-mono">{inc.timestamp} • {(inc.confidence * 100).toFixed(0)}% conf</div>
+                  </td>
+                  <td className="py-2 text-slate-400 truncate max-w-[120px] text-[10px]">
+                    {inc.location}
+                  </td>
+                  <td className="py-2 text-right">
+                    <span
+                      className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase shadow-xs ${
+                        inc.status === 'flagged'
+                          ? 'bg-rose-950/80 text-rose-300 border border-rose-700/80'
+                          : inc.status === 'investigating'
+                          ? 'bg-amber-950/80 text-amber-300 border border-amber-700/80'
+                          : 'bg-emerald-950/80 text-emerald-300 border border-emerald-700/80'
+                      }`}
+                    >
+                      {inc.status}
+                    </span>
+                  </td>
+                </motion.tr>
+              ))}
+            </AnimatePresence>
           </tbody>
         </table>
       </div>

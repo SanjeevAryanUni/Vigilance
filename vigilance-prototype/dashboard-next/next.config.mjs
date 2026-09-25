@@ -11,7 +11,7 @@ const withPWA = withPWAInit({
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   transpilePackages: ['maplibre-gl'],
-  reactStrictMode: false,
+  reactStrictMode: true,
   async rewrites() {
     return [
       {

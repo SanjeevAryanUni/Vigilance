@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { motion } from 'framer-motion';
 import { ShieldAlert, Radio, RefreshCw, Cpu, Activity, LayoutDashboard, BarChart3, Truck, ClipboardList, Search, Smartphone } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BackendConnectionStatus } from '@/hooks/useDashboardData';
@@ -85,16 +86,20 @@ export default function Header({
   const isColdStarting = backendStatus === 'cold-starting';
 
   return (
-    <header className="h-14 bg-slate-950/60 backdrop-blur-2xl border-b border-white/10 px-3 lg:px-5 flex items-center justify-between z-30 select-none shrink-0 shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
+    <header className="h-14 bg-slate-950/75 backdrop-blur-2xl border-b border-white/10 px-3 lg:px-5 flex items-center justify-between z-30 select-none shrink-0 shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
       {/* Brand & Badge */}
       <div className="flex items-center gap-3.5">
         <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-8 h-8 rounded-lg bg-blue-600/80 backdrop-blur-md flex items-center justify-center text-white border border-blue-400/30 shadow-[0_0_15px_rgba(37,99,235,0.4)] group-hover:bg-blue-500 transition-all">
-            <ShieldAlert className="w-4 h-4" />
-          </div>
+          <motion.div
+            whileHover={{ scale: 1.05, rotate: 2 }}
+            whileTap={{ scale: 0.95 }}
+            className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white border border-cyan-400/40 shadow-[0_0_18px_rgba(34,211,238,0.4)] transition-all"
+          >
+            <ShieldAlert className="w-4 h-4 text-white" />
+          </motion.div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-extrabold text-sm tracking-wider text-slate-100 font-mono">
+              <span className="font-extrabold text-sm tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-200 to-blue-400 font-mono animate-hue-cycle">
                 VIGILANCE
               </span>
               <span className="bg-white/[0.06] backdrop-blur-md text-slate-300 text-[10px] font-mono px-1.5 py-0.5 rounded-md border border-white/10 font-semibold tracking-wide shadow-xs">
@@ -107,8 +112,8 @@ export default function Header({
           </div>
         </Link>
 
-        {/* Navigation Tabs */}
-        <nav className="hidden md:flex items-center gap-1 ml-3 pl-3 border-l border-white/10">
+        {/* Navigation Tabs with Animated Layout Indicator */}
+        <nav className="hidden md:flex items-center gap-1 ml-3 pl-3 border-l border-white/10 relative">
           {navLinks.map((link) => {
             const Icon = link.icon;
             const isActive = pathname === link.href;
@@ -117,12 +122,19 @@ export default function Header({
                 key={link.href}
                 href={link.href}
                 className={cn(
-                  'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all',
+                  'relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors z-10',
                   isActive
-                    ? 'bg-blue-500/20 text-blue-300 border border-blue-400/40 font-semibold shadow-[0_0_12px_rgba(59,130,246,0.25)]'
-                    : 'text-slate-400 hover:text-slate-100 hover:bg-white/[0.06] border border-transparent'
+                    ? 'text-cyan-300 font-semibold'
+                    : 'text-slate-400 hover:text-slate-100 hover:bg-white/[0.04]'
                 )}
               >
+                {isActive && (
+                  <motion.div
+                    layoutId="activeNavTab"
+                    className="absolute inset-0 rounded-lg bg-cyan-500/15 border border-cyan-400/40 shadow-[0_0_12px_rgba(34,211,238,0.25)] z-[-1]"
+                    transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                  />
+                )}
                 <Icon className="w-3.5 h-3.5" />
                 <span>{link.label}</span>
               </Link>

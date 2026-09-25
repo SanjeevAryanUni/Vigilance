@@ -18,7 +18,8 @@ from main import app
 
 @pytest.fixture
 def client():
-    return TestClient(app)
+    api_key = os.getenv("API_KEY", "vigilance_sih_2026")
+    return TestClient(app, headers={"X-API-Key": api_key})
 
 
 def test_traffic_ingestion_and_stats(client):

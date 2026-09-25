@@ -15,7 +15,15 @@ except ImportError:
     GEOALCHEMY_AVAILABLE = False
 
 DATABASE_URL = os.getenv("DATABASE_URL", "")
-IS_POSTGRES = "postgresql" in DATABASE_URL
+IS_POSTGRES = False
+if "postgresql" in DATABASE_URL:
+    try:
+        import psycopg2
+        _test_conn = psycopg2.connect(DATABASE_URL.split("?")[0], connect_timeout=1)
+        _test_conn.close()
+        IS_POSTGRES = True
+    except Exception:
+        IS_POSTGRES = False
 
 Base = declarative_base()
 

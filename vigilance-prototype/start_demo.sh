@@ -1,51 +1,90 @@
 #!/bin/bash
+set -e
+
 echo "================================================================"
-echo "🛡️  VIGILANCE — Urban Road Intelligence Prototype Launcher"
+echo "🛡️  VIGILANCE — SIH Grand Finale One-Click Demo Launcher"
 echo "================================================================"
 
 ROOT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-cd "$ROOT_DIR"
+WORKSPACE_DIR="$( cd "$ROOT_DIR/.." && pwd )"
 
-# 1. Start Celery Async Worker Process
-echo "Starting Celery Background Deduplication Worker..."
-python3 -m celery -A backend.celery_app worker --loglevel=info --pool=solo &
-CELERY_PID=$!
+# 1. Activate Python Virtual Environment if present
+if [ -d "$WORKSPACE_DIR/.venv" ]; then
+    echo "[*] Activating Python virtualenv from $WORKSPACE_DIR/.venv..."
+    source "$WORKSPACE_DIR/.venv/bin/activate"
+elif [ -d "$ROOT_DIR/.venv" ]; then
+    echo "[*] Activating Python virtualenv from $ROOT_DIR/.venv..."
+    source "$ROOT_DIR/.venv/bin/activate"
+fi
 
+# 2. Free up existing ports (3000, 8000, 8001)
+echo "[*] Ensuring clean ports (3000, 8000, 8001)..."
+for PORT in 3000 8000 8001; do
+    PID=$(lsof -ti :$PORT || true)
+    if [ -n "$PID" ]; then
+        echo "    Killing process $PID on port $PORT..."
+        kill -9 $PID 2>/dev/null || true
+    fi
+done
 sleep 1
 
-# 2. Start FastAPI Backend on Port 8000
-echo "Starting FastAPI Server on http://localhost:8000 ..."
-python3 -m uvicorn backend.main:app --host 0.0.0.0 --port 8000 &
+# 3. Clean Seed Database with Rich Chennai Telemetry
+echo "[*] Pre-seeding database with full Chennai arterial telemetry & RPI scores..."
+cd "$ROOT_DIR/backend"
+python3 seed_data.py --force
+
+# 4. Start FastAPI Backend on Port 8000
+echo "[*] Starting FastAPI Backend on http://localhost:8000 ..."
+python3 -m uvicorn main:app --host 0.0.0.0 --port 8000 &
 BACKEND_PID=$!
 
 sleep 2
 
-# 3. Seed Database with initial Chennai road nodes
-echo "Seeding initial Chennai transit detections with dynamic RPI..."
-python3 backend/seed_data.py
-
-# 4. Start Next.js 14 WebGIS Dashboard on Port 3000
-echo "Starting Next.js 14 WebGIS Dashboard on http://localhost:3000 ..."
-if [ -d "$ROOT_DIR/dashboard-next" ]; then
-    cd "$ROOT_DIR/dashboard-next"
+# 5. Start Next.js Dashboard on Port 3000
+echo "[*] Starting Next.js WebGIS Command Center on http://localhost:3000 ..."
+cd "$ROOT_DIR/dashboard-next"
+if [ -d ".next" ]; then
+    npm start -- -p 3000 &
+    DASHBOARD_PID=$!
+else
     npm run dev -- -p 3000 &
     DASHBOARD_PID=$!
-    cd "$ROOT_DIR"
 fi
 
-# 5. Start Simulated Fleet Stream in background
-echo "Starting Simulated Fleet Edge AI Stream (5 Virtual Buses)..."
-python3 edge/simulate_fleet.py &
-FLEET_PID=$!
+sleep 2
+
+# 6. Optional: Start Edge Camera Streamer on Port 8001 if sample video exists
+DEMO_VIDEO="$WORKSPACE_DIR/assets/demo_samples/chennai_road.mp4"
+if [ -f "$DEMO_VIDEO" ]; then
+    echo "[*] Launching Edge AI Multi-Model Video Streamer on http://localhost:8001 ..."
+    cd "$ROOT_DIR/edge"
+    python3 stream_video.py --video "$DEMO_VIDEO" --serve --no-window &
+    STREAM_PID=$!
+fi
 
 echo "================================================================"
-echo "✨ VIGILANCE Prototype is LIVE!"
-echo "👉 Dashboard URL: http://localhost:3000"
-echo "👉 REST API Docs: http://localhost:8000/docs"
+echo "✨ VIGILANCE Grand Finale Platform is LIVE!"
+echo "👉 Command Center:     http://localhost:3000"
+echo "👉 Dashcam Capture:    http://localhost:3000/capture"
+echo "👉 REST API & Docs:    http://localhost:8000/docs"
+if [ -n "$STREAM_PID" ]; then
+    echo "👉 Edge Video Stream:  http://localhost:8001"
+fi
 echo "================================================================"
+echo "Press Ctrl+C to terminate all services."
 
-# Cross-platform browser opener
-sleep 3
+# Trap to kill all background services on exit
+cleanup() {
+    echo ""
+    echo "[*] Shutting down VIGILANCE services..."
+    kill $BACKEND_PID $DASHBOARD_PID ${STREAM_PID:-} 2>/dev/null || true
+    echo "[+] Done."
+    exit 0
+}
+trap cleanup SIGINT SIGTERM EXIT
+
+# Auto-open browser in background
+sleep 2
 case "$(uname -s)" in
   Darwin)
     open "http://localhost:3000" 2>/dev/null || true
@@ -53,11 +92,6 @@ case "$(uname -s)" in
   Linux)
     xdg-open "http://localhost:3000" 2>/dev/null || echo "Please open http://localhost:3000 in your browser"
     ;;
-  *)
-    echo "Please open http://localhost:3000 in your browser"
-    ;;
 esac
 
-# Wait and handle cleanup
-trap "kill $BACKEND_PID $DASHBOARD_PID $FLEET_PID $CELERY_PID 2>/dev/null" EXIT
 wait

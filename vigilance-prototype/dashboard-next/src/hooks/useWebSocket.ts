@@ -9,9 +9,21 @@ export function useWebSocket(onMessage?: (msg: WebSocketMessage) => void) {
   const [lastMessage, setLastMessage] = useState<WebSocketMessage | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout>();
+  const onMessageRef = useRef(onMessage);
+  const backoffRef = useRef(1000); // Start at 1s
+
+  // Keep latest onMessage reference without triggering reconnection
+  useEffect(() => {
+    onMessageRef.current = onMessage;
+  }, [onMessage]);
 
   const connect = useCallback(() => {
     if (typeof window === 'undefined') return;
+
+    // Avoid duplicate connection if already open or connecting
+    if (wsRef.current && (wsRef.current.readyState === WebSocket.OPEN || wsRef.current.readyState === WebSocket.CONNECTING)) {
+      return;
+    }
 
     const base = getApiBase();
     const wsUrl =
@@ -27,6 +39,7 @@ export function useWebSocket(onMessage?: (msg: WebSocketMessage) => void) {
 
       ws.onopen = () => {
         setIsConnected(true);
+        backoffRef.current = 1000; // Reset backoff on successful connection
       };
 
       ws.onmessage = (event) => {
@@ -58,7 +71,7 @@ export function useWebSocket(onMessage?: (msg: WebSocketMessage) => void) {
 
           if (message) {
             setLastMessage(message);
-            onMessage?.(message);
+            onMessageRef.current?.(message);
           }
         } catch (e) {
           console.error('Error parsing WebSocket message:', e);
@@ -68,7 +81,9 @@ export function useWebSocket(onMessage?: (msg: WebSocketMessage) => void) {
       ws.onclose = () => {
         setIsConnected(false);
         wsRef.current = null;
-        reconnectTimeoutRef.current = setTimeout(connect, 3000);
+        const delay = backoffRef.current;
+        backoffRef.current = Math.min(delay * 1.5, 30000); // Exponential backoff up to 30s
+        reconnectTimeoutRef.current = setTimeout(connect, delay);
       };
 
       ws.onerror = () => {
@@ -76,15 +91,20 @@ export function useWebSocket(onMessage?: (msg: WebSocketMessage) => void) {
       };
     } catch (e) {
       setIsConnected(false);
-      reconnectTimeoutRef.current = setTimeout(connect, 3000);
+      const delay = backoffRef.current;
+      backoffRef.current = Math.min(delay * 1.5, 30000);
+      reconnectTimeoutRef.current = setTimeout(connect, delay);
     }
-  }, [onMessage]);
+  }, []);
 
   useEffect(() => {
     connect();
     return () => {
       if (reconnectTimeoutRef.current) clearTimeout(reconnectTimeoutRef.current);
-      if (wsRef.current) wsRef.current.close();
+      if (wsRef.current) {
+        wsRef.current.close();
+        wsRef.current = null;
+      }
     };
   }, [connect]);
 

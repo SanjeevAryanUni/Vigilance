@@ -59,6 +59,7 @@ def client(db_session):
             pass
 
     app.dependency_overrides[get_db] = override_get_db
-    with TestClient(app) as test_client:
+    api_key = os.getenv("API_KEY", "vigilance_sih_2026")
+    with TestClient(app, headers={"X-API-Key": api_key}) as test_client:
         yield test_client
     app.dependency_overrides.clear()

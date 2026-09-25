@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
+import PageTransition from "@/components/PageTransition";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import "./globals.css";
 
@@ -50,7 +51,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-slate-950 text-slate-100 pb-14 md:pb-0`}
       >
-        {children}
+        <PageTransition>
+          {children}
+        </PageTransition>
         <MobileBottomNav />
       </body>
     </html>

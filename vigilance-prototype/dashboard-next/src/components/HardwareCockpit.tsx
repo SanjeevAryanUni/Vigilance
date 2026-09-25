@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Cpu, Zap, Wifi, Activity, HardDrive, Gauge, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface CockpitMetric {
@@ -130,54 +131,67 @@ export default function HardwareCockpit() {
       </button>
 
       {/* Content */}
-      {isExpanded && (
-        <div className="p-4">
-          {/* Metrics Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            {metrics.map((m, idx) => {
-              const style = accentStyles[m.accentColor];
-              return (
-                <div
-                  key={idx}
-                  className={`glass-card glass-card-hover rounded-xl p-4 ${style.border} ${style.glow} cursor-default`}
-                >
-                  {/* Icon + Label */}
-                  <div className="flex items-center gap-2.5 mb-3">
-                    <div className={`w-9 h-9 rounded-lg ${style.bg} flex items-center justify-center ${style.text} border ${style.border}`}>
-                      {m.icon}
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.35, ease: 'easeInOut' }}
+            className="p-4"
+          >
+            {/* Metrics Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              {metrics.map((m, idx) => {
+                const style = accentStyles[m.accentColor];
+                return (
+                  <motion.div
+                    key={idx}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: idx * 0.05 }}
+                    whileHover={{ y: -3, scale: 1.015 }}
+                    className={`glass-card rounded-xl p-4 ${style.border} ${style.glow} cursor-default transition-colors`}
+                  >
+                    {/* Icon + Label */}
+                    <div className="flex items-center gap-2.5 mb-3">
+                      <div className={`w-9 h-9 rounded-lg ${style.bg} flex items-center justify-center ${style.text} border ${style.border}`}>
+                        {m.icon}
+                      </div>
+                      <span className="text-[11px] font-mono text-slate-400 leading-tight">
+                        {m.label}
+                      </span>
                     </div>
-                    <span className="text-[11px] font-mono text-slate-400 leading-tight">
-                      {m.label}
-                    </span>
-                  </div>
 
-                  {/* Value */}
-                  <div className={`text-2xl font-extrabold font-mono ${style.text} tracking-tight mb-1`}>
-                    {m.value}
-                  </div>
+                    {/* Value */}
+                    <div className={`text-2xl font-extrabold font-mono ${style.text} tracking-tight mb-1`}>
+                      {m.value}
+                    </div>
 
-                  {/* Subtext */}
-                  <p className="text-[10px] text-slate-500 font-mono mb-3 leading-relaxed">
-                    {m.subtext}
-                  </p>
+                    {/* Subtext */}
+                    <p className="text-[10px] text-slate-500 font-mono mb-3 leading-relaxed">
+                      {m.subtext}
+                    </p>
 
-                  {/* Gauge Bar */}
-                  <div className="h-2 rounded-full bg-slate-800/60 overflow-hidden">
-                    <div
-                      className={`h-full rounded-full bg-gradient-to-r ${style.fill} transition-all duration-[1500ms] ease-out`}
-                      style={{ width: `${m.gaugePercent}%` }}
-                    />
-                  </div>
-                  <div className="flex justify-between mt-1">
-                    <span className="text-[9px] text-slate-600 font-mono">0</span>
-                    <span className={`text-[9px] font-mono font-semibold ${style.text}`}>
-                      {m.gaugePercent.toFixed(1)}%
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                    {/* Gauge Bar */}
+                    <div className="h-2 rounded-full bg-slate-800/60 overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${m.gaugePercent}%` }}
+                        transition={{ duration: 1.2, delay: 0.2 + idx * 0.1, ease: 'easeOut' }}
+                        className={`h-full rounded-full bg-gradient-to-r ${style.fill}`}
+                      />
+                    </div>
+                    <div className="flex justify-between mt-1">
+                      <span className="text-[9px] text-slate-600 font-mono">0</span>
+                      <span className={`text-[9px] font-mono font-semibold ${style.text}`}>
+                        {m.gaugePercent.toFixed(1)}%
+                      </span>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
 
           {/* G-Force Vibration Gauge */}
           <div className="mt-4 glass-card rounded-xl p-4 border-cyan-500/20">
@@ -220,8 +234,9 @@ export default function HardwareCockpit() {
               <span className="text-[9px] text-slate-600 font-mono">50 Hz</span>
             </div>
           </div>
-        </div>
+        </motion.div>
       )}
+      </AnimatePresence>
     </div>
   );
 }

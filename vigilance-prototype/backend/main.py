@@ -4,6 +4,11 @@ import sys
 # Ensure backend directory is in sys.path
 sys.path.insert(0, os.path.dirname(__file__))
 
+from dotenv import load_dotenv
+# Load .env from backend directory or parent repository root
+load_dotenv(os.path.join(os.path.dirname(__file__), ".env"))
+load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"))
+
 import io
 import json
 import asyncio
@@ -206,10 +211,10 @@ def get_detector():
             print(f"Warning initializing RoadDamageDetector: {e}")
     return _detector_instance
 
-# Optional API Key Authentication Helper
+# API Key Authentication Enforcement
 def verify_api_key(x_api_key: Optional[str] = Header(None)):
-    required_key = os.getenv("API_KEY")
-    if required_key and x_api_key != required_key:
+    required_key = os.getenv("API_KEY", "vigilance_sih_2026")
+    if not x_api_key or x_api_key != required_key:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid or missing API key. Provide via 'X-API-Key' header."

@@ -21,11 +21,26 @@ from poi_data import haversine_meters, get_road_weight, get_proximity_weight, ge
 DB_PATH = os.path.join(os.path.dirname(__file__), "vigilance.db")
 DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{DB_PATH}")
 
-engine = create_engine(
-    DATABASE_URL,
-    connect_args={"check_same_thread": False} if "sqlite" in DATABASE_URL else {},
-    pool_pre_ping=True
-)
+def create_resilient_engine():
+    global DATABASE_URL
+    target_url = DATABASE_URL
+    if "postgresql" in target_url:
+        try:
+            test_engine = create_engine(target_url, pool_pre_ping=True)
+            with test_engine.connect() as conn:
+                pass
+            return test_engine
+        except Exception as e:
+            print(f"[!] PostgreSQL not reachable ({e}). Gracefully falling back to local SQLite database.")
+            DATABASE_URL = f"sqlite:///{DB_PATH}"
+            return create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+    return create_engine(
+        target_url,
+        connect_args={"check_same_thread": False} if "sqlite" in target_url else {},
+        pool_pre_ping=True
+    )
+
+engine = create_resilient_engine()
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
