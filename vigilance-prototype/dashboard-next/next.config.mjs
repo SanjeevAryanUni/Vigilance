@@ -12,6 +12,22 @@ const withPWA = withPWAInit({
 const nextConfig = {
   transpilePackages: ['maplibre-gl'],
   reactStrictMode: false,
+  async rewrites() {
+    return [
+      {
+        source: '/api/reports/:path*',
+        destination: 'http://localhost:8000/api/reports/:path*',
+      },
+      {
+        source: '/api/cities/:path*',
+        destination: 'http://localhost:8000/api/cities/:path*',
+      },
+      {
+        source: '/api/cities',
+        destination: 'http://localhost:8000/api/cities',
+      },
+    ];
+  },
 };
 
 export default withPWA(nextConfig);

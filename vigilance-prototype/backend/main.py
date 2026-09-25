@@ -4,6 +4,7 @@ import sys
 # Ensure backend directory is in sys.path
 sys.path.insert(0, os.path.dirname(__file__))
 
+import io
 import json
 import asyncio
 from datetime import datetime
@@ -11,6 +12,7 @@ from typing import List, Optional
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Depends, WebSocket, WebSocketDisconnect, Query, HTTPException, Header, status
+from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, field_validator
 from sqlalchemy.orm import Session
@@ -21,7 +23,11 @@ from database import (
     TrafficObservation, IncidentReport, FleetPosition,
     run_spatial_deduplication, IS_POSTGRES
 )
-from poi_data import match_nearest_road
+from poi_data import (
+    match_nearest_road, set_active_city, get_active_city,
+    get_all_cities_summary, get_active_city_config, estimate_repair_cost
+)
+from pdf_report import generate_pwd_pdf, generate_pwd_csv
 from tasks import async_spatial_deduplication
 from congestion import compute_congestion_for_all_roads, get_congestion_heatmap_points
 from od_analysis import build_od_from_fleet_data
@@ -138,23 +144,37 @@ class IncidentIn(BaseModel):
     reporter_vehicle_id: Optional[str] = Field("BUS-TN01-1042", description="Reporting vehicle identifier")
     image_b64: Optional[str] = Field(None, description="Optional incident frame proof thumbnail")
 
-def _update_fleet_position(db: Session, vehicle_id: str, lat: float, lon: float, speed_kmh: float = 0.0, road_name: Optional[str] = None, last_det_type: Optional[str] = None):
-    """Updates vehicle telematic location in the live fleet registry."""
+def _update_fleet_position(db: Session, vehicle_id: str, lat: float, lon: float, speed_kmh: float = 0.0, road_name: Optional[str] = None, last_det_type: Optional[str] = None, heading: Optional[float] = None):
+    """Upsert fleet position -- prevents unbounded table growth."""
     if not vehicle_id:
         return
     try:
         matched_road = road_name or match_nearest_road(lat, lon)
-        pos = FleetPosition(
-            vehicle_id=vehicle_id,
-            lat=lat,
-            lon=lon,
-            speed_kmh=speed_kmh or 0.0,
-            road_name=matched_road,
-            status="active",
-            last_detection_type=last_det_type,
-            timestamp=datetime.utcnow()
-        )
-        db.add(pos)
+        existing = db.query(FleetPosition).filter(FleetPosition.vehicle_id == vehicle_id).first()
+        if existing:
+            existing.lat = lat
+            existing.lon = lon
+            existing.speed_kmh = speed_kmh or 0.0
+            if heading is not None:
+                existing.heading = heading
+            if matched_road:
+                existing.road_name = matched_road
+            if last_det_type:
+                existing.last_detection_type = last_det_type
+            existing.timestamp = datetime.utcnow()
+        else:
+            new_pos = FleetPosition(
+                vehicle_id=vehicle_id,
+                lat=lat,
+                lon=lon,
+                speed_kmh=speed_kmh or 0.0,
+                heading=heading,
+                road_name=matched_road,
+                status="active",
+                last_detection_type=last_det_type,
+                timestamp=datetime.utcnow()
+            )
+            db.add(new_pos)
         db.commit()
     except Exception as e:
         db.rollback()
@@ -683,4 +703,110 @@ def get_fleet_positions(db: Session = Depends(get_db)):
         }
         for p in positions
     ]
+
+
+# ====================================================================
+# GAP 2: PWD Municipal Audit Report Endpoints
+# ====================================================================
+
+@app.get("/api/reports/pwd-summary", tags=["Reports"])
+async def pwd_summary_report(format: str = Query("json", enum=["json", "pdf", "csv"]), db: Session = Depends(get_db)):
+    """
+    PWD Municipal Audit Report -- generates JSON, PDF, or CSV.
+    Judges ask: "What does the Chief Engineer print on Monday morning?"
+    This is the answer.
+    """
+    detections_orm = db.query(Detection).order_by(Detection.timestamp.desc()).limit(500).all()
+    detections = []
+    for d in detections_orm:
+        detections.append({
+            "id": d.id,
+            "lat": d.lat,
+            "lon": d.lon,
+            "road_name": d.road_name or match_nearest_road(d.lat, d.lon),
+            "damage_type": d.defect_type,
+            "defect_type": d.defect_type,
+            "severity": d.severity,
+            "confidence": d.confidence,
+            "detected_at": d.timestamp.isoformat() if d.timestamp else None,
+            "timestamp": d.timestamp.isoformat() if d.timestamp else None,
+        })
+
+    if format == "pdf":
+        pdf_bytes = generate_pwd_pdf(detections)
+        return StreamingResponse(
+            io.BytesIO(pdf_bytes),
+            media_type="application/pdf",
+            headers={"Content-Disposition": f"attachment; filename=VIGILANCE_PWD_Report_{get_active_city()}.pdf"}
+        )
+    elif format == "csv":
+        csv_str = generate_pwd_csv(detections)
+        return StreamingResponse(
+            io.BytesIO(csv_str.encode("utf-8")),
+            media_type="text/csv",
+            headers={"Content-Disposition": f"attachment; filename=VIGILANCE_Detections_{get_active_city()}.csv"}
+        )
+    else:
+        # JSON summary
+        cfg = get_active_city_config()
+        type_counts = {}
+        total_budget = 0.0
+        for d in detections:
+            dtype = d.get("damage_type") or d.get("defect_type") or "D40"
+            type_counts[dtype] = type_counts.get(dtype, 0) + 1
+            class_code = dtype.split(" ")[0] if " " in dtype else dtype
+            total_budget += estimate_repair_cost(class_code)["estimated_cost_inr"]
+
+        return {
+            "city": cfg["display_name"],
+            "municipal_body": cfg["municipal_body"],
+            "total_defects": len(detections),
+            "damage_breakdown": type_counts,
+            "estimated_total_budget_inr": round(total_budget, 2),
+            "report_generated_utc": datetime.utcnow().isoformat(),
+            "detections": detections[:50],  # Preview first 50
+        }
+
+
+# ====================================================================
+# GAP 5: Multi-City Switching Endpoints
+# ====================================================================
+
+@app.get("/api/cities", tags=["Cities"])
+async def list_cities():
+    """Returns all available cities with their map center coordinates."""
+    return {"cities": get_all_cities_summary(), "active": get_active_city()}
+
+
+@app.post("/api/cities/switch", tags=["Cities"])
+async def switch_city(city_key: str = Query(..., description="City key: chennai, bangalore, or delhi")):
+    """Switch the active city for the platform."""
+    try:
+        display_name = set_active_city(city_key)
+        cfg = get_active_city_config()
+        return {
+            "status": "ok",
+            "active_city": city_key,
+            "display_name": display_name,
+            "center": cfg["center"],
+            "zoom": cfg["zoom"],
+        }
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.get("/api/cities/config", tags=["Cities"])
+async def get_city_config():
+    """Returns full configuration for the active city (POIs, roads, contractors)."""
+    cfg = get_active_city_config()
+    return {
+        "city": get_active_city(),
+        "display_name": cfg["display_name"],
+        "center": cfg["center"],
+        "zoom": cfg["zoom"],
+        "municipal_body": cfg["municipal_body"],
+        "zones": cfg.get("zones", {}),
+        "road_count": len(cfg["roads"]),
+        "poi_count": len(cfg["pois"]),
+    }
 

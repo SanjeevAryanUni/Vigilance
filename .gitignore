@@ -68,3 +68,6 @@ training/data/**/*.cache
 *.cache
 training/runs/
 training/.config/
+
+# Binaries
+bin/

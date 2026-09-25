@@ -1,0 +1,139 @@
+{
+  "cities": {
+    "chennai": {
+      "display_name": "Chennai",
+      "state": "Tamil Nadu",
+      "center": { "lat": 13.0827, "lon": 80.2707 },
+      "zoom": 12,
+      "municipal_body": "Greater Chennai Corporation (GCC)",
+      "pwd_office": "Tamil Nadu PWD, Chennai Circle",
+      "zones": {
+        "Zone 8": "Anna Nagar",
+        "Zone 9": "Teynampet",
+        "Zone 10": "Kodambakkam / T.Nagar",
+        "Zone 12": "Alandur",
+        "Zone 13": "Adyar",
+        "Zone 14": "Perungudi / OMR"
+      },
+      "pois": [
+        { "name": "SRM Medical College Hospital, Potheri", "lat": 12.8233, "lon": 80.0440, "type": "hospital" },
+        { "name": "MIOT International Hospital", "lat": 13.0105, "lon": 80.1720, "type": "hospital" },
+        { "name": "Apollo Hospital, Greams Road", "lat": 13.0619, "lon": 80.2522, "type": "hospital" },
+        { "name": "Rajiv Gandhi Govt General Hospital", "lat": 13.0785, "lon": 80.2765, "type": "hospital" },
+        { "name": "Fortis Malar Hospital, Adyar", "lat": 13.0063, "lon": 80.2575, "type": "hospital" },
+        { "name": "Anna University Main Campus", "lat": 13.0108, "lon": 80.2354, "type": "school" },
+        { "name": "SRM IST, Kattankulathur", "lat": 12.8231, "lon": 80.0442, "type": "school" },
+        { "name": "IIT Madras", "lat": 12.9916, "lon": 80.2336, "type": "school" },
+        { "name": "Madras Medical College", "lat": 13.0802, "lon": 80.2783, "type": "school" }
+      ],
+      "roads": [
+        { "name": "GST Road, Tambaram, Chennai", "weight": 1.00, "waypoint": [12.9516, 80.1462] },
+        { "name": "Poonamallee High Road, Chennai", "weight": 0.90, "waypoint": [13.0827, 80.2707] },
+        { "name": "Anna Salai (Mount Road), Chennai", "weight": 0.85, "waypoint": [13.0604, 80.2496] },
+        { "name": "Old Mahabalipuram Road (OMR IT Corridor)", "weight": 0.85, "waypoint": [12.9719, 80.2500] },
+        { "name": "Guindy Kathipara Junction, Chennai", "weight": 0.80, "waypoint": [13.0067, 80.2030] },
+        { "name": "SRM Institute / Potheri Highway", "weight": 0.75, "waypoint": [12.8231, 80.0442] },
+        { "name": "Saidapet Bridge, Chennai", "weight": 0.70, "waypoint": [13.0200, 80.2260] },
+        { "name": "Velachery Main Road, Chennai", "weight": 0.65, "waypoint": [12.9815, 80.2180] },
+        { "name": "T. Nagar Usman Road, Chennai", "weight": 0.60, "waypoint": [13.0418, 80.2341] },
+        { "name": "Mylapore Santhome High Road, Chennai", "weight": 0.55, "waypoint": [13.0334, 80.2678] },
+        { "name": "Anna Nagar 2nd Avenue, Chennai", "weight": 0.50, "waypoint": [13.0878, 80.2155] }
+      ],
+      "contractors": {
+        "GST Road, Tambaram, Chennai": { "name": "L&T Highways Infra Ltd", "contact": "+91 98401 22345", "email": "pwd-ops@lthighways.in", "sla_hours": 24 },
+        "GST Road, Tambaram (NH-32)": { "name": "L&T Highways Infra Ltd", "contact": "+91 98401 22345", "email": "pwd-ops@lthighways.in", "sla_hours": 24 },
+        "Anna Salai (Mount Road), Chennai": { "name": "GMR Urban Highways Ltd", "contact": "+91 98840 77890", "email": "annasalai@gmrgroup.in", "sla_hours": 24 },
+        "Anna Salai (Mount Road)": { "name": "GMR Urban Highways Ltd", "contact": "+91 98840 77890", "email": "annasalai@gmrgroup.in", "sla_hours": 24 },
+        "Old Mahabalipuram Road (OMR IT Corridor)": { "name": "TNRDC", "contact": "+91 99400 33445", "email": "support@tnrdc.com", "sla_hours": 48 },
+        "Old Mahabalipuram Road (OMR)": { "name": "TNRDC", "contact": "+91 99400 33445", "email": "support@tnrdc.com", "sla_hours": 48 },
+        "Guindy Kathipara Junction, Chennai": { "name": "NHAI Metro Division Chennai", "contact": "+91 91760 55667", "email": "ro-chennai@nhai.org", "sla_hours": 12 },
+        "Guindy Kathipara Grade Junction": { "name": "NHAI Metro Division Chennai", "contact": "+91 91760 55667", "email": "ro-chennai@nhai.org", "sla_hours": 12 },
+        "Velachery Main Road, Chennai": { "name": "Chennai Corp Zone 13", "contact": "+91 94451 90013", "email": "zone13@chennaicorporation.gov.in", "sla_hours": 72 },
+        "Velachery Main Road": { "name": "Chennai Corp Zone 13", "contact": "+91 94451 90013", "email": "zone13@chennaicorporation.gov.in", "sla_hours": 72 },
+        "Poonamallee High Road, Chennai": { "name": "Tamil Nadu PWD Division 4", "contact": "+91 94440 11223", "email": "ee-pwd-north@tn.gov.in", "sla_hours": 48 },
+        "Poonamallee High Road": { "name": "Tamil Nadu PWD Division 4", "contact": "+91 94440 11223", "email": "ee-pwd-north@tn.gov.in", "sla_hours": 48 },
+        "SRM Institute / Potheri Highway": { "name": "Chettinad Road Infra Pvt Ltd", "contact": "+91 97900 88990", "email": "potheri@chettinadinfra.com", "sla_hours": 24 },
+        "T. Nagar Usman Road, Chennai": { "name": "Chennai Corp Zone 10 (T.Nagar)", "contact": "+91 94451 90010", "email": "zone10@chennaicorporation.gov.in", "sla_hours": 48 },
+        "Anna Nagar 2nd Avenue, Chennai": { "name": "Chennai Corp Zone 8 (Anna Nagar)", "contact": "+91 94451 90008", "email": "zone8@chennaicorporation.gov.in", "sla_hours": 72 }
+      }
+    },
+    "bangalore": {
+      "display_name": "Bangalore",
+      "state": "Karnataka",
+      "center": { "lat": 12.9716, "lon": 77.5946 },
+      "zoom": 12,
+      "municipal_body": "Bruhat Bengaluru Mahanagara Palike (BBMP)",
+      "pwd_office": "Karnataka PWD, Bangalore Division",
+      "zones": {
+        "Zone East": "Whitefield / KR Puram",
+        "Zone South": "JP Nagar / Bannerghatta",
+        "Zone West": "Rajajinagar / Malleshwaram",
+        "Zone Bommanahalli": "Silk Board / HSR Layout"
+      },
+      "pois": [
+        { "name": "Manipal Hospital, Old Airport Rd", "lat": 12.9631, "lon": 77.6479, "type": "hospital" },
+        { "name": "Narayana Health, Bommasandra", "lat": 12.8169, "lon": 77.6907, "type": "hospital" },
+        { "name": "Victoria Hospital, Fort", "lat": 12.9564, "lon": 77.5710, "type": "hospital" },
+        { "name": "Indian Institute of Science (IISc)", "lat": 13.0219, "lon": 77.5671, "type": "school" },
+        { "name": "PESIT Bangalore South Campus", "lat": 12.8369, "lon": 77.5422, "type": "school" },
+        { "name": "RV College of Engineering", "lat": 12.9237, "lon": 77.4987, "type": "school" }
+      ],
+      "roads": [
+        { "name": "Outer Ring Road (ORR), Bangalore", "weight": 1.00, "waypoint": [12.9352, 77.6245] },
+        { "name": "Silk Board Junction, Bangalore", "weight": 0.95, "waypoint": [12.9177, 77.6238] },
+        { "name": "Hosur Road (NH-44), Bangalore", "weight": 0.90, "waypoint": [12.9096, 77.6367] },
+        { "name": "MG Road, Bangalore", "weight": 0.85, "waypoint": [12.9756, 77.6064] },
+        { "name": "Bellary Road / NH-7, Bangalore", "weight": 0.80, "waypoint": [13.0078, 77.5713] },
+        { "name": "Bannerghatta Road, Bangalore", "weight": 0.70, "waypoint": [12.8890, 77.5975] },
+        { "name": "Whitefield Main Road, Bangalore", "weight": 0.65, "waypoint": [12.9698, 77.7500] }
+      ],
+      "contractors": {
+        "Outer Ring Road (ORR), Bangalore": { "name": "BBMP Roads Infrastructure Div", "contact": "+91 80 2222 1188", "email": "roads@bbmp.gov.in", "sla_hours": 48 },
+        "Silk Board Junction, Bangalore": { "name": "NHAI Bangalore Unit", "contact": "+91 80 2222 3344", "email": "nhai-blr@nhai.org", "sla_hours": 24 },
+        "MG Road, Bangalore": { "name": "BBMP Central Zone", "contact": "+91 80 2222 5566", "email": "central-zone@bbmp.gov.in", "sla_hours": 48 }
+      }
+    },
+    "delhi": {
+      "display_name": "Delhi",
+      "state": "NCT Delhi",
+      "center": { "lat": 28.6139, "lon": 77.2090 },
+      "zoom": 11,
+      "municipal_body": "Municipal Corporation of Delhi (MCD)",
+      "pwd_office": "Delhi PWD, Central Division",
+      "zones": {
+        "Zone New Delhi": "Connaught Place / India Gate",
+        "Zone South": "Defence Colony / Lajpat Nagar",
+        "Zone East": "Preet Vihar / Laxmi Nagar",
+        "Zone North": "Civil Lines / Model Town"
+      },
+      "pois": [
+        { "name": "AIIMS New Delhi", "lat": 28.5672, "lon": 77.2100, "type": "hospital" },
+        { "name": "Safdarjung Hospital", "lat": 28.5686, "lon": 77.2066, "type": "hospital" },
+        { "name": "GTB Hospital, Dilshad Garden", "lat": 28.6860, "lon": 77.3143, "type": "hospital" },
+        { "name": "IIT Delhi", "lat": 28.5459, "lon": 77.1855, "type": "school" },
+        { "name": "Delhi University North Campus", "lat": 28.6889, "lon": 77.2099, "type": "school" },
+        { "name": "Jawaharlal Nehru University (JNU)", "lat": 28.5407, "lon": 77.1686, "type": "school" }
+      ],
+      "roads": [
+        { "name": "Ring Road (Mahatma Gandhi Marg), Delhi", "weight": 1.00, "waypoint": [28.6100, 77.2400] },
+        { "name": "Outer Ring Road (NH-44), Delhi", "weight": 0.95, "waypoint": [28.6500, 77.2900] },
+        { "name": "Connaught Place Inner Circle, Delhi", "weight": 0.85, "waypoint": [28.6315, 77.2167] },
+        { "name": "Vikas Marg, Delhi", "weight": 0.80, "waypoint": [28.6375, 77.2819] },
+        { "name": "Aurobindo Marg (NH-8), Delhi", "weight": 0.75, "waypoint": [28.5600, 77.1900] },
+        { "name": "Mathura Road (NH-2), Delhi", "weight": 0.70, "waypoint": [28.5800, 77.2500] }
+      ],
+      "contractors": {
+        "Ring Road (Mahatma Gandhi Marg), Delhi": { "name": "Delhi PWD Central", "contact": "+91 11 2339 2037", "email": "pwd-central@delhi.gov.in", "sla_hours": 24 },
+        "Connaught Place Inner Circle, Delhi": { "name": "NDMC Roads Dept", "contact": "+91 11 2336 4400", "email": "roads@ndmc.gov.in", "sla_hours": 24 },
+        "Outer Ring Road (NH-44), Delhi": { "name": "NHAI Delhi", "contact": "+91 11 2501 1500", "email": "nhai-delhi@nhai.org", "sla_hours": 48 }
+      }
+    }
+  },
+  "irc_repair_rates": {
+    "D00": { "desc": "Longitudinal Crack Seal", "rate_per_sqm": 850, "unit": "INR/m²" },
+    "D10": { "desc": "Transverse Crack Routing", "rate_per_sqm": 950, "unit": "INR/m²" },
+    "D20": { "desc": "Alligator Crack Patching", "rate_per_sqm": 2800, "unit": "INR/m²" },
+    "D40": { "desc": "Pothole Mastic Asphalt Fill", "rate_per_sqm": 4500, "unit": "INR/m²" }
+  },
+  "default_city": "chennai"
+}
