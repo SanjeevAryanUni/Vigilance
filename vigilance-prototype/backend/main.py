@@ -11,12 +11,16 @@ from datetime import datetime
 from typing import List, Optional
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Depends, WebSocket, WebSocketDisconnect, Query, HTTPException, Header, status
+from fastapi import FastAPI, Depends, WebSocket, WebSocketDisconnect, Query, HTTPException, Header, Request, status
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, field_validator
 from sqlalchemy.orm import Session
 from sqlalchemy import func
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
 
 from database import (
     init_db, get_db, Detection, Cluster,
@@ -39,12 +43,17 @@ async def lifespan(app: FastAPI):
     init_db()
     yield
 
+limiter = Limiter(key_func=get_remote_address, default_limits=["120/minute"])
+
 app = FastAPI(
     title="VIGILANCE Urban Road Intelligence API",
     description="Edge-first road distress detection, DBSCAN spatial deduplication, and RPI prioritization platform.",
     version="1.0.0",
     lifespan=lifespan
 )
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_middleware(SlowAPIMiddleware)
 
 # CORS Configuration: Whitelist localhost, Vercel production & preview deployments
 cors_origins_env = os.getenv("CORS_ORIGINS", "")
@@ -63,7 +72,7 @@ else:
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
-    allow_origin_regex=r"^https:\/\/.*\.vercel\.app$",
+    allow_origin_regex=r"^https:\/\/vigilance[a-zA-Z0-9_-]*\.vercel\.app$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -201,7 +210,10 @@ def get_detector():
 def verify_api_key(x_api_key: Optional[str] = Header(None)):
     required_key = os.getenv("API_KEY")
     if required_key and x_api_key != required_key:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or missing API key")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or missing API key. Provide via 'X-API-Key' header."
+        )
     return True
 
 # API Endpoints
@@ -263,11 +275,12 @@ def health():
         "timestamp": datetime.utcnow().isoformat()
     }
 
-@app.post("/api/detections", status_code=status.HTTP_201_CREATED)
-async def create_detection(det: DetectionIn, db: Session = Depends(get_db)):
+@app.post("/api/detections", status_code=status.HTTP_201_CREATED, dependencies=[Depends(verify_api_key)])
+@limiter.limit("30/minute")
+async def create_detection(request: Request, det: DetectionIn, city: Optional[str] = Query(None), db: Session = Depends(get_db)):
     """Ingests individual vehicle defect telemetry and schedules spatial deduplication."""
     # Auto-match road segment if not provided or default
-    road_name = det.road_name if det.road_name and det.road_name != "GST Road, Chennai" else match_nearest_road(det.lat, det.lon)
+    road_name = det.road_name if det.road_name and det.road_name != "GST Road, Chennai" else match_nearest_road(det.lat, det.lon, city_key=city)
 
     db_det = Detection(
         defect_type=det.defect_type,
@@ -416,9 +429,10 @@ def get_heatmap_geojson(db: Session = Depends(get_db)):
         "features": features
     }
 
-@app.patch("/api/clusters/{cluster_id}/status")
-@app.post("/api/clusters/{cluster_id}/status")
-async def update_cluster_status(cluster_id: int, status: str = Query(...), db: Session = Depends(get_db)):
+@app.patch("/api/clusters/{cluster_id}/status", dependencies=[Depends(verify_api_key)])
+@app.post("/api/clusters/{cluster_id}/status", dependencies=[Depends(verify_api_key)])
+@limiter.limit("30/minute")
+async def update_cluster_status(request: Request, cluster_id: int, status: str = Query(...), db: Session = Depends(get_db)):
     """Updates operational workflow status (open, assigned, resolved) of a road distress cluster."""
     valid_statuses = ["open", "assigned", "resolved"]
     if status.lower() not in valid_statuses:
@@ -437,8 +451,9 @@ async def update_cluster_status(cluster_id: int, status: str = Query(...), db: S
     })
     return {"status": "success", "cluster_id": cluster.id, "new_status": cluster.status}
 
-@app.post("/api/trigger-dedup")
-async def trigger_dedup(db: Session = Depends(get_db)):
+@app.post("/api/trigger-dedup", dependencies=[Depends(verify_api_key)])
+@limiter.limit("10/minute")
+async def trigger_dedup(request: Request, db: Session = Depends(get_db)):
     """
     Manually trigger spatial deduplication and RPI recalculation across all detections.
     Broadcasts CLUSTERS_RESET event so all connected dashboard clients refresh immediately.
@@ -470,13 +485,14 @@ async def websocket_endpoint(websocket: WebSocket):
 # Phase 1 & 2: Traffic & Congestion Endpoints
 # ==========================================
 
-@app.post("/api/traffic", status_code=status.HTTP_201_CREATED)
-async def ingest_traffic(data: TrafficTelemetryIn, db: Session = Depends(get_db)):
+@app.post("/api/traffic", status_code=status.HTTP_201_CREATED, dependencies=[Depends(verify_api_key)])
+@limiter.limit("30/minute")
+async def ingest_traffic(request: Request, data: TrafficTelemetryIn, city: Optional[str] = Query(None), db: Session = Depends(get_db)):
     """
     Ingests vehicle/pedestrian count observations from edge transit perception nodes.
     Updates the live vehicle location in the fleet registry and broadcasts telemetry.
     """
-    road_name = data.road_name or match_nearest_road(data.lat, data.lon)
+    road_name = data.road_name or match_nearest_road(data.lat, data.lon, city_key=city)
     obs = TrafficObservation(
         lat=data.lat,
         lon=data.lon,
@@ -526,22 +542,24 @@ def get_traffic_stats(db: Session = Depends(get_db)):
 
     total_obs = db.query(TrafficObservation).filter(TrafficObservation.timestamp >= since).count()
 
-    v_count = int(results[0]) if results and results[0] else max(total_obs * 6, 28)
-    p_count = int(results[1]) if results and results[1] else max(total_obs * 2, 9)
-    avg_speed = float(results[2]) if results and results[2] else 38.5
+    v_count = int(results[0]) if results and results[0] else 0
+    p_count = int(results[1]) if results and results[1] else 0
+    avg_speed = float(results[2]) if results and results[2] else 0.0
+    active_monitors = db.query(TrafficObservation.vehicle_id).distinct().count() if total_obs > 0 else 0
 
     return {
         "vehicles_24h": v_count,
         "pedestrians_24h": p_count,
         "avg_speed_kmh": round(avg_speed, 1),
-        "active_monitors": db.query(TrafficObservation.vehicle_id).distinct().count() or 5
+        "active_monitors": active_monitors,
+        "is_seed": total_obs == 0
     }
 
 
 @app.get("/api/congestion")
-def get_congestion(db: Session = Depends(get_db)):
+def get_congestion(city: Optional[str] = Query(None), db: Session = Depends(get_db)):
     """Computes real-time corridor congestion indices and Travel Time Indices (TTI)."""
-    return compute_congestion_for_all_roads(db)
+    return compute_congestion_for_all_roads(db, city_key=city)
 
 
 @app.get("/api/heatmap/congestion")
@@ -554,12 +572,13 @@ def get_congestion_heatmap(db: Session = Depends(get_db)):
 # Phase 2: Safety & Incident Endpoints (ANPR)
 # ==========================================
 
-@app.post("/api/incidents", status_code=status.HTTP_201_CREATED)
-async def report_incident(data: IncidentIn, db: Session = Depends(get_db)):
+@app.post("/api/incidents", status_code=status.HTTP_201_CREATED, dependencies=[Depends(verify_api_key)])
+@limiter.limit("30/minute")
+async def report_incident(request: Request, data: IncidentIn, city: Optional[str] = Query(None), db: Session = Depends(get_db)):
     """
     Ingests safety violations and incident telemetry (rash driving, hit-and-run, ANPR reads).
     """
-    road_name = data.road_name or match_nearest_road(data.lat, data.lon)
+    road_name = data.road_name or match_nearest_road(data.lat, data.lon, city_key=city)
     incident = IncidentReport(
         incident_type=data.incident_type,
         plate_text=data.plate_text,
@@ -601,7 +620,7 @@ async def report_incident(data: IncidentIn, db: Session = Depends(get_db)):
 def get_incidents(limit: int = 50, db: Session = Depends(get_db)):
     """Lists recent enforcement and safety violation incidents."""
     incidents = db.query(IncidentReport).order_by(IncidentReport.timestamp.desc()).limit(limit).all()
-    # Provide synthetic demonstration seed incidents if fresh DB
+    # Provide synthetic demonstration seed incidents with is_seed=True flag if fresh DB
     if not incidents:
         return [
             {
@@ -615,7 +634,8 @@ def get_incidents(limit: int = 50, db: Session = Depends(get_db)):
                 "lon": 80.2496,
                 "speed_kmh": 78.4,
                 "status": "reported",
-                "timestamp": datetime.utcnow().isoformat()
+                "timestamp": datetime.utcnow().isoformat(),
+                "is_seed": True
             },
             {
                 "id": 2,
@@ -628,7 +648,8 @@ def get_incidents(limit: int = 50, db: Session = Depends(get_db)):
                 "lon": 80.1462,
                 "speed_kmh": 92.1,
                 "status": "verified",
-                "timestamp": datetime.utcnow().isoformat()
+                "timestamp": datetime.utcnow().isoformat(),
+                "is_seed": True
             },
             {
                 "id": 3,
@@ -641,7 +662,8 @@ def get_incidents(limit: int = 50, db: Session = Depends(get_db)):
                 "lon": 80.2030,
                 "speed_kmh": 64.0,
                 "status": "actioned",
-                "timestamp": datetime.utcnow().isoformat()
+                "timestamp": datetime.utcnow().isoformat(),
+                "is_seed": True
             }
         ]
     return incidents
@@ -681,13 +703,13 @@ def get_fleet_positions(db: Session = Depends(get_db)):
     ).all()
 
     if not positions:
-        # Fallback demonstration fleet when freshly started
+        # Explicit demonstration seed fleet when freshly started
         return [
-            {"vehicle_id": "BUS-TN01-1042", "lat": 13.0067, "lon": 80.2030, "speed_kmh": 42.0, "road_name": "Guindy Kathipara", "status": "active", "timestamp": datetime.utcnow().isoformat()},
-            {"vehicle_id": "BUS-TN02-3891", "lat": 13.0604, "lon": 80.2496, "speed_kmh": 38.0, "road_name": "Anna Salai (Mount Road)", "status": "active", "timestamp": datetime.utcnow().isoformat()},
-            {"vehicle_id": "MUNICIPAL-TRUCK-07", "lat": 12.8231, "lon": 80.0442, "speed_kmh": 28.0, "road_name": "SRM Potheri Corridor", "status": "active", "timestamp": datetime.utcnow().isoformat()},
-            {"vehicle_id": "PATROL-VAN-12", "lat": 12.9516, "lon": 80.1462, "speed_kmh": 46.0, "road_name": "GST Road (NH-32)", "status": "active", "timestamp": datetime.utcnow().isoformat()},
-            {"vehicle_id": "BUS-TN22-5501", "lat": 12.9719, "lon": 80.2500, "speed_kmh": 34.0, "road_name": "Old Mahabalipuram Road", "status": "active", "timestamp": datetime.utcnow().isoformat()},
+            {"vehicle_id": "BUS-TN01-1042", "lat": 13.0067, "lon": 80.2030, "speed_kmh": 42.0, "road_name": "Guindy Kathipara", "status": "active", "timestamp": datetime.utcnow().isoformat(), "is_seed": True},
+            {"vehicle_id": "BUS-TN02-3891", "lat": 13.0604, "lon": 80.2496, "speed_kmh": 38.0, "road_name": "Anna Salai (Mount Road)", "status": "active", "timestamp": datetime.utcnow().isoformat(), "is_seed": True},
+            {"vehicle_id": "MUNICIPAL-TRUCK-07", "lat": 12.8231, "lon": 80.0442, "speed_kmh": 28.0, "road_name": "SRM Potheri Corridor", "status": "active", "timestamp": datetime.utcnow().isoformat(), "is_seed": True},
+            {"vehicle_id": "PATROL-VAN-12", "lat": 12.9516, "lon": 80.1462, "speed_kmh": 46.0, "road_name": "GST Road (NH-32)", "status": "active", "timestamp": datetime.utcnow().isoformat(), "is_seed": True},
+            {"vehicle_id": "BUS-TN22-5501", "lat": 12.9719, "lon": 80.2500, "speed_kmh": 34.0, "road_name": "Old Mahabalipuram Road", "status": "active", "timestamp": datetime.utcnow().isoformat(), "is_seed": True},
         ]
 
     return [
@@ -778,8 +800,9 @@ async def list_cities():
     return {"cities": get_all_cities_summary(), "active": get_active_city()}
 
 
-@app.post("/api/cities/switch", tags=["Cities"])
-async def switch_city(city_key: str = Query(..., description="City key: chennai, bangalore, or delhi")):
+@app.post("/api/cities/switch", tags=["Cities"], dependencies=[Depends(verify_api_key)])
+@limiter.limit("30/minute")
+async def switch_city(request: Request, city_key: str = Query(..., description="City key: chennai, bangalore, or delhi")):
     """Switch the active city for the platform."""
     try:
         display_name = set_active_city(city_key)

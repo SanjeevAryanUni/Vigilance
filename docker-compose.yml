@@ -8,7 +8,7 @@ services:
     environment:
       POSTGRES_DB: vigilance
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-vigilance2026}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Error: POSTGRES_PASSWORD must be set in environment}
     ports:
       - "5432:5432"
     volumes:

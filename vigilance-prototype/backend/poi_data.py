@@ -72,9 +72,9 @@ def haversine_meters(lat1: float, lon1: float, lat2: float, lon2: float) -> floa
 
 
 # ── Road matching (uses active city) ────────────────────────────────
-def get_road_weight(road_name: str) -> float:
+def get_road_weight(road_name: str, city_key: Optional[str] = None) -> float:
     """Returns normalized road hierarchy importance weight (0.4–1.0)."""
-    cfg = get_active_city_config()
+    cfg = CITY_CONFIGS.get(city_key or _active_city, CITY_CONFIGS[_active_city])
     road_map = {r["name"]: r["weight"] for r in cfg["roads"]}
     return road_map.get(road_name, 0.60)
 
@@ -93,13 +93,13 @@ def match_nearest_road(lat: float, lon: float, city_key: Optional[str] = None) -
     return best_road
 
 
-# ── POI proximity (uses active city) ────────────────────────────────
-def get_proximity_weight(lat: float, lon: float) -> Tuple[float, str, float]:
+# ── POI proximity (uses active city or per-request city) ────────────
+def get_proximity_weight(lat: float, lon: float, city_key: Optional[str] = None) -> Tuple[float, str, float]:
     """
     Computes distance to nearest hospital/school POI.
     Returns: (normalized_weight, nearest_poi_name, distance_in_meters)
     """
-    cfg = get_active_city_config()
+    cfg = CITY_CONFIGS.get(city_key or _active_city, CITY_CONFIGS[_active_city])
     min_dist = float("inf")
     nearest_name = "Urban Zone"
     for poi in cfg["pois"]:
@@ -121,17 +121,18 @@ def get_proximity_weight(lat: float, lon: float) -> Tuple[float, str, float]:
 
 
 # ── Contractor lookup ───────────────────────────────────────────────
-def get_contractor(road_name: str) -> Dict[str, Any]:
+def get_contractor(road_name: str, city_key: Optional[str] = None) -> Dict[str, Any]:
     """Returns road maintenance contractor and SLA specs."""
-    cfg = get_active_city_config()
+    effective_city = city_key or _active_city
+    cfg = CITY_CONFIGS.get(effective_city, CITY_CONFIGS[_active_city])
     default_name = (
         "Greater Chennai Public Works Dept (PWD)"
-        if _active_city == "chennai"
+        if effective_city == "chennai"
         else f"{cfg['municipal_body']} General Works"
     )
     default = {
         "name": default_name,
-        "contact": "+91 44 2538 4520" if _active_city == "chennai" else "N/A",
+        "contact": "+91 44 2538 4520" if effective_city == "chennai" else "N/A",
         "email": "pwd-general@gov.in",
         "sla_hours": 48,
     }

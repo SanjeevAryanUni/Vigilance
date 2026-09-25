@@ -16,6 +16,11 @@ export const getApiBase = (): string => {
 
 export const API_BASE = getApiBase();
 
+export const getAuthHeaders = (): Record<string, string> => {
+  const key = (typeof window !== 'undefined' ? localStorage.getItem('vigilance_api_key') : null) || process.env.NEXT_PUBLIC_API_KEY || 'vigilance_sih_2026';
+  return key ? { 'X-API-Key': key } : {};
+};
+
 export async function getHealth(): Promise<{ status: string; service: string; timestamp: string } | null> {
   const base = getApiBase();
   const url = base ? `${base}/api/health` : '/api/health';
@@ -70,7 +75,10 @@ export async function updateClusterStatus(clusterId: number, status: ClusterStat
   try {
     const res = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAuthHeaders(),
+      },
       body: JSON.stringify({ status }),
     });
     return res.ok;
@@ -86,6 +94,9 @@ export async function triggerDedup(): Promise<{ status: string; clusters_updated
   try {
     const res = await fetch(url, {
       method: 'POST',
+      headers: {
+        ...getAuthHeaders(),
+      },
     });
     if (!res.ok) return null;
     return await res.json();
@@ -101,7 +112,10 @@ export async function createDetection(data: Partial<Detection>): Promise<Detecti
   try {
     const res = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAuthHeaders(),
+      },
       body: JSON.stringify(data),
     });
     if (!res.ok) return null;
@@ -186,7 +200,10 @@ export async function reportIncident(data: any): Promise<any | null> {
   try {
     const res = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...getAuthHeaders(),
+      },
       body: JSON.stringify(data),
     });
     if (!res.ok) return null;

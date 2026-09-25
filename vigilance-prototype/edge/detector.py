@@ -89,11 +89,17 @@ class RoadDamageDetector:
                 cand_classes = []
                 cand_coords = []
 
+                num_model_classes = scores_all.shape[1]
+
                 for i in range(len(boxes)):
                     cls_scores = scores_all[i]
                     cls_id = int(np.argmax(cls_scores))
                     conf = float(cls_scores[cls_id])
                     
+                    # Guard: If model has >4 classes (e.g. general COCO), reject non-RDD classes
+                    if num_model_classes > 4 and cls_id >= 4:
+                        continue
+
                     if conf >= self.conf_threshold:
                         cx, cy, bw, bh = boxes[i]
                         x1 = int((cx - bw / 2) * (w / 640.0))
@@ -117,7 +123,7 @@ class RoadDamageDetector:
                     x1, y1, x2, y2 = cand_coords[idx]
                     
                     bbox_area = ((x2 - x1) * (y2 - y1)) / (w * h) if (w * h) > 0 else 0
-                    target_cls = cls_id % 4 # Map to 4 standard classes
+                    target_cls = cls_id # Direct 1:1 mapping (0: D00, 1: D10, 2: D20, 3: D40)
                     
                     if target_cls == 3:
                         defect_type = "D40"
@@ -167,8 +173,13 @@ class RoadDamageDetector:
                 # Run PyTorch YOLOv8
                 results = self.pt_model.predict(source=frame, conf=self.conf_threshold, verbose=False)
                 for r in results:
+                    num_pt_classes = len(r.names) if hasattr(r, 'names') and r.names else 80
                     for box in r.boxes:
-                        cls_id = int(box.cls[0]) % 4
+                        raw_cls = int(box.cls[0])
+                        # Guard: If model has >4 classes, reject non-RDD classes
+                        if num_pt_classes > 4 and raw_cls >= 4:
+                            continue
+                        cls_id = raw_cls
                         conf = float(box.conf[0])
                         x1, y1, x2, y2 = [int(v) for v in box.xyxy[0]]
                         bbox_area = ((x2 - x1) * (y2 - y1)) / (w * h)

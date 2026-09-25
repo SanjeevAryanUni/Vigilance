@@ -40,8 +40,10 @@ def run_edge_telemetry_stream(vehicle_id: str = "BUS-TN01-1042", interval: float
         for det in defect_list:
             det["road_name"] = road
             try:
-                res = requests.post(API_URL, json=det, timeout=3.0)
-                if res.status_code == 200:
+                api_key = os.getenv("API_KEY", "vigilance_sih_2026")
+                headers = {"X-API-Key": api_key}
+                res = requests.post(API_URL, json=det, headers=headers, timeout=3.0)
+                if res.status_code in [200, 201]:
                     print(f"[{datetime.now().strftime('%H:%M:%S')}] 📡 {vehicle_id} -> Transmitted {det['defect_type']} ({det['severity'].upper()}) @ {road} [Lat: {curr_lat:.4f}, Lon: {curr_lon:.4f}]")
                 else:
                     print(f"! Failed to send detection: HTTP {res.status_code}")

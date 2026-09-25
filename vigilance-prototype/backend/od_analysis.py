@@ -82,6 +82,7 @@ def build_od_from_fleet_data(db: Session) -> Dict[str, Any]:
                 "trips": count
             })
 
+    is_seed = False
     # Default synthetic seed baseline if fleet telemetry was just cleared
     if not od_pairs:
         seed_flows = [
@@ -95,10 +96,12 @@ def build_od_from_fleet_data(db: Session) -> Dict[str, Any]:
         for org, dst, cnt in seed_flows:
             matrix[org][dst] = cnt
             od_pairs.append({"origin": org, "destination": dst, "trips": cnt})
+        is_seed = True
 
     return {
         "matrix": {k: dict(v) for k, v in matrix.items()},
         "pairs": sorted(od_pairs, key=lambda x: x["trips"], reverse=True),
         "stops": list(TRANSIT_STOPS.keys()),
         "total_trips": sum(p["trips"] for p in od_pairs),
+        "is_seed": is_seed,
     }

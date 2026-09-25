@@ -62,7 +62,12 @@ export default function CitySelector({ onCityChange }: CitySelectorProps) {
     }
     setIsLoading(true);
     try {
-      await fetch(`${BACKEND_URL}/api/cities/switch?city_key=${cityKey}`, { method: 'POST' });
+      await fetch(`${BACKEND_URL}/api/cities/switch?city_key=${cityKey}`, {
+        method: 'POST',
+        headers: {
+          'X-API-Key': (typeof window !== 'undefined' ? localStorage.getItem('vigilance_api_key') : null) || process.env.NEXT_PUBLIC_API_KEY || 'vigilance_sih_2026'
+        }
+      });
       setActiveCity(cityKey);
       const selected = cities.find(c => c.key === cityKey);
       if (selected && onCityChange) {

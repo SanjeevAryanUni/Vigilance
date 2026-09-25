@@ -30,6 +30,24 @@ FREEFLOW_SPEEDS = {
 }
 
 
+def get_corridor_freeflow_speeds(city_key: str = None) -> Dict[str, float]:
+    """Dynamically resolves corridor freeflow design speeds for the specified or active city."""
+    from poi_data import CITY_CONFIGS, get_active_city
+    city = city_key or get_active_city()
+    cfg = CITY_CONFIGS.get(city, {})
+    speeds = dict(FREEFLOW_SPEEDS)
+    for r in cfg.get("roads", []):
+        r_name = r.get("name")
+        wt = r.get("weight", 0.6)
+        if wt >= 0.9:
+            speeds[r_name] = 60.0
+        elif wt >= 0.7:
+            speeds[r_name] = 45.0
+        else:
+            speeds[r_name] = 35.0
+    return speeds
+
+
 def _ci_level(ci: float) -> str:
     if ci <= 0.05:
         return "free_flow"
@@ -42,11 +60,12 @@ def _ci_level(ci: float) -> str:
     return "gridlock"
 
 
-def compute_congestion_for_all_roads(db: Session) -> List[Dict[str, Any]]:
+def compute_congestion_for_all_roads(db: Session, city_key: str = None) -> List[Dict[str, Any]]:
     """
     Computes real-time corridor congestion by comparing observed fleet speed
     against historical freeflow design speed.
     """
+    speeds_map = get_corridor_freeflow_speeds(city_key)
     since = datetime.utcnow() - timedelta(minutes=60)
     results = db.query(
         TrafficObservation.road_name,
@@ -64,7 +83,7 @@ def compute_congestion_for_all_roads(db: Session) -> List[Dict[str, Any]]:
         if not road_name:
             continue
         seen_roads.add(road_name)
-        freeflow = FREEFLOW_SPEEDS.get(road_name, 40)
+        freeflow = speeds_map.get(road_name, 40)
         speed = float(avg_speed) if avg_speed is not None else freeflow
         ci = max(0.0, 1.0 - (speed / freeflow))
         tti = freeflow / max(speed, 1.0)
@@ -80,7 +99,7 @@ def compute_congestion_for_all_roads(db: Session) -> List[Dict[str, Any]]:
         })
 
     # Default fallback for prominent corridors with no recent traffic points
-    for road, freeflow in FREEFLOW_SPEEDS.items():
+    for road, freeflow in speeds_map.items():
         if road not in seen_roads and len(congestion) < 12:
             congestion.append({
                 "road_name": road,
