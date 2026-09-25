@@ -37,6 +37,7 @@ import {
   Users,
   ShieldAlert,
   Flame,
+  Video,
 } from 'lucide-react';
 
 const WebGISMap = dynamic(() => import('@/components/WebGISMap'), {
@@ -54,6 +55,15 @@ const EdgeCockpit3D = dynamic(() => import('@/components/EdgeCockpit3D'), {
   loading: () => (
     <div className="w-full h-full flex items-center justify-center bg-slate-950 text-slate-400 font-mono text-xs">
       Initializing 3D Transit Highway Telemetry...
+    </div>
+  ),
+});
+
+const VideoCameraGrid = dynamic(() => import('@/components/VideoCameraGrid'), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-full flex items-center justify-center bg-slate-950 text-cyan-400 font-mono text-xs">
+      Connecting to Edge AI Dashcam Pipeline...
     </div>
   ),
 });
@@ -106,6 +116,7 @@ export default function CommandCenterPage() {
   const [showRPIModal, setShowRPIModal] = useState(false);
   const [showExecutiveBrief, setShowExecutiveBrief] = useState(false);
   const [showCockpitModal, setShowCockpitModal] = useState(false);
+  const [showCameraGridModal, setShowCameraGridModal] = useState(false);
   const [showCommandPalette, setShowCommandPalette] = useState(false);
   const [workstationMode, setWorkstationMode] = useState<WorkstationMode>('full-gis');
   const [activeMapStyle, setActiveMapStyle] = useState<string>('esriDark');
@@ -456,6 +467,16 @@ export default function CommandCenterPage() {
               </Link>
 
               <button
+                onClick={() => setShowCameraGridModal(true)}
+                className="bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400/40 text-cyan-200 px-2.5 py-1 rounded-lg flex items-center gap-1.5 text-xs font-mono backdrop-blur-md transition-all font-bold shadow-[0_0_15px_rgba(6,182,212,0.25)] active:scale-95"
+                title="View Live Dashcam AI Multi-Model Stream (Port 8001)"
+              >
+                <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+                <Video className="w-3.5 h-3.5 text-cyan-300" />
+                <span>Live Cam</span>
+              </button>
+
+              <button
                 onClick={() => setShowCockpitModal(true)}
                 className="bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 text-slate-200 px-2 py-1 rounded-lg flex items-center gap-1.5 text-xs font-mono backdrop-blur-md transition-all shadow-xs"
                 title="View live 3D highway edge cockpit perspective"
@@ -548,6 +569,18 @@ export default function CommandCenterPage() {
                   vehicleId="BUS-TN01-1042"
                   roadName="GST Road, Tambaram (NH-32)"
                   onClose={() => setShowCockpitModal(false)}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Live Edge Video Camera Grid Modal Overlay */}
+          {showCameraGridModal && (
+            <div className="absolute inset-4 z-30 flex flex-col bg-slate-950/90 backdrop-blur-3xl rounded-2xl border border-white/15 shadow-[0_25px_60px_rgba(0,0,0,0.8),inset_0_1px_0_0_rgba(255,255,255,0.15)] overflow-hidden animate-in fade-in zoom-in-95">
+              <div className="flex-1 w-full h-full relative p-2 flex items-center justify-center">
+                <VideoCameraGrid
+                  isModal
+                  onClose={() => setShowCameraGridModal(false)}
                 />
               </div>
             </div>
