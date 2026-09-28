@@ -1,0 +1,25 @@
+{
+  "neighbor_distance_m": 20.015086796052934,
+  "before_dedup": [
+    {
+      "id": 1,
+      "status": "resolved"
+    },
+    {
+      "id": 2,
+      "status": "open"
+    }
+  ],
+  "after_dedup": [
+    {
+      "id": 1,
+      "status": "resolved"
+    },
+    {
+      "id": 2,
+      "status": "resolved"
+    }
+  ],
+  "publisher_single_iteration": "==================================================\n\ud83d\ude80 VIGILANCE Edge AI Telemetry Node Started\nVehicle Node: BUS-TN01-1042 | Ingest Target: http://localhost:8000/api/detections\n==================================================\n! Ingestion server offline (name 'os' is not defined). Buffering telemetry packet...\n",
+  "card_at_025": []
+}

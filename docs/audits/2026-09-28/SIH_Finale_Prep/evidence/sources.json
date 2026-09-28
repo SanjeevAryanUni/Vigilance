@@ -1,0 +1,23 @@
+{
+  "date": "2026-09-28",
+  "commit": "ae9ec7ba678feb4db366a1058fa55509761fb9e9",
+  "official_guidelines": "https://sih.gov.in/letters/2026/SIH%202026%20Guidelines.pdf",
+  "criteria_page_pdf": 20,
+  "official_ps_portal": "https://www.sih.gov.in/sih2026PS",
+  "ps_portal_result": "403; repository transcription used with explicit provenance limitation",
+  "prior_art": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2243028&lang=1&reg=1",
+  "dataset": "https://arxiv.org/abs/2209.08538",
+  "new_runtime_check": "standalone synthetic incident heuristic only",
+  "earlier_verification_reused": "same-session technical audit; not a new full test/build run",
+  "plan3": "unavailable",
+  "pitch_duration": "five-minute proposed rehearsal; actual slot unverified",
+  "qa_counts": {
+    "Technical": 20,
+    "Product and domain": 20,
+    "Scalability": 10,
+    "Security": 10,
+    "Feasibility": 10,
+    "Why didn't you": 10,
+    "Weakness exposure": 10
+  }
+}
