@@ -1,0 +1,26 @@
+{
+  "Government_Integration_Recommendations.md": {
+    "bytes": 16437,
+    "sha256": "3083c3eecbad1c8c33d117175186b5086b28d65454f571c675b5ff59d12ee684"
+  },
+  "evidence/aikosh-notebook-summary.json": {
+    "bytes": 1039,
+    "sha256": "bcd229fb1a48f54b91250c984348ec6b496dc313921bae5563cbd78dcc83a6c0"
+  },
+  "evidence/bhuvan_capabilities_check.json": {
+    "bytes": 308,
+    "sha256": "34143a4c1aa8a7edb269e6567530e3cb4961511ace8fe579e3f3d96c99f646c2"
+  },
+  "evidence/gcc_ward_metadata.json": {
+    "bytes": 7167,
+    "sha256": "43af4f3bf32edcb4f1603a1c43ebf28960907ae6274913701c1dcdec1f7555bc"
+  },
+  "evidence/gcc_ward_metadata_check.json": {
+    "bytes": 407,
+    "sha256": "672a907746cb54e8a57416f418842657e0bae57bdfab716232a91a4b1e402232"
+  },
+  "evidence/gcc_ward_sample_check.json": {
+    "bytes": 714,
+    "sha256": "0d703c7d4640a3ac243cd20d1514af70eed46e9db2e678570768fbe1ca188f42"
+  }
+}
