@@ -130,6 +130,22 @@ class DetectionIn(BaseModel):
             raise ValueError("Longitude must be between -180.0 and 180.0")
         return v
 
+    @field_validator("defect_type")
+    @classmethod
+    def validate_defect_type(cls, v: str) -> str:
+        valid_prefixes = ("D00", "D10", "D20", "D40", "Pothole", "Crack")
+        if not any(v.strip().startswith(p) for p in valid_prefixes):
+            raise ValueError(f"Invalid defect_type '{v}'. Must start with one of {valid_prefixes}")
+        return v
+
+    @field_validator("severity")
+    @classmethod
+    def validate_severity(cls, v: str) -> str:
+        valid_severities = {"low", "medium", "high", "critical"}
+        if v.lower() not in valid_severities:
+            raise ValueError(f"Invalid severity '{v}'. Must be one of {sorted(valid_severities)}")
+        return v.lower()
+
 class DetectFrameIn(BaseModel):
     image_b64: str = Field(..., description="Base64 encoded JPEG/PNG frame")
     lat: Optional[float] = Field(12.8231, ge=-90.0, le=90.0)
@@ -212,8 +228,11 @@ def get_detector():
     return _detector_instance
 
 # API Key Authentication Enforcement
+def get_api_key() -> str:
+    return os.getenv("API_KEY", "vigilance_sih_2026")
+
 def verify_api_key(x_api_key: Optional[str] = Header(None)):
-    required_key = os.getenv("API_KEY", "vigilance_sih_2026")
+    required_key = get_api_key()
     if not x_api_key or x_api_key != required_key:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -507,7 +526,8 @@ def get_work_orders(city: Optional[str] = Query(None), db: Session = Depends(get
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket, token: Optional[str] = Query(None)):
     """Full-duplex WebSocket channel for real-time edge telemetry streaming."""
-    if API_KEY and token and token != API_KEY:
+    required_key = get_api_key()
+    if required_key and token and token != required_key:
         await websocket.close(code=4403, reason="Unauthorized: Invalid API token")
         return
     await manager.connect(websocket)

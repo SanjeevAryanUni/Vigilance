@@ -60,7 +60,8 @@ class TestBackendAPI(unittest.TestCase):
             "lon": 80.2030,
             "road_name": "GST Road, Tambaram, Chennai"
         }
-        post_resp = self.client.post("/api/detections", json=payload)
+        api_key = os.getenv("API_KEY", "vigilance_sih_2026")
+        post_resp = self.client.post("/api/detections", json=payload, headers={"x-api-key": api_key})
         self.assertIn(post_resp.status_code, [200, 201])
 
         # Query detections

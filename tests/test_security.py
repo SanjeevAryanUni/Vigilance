@@ -60,3 +60,15 @@ def test_cors_preflight(sec_client):
     resp = sec_client.options("/api/detections", headers=headers)
     assert resp.status_code == 200
     assert resp.headers.get("access-control-allow-origin") == "https://vigilance-sih.vercel.app"
+
+
+def test_websocket_token_auth(sec_client):
+    """Verify WebSocket connection handles tokens properly without NameError."""
+    # Connecting without token or with matching token works
+    with sec_client.websocket_connect("/ws") as ws:
+        ws.send_text("ping")
+        # Connection succeeds without crash
+
+    with sec_client.websocket_connect("/ws?token=vigilance_sih_2026") as ws:
+        ws.send_text("ping")
+        # Connection succeeds with matching token
