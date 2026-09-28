@@ -1,0 +1,22 @@
+{
+  "test": "Pure function, synthetic fixtures only; no video/collision/tracking inputs",
+  "input": {
+    "pedestrians": 0,
+    "road_damage": "D40 high confidence 0.9",
+    "vehicle_speed_kmh": 55,
+    "first_plate": "AUDIT-TEST-ONLY"
+  },
+  "output": [
+    {
+      "incident_type": "hit_and_run",
+      "severity": "critical",
+      "plate_text": "AUDIT-TEST-ONLY",
+      "plate_confidence": 0.95,
+      "speed_kmh": 55,
+      "damage_type": "D40",
+      "reason": "Vehicle at 55 km/h near fresh D40 damage",
+      "timestamp": "2026-09-28T14:15:00.105149+00:00"
+    }
+  ],
+  "interpretation": "Heuristic labels hit_and_run and attributes first plate without collision or track evidence; source module call-site integration not established."
+}
