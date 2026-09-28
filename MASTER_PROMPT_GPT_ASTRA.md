@@ -3,7 +3,7 @@
 > **TARGET AGENT:** GPT-6 Astra / Claude Opus 4.6 / Advanced Autonomous Reasoning Agent  
 > **OPERATIONAL MODE:** Extra High Compute / Autonomous Full-Stack Execution Mode  
 > **MISSION:** Completely overhaul, refactor, and elevate **Project VIGILANCE** (SIH26124 — Bharat Electronics Limited) from an 8.0 prototype into an undisputed, best-in-class, enterprise-grade AI Urban Intelligence & Defense-grade Command Platform that wins Smart India Hackathon 2026 with a perfect 10/10 score.  
-> **CORE DIRECTIVE:** You are not an advisory assistant; you are an autonomous principal software architect and staff engineer. You will **search the web, conduct deep technical research, formulate an explicit execution plan, write complete production code (zero pseudocode, zero placeholders), run test verification, commit to Git, and sync with GitHub and Supabase**.
+> **CORE DIRECTIVE:** You are not an advisory assistant; you are an autonomous principal software architect and staff engineer. You will **re-verify the entire project from first principles, critically analyze what to DELETE and what to ADD across frontend, backend, edge, and reporting, search the web, formulate an explicit execution plan, write complete production code (zero pseudocode, zero placeholders), run test verification, commit to Git, and sync with GitHub and Supabase**.
 
 ---
 
@@ -12,7 +12,7 @@
 * **Event:** Smart India Hackathon 2026 (SIH 2026) — Grand Finale.
 * **Problem Statement:** SIH26124 by **Bharat Electronics Limited (BEL)** (Ministry of Defence, Govt. of India).
 * **Domain:** AI-Powered Edge Video Analytics, Automated Road Distress Detection, Municipal Infrastructure Audit & Smart City Defense Command.
-* **Repository:** Monorepo at `/Users/sanjeev/Documents/SIH/` (Commit: `eff46f2` on branch `main`).
+* **Repository:** Monorepo at `/Users/sanjeev/Documents/SIH/` (Commit: `0de26cc` on branch `main`).
 * **Active Remotes:**
   * `origin`: `git@github.com:SanjeevAryanUni/Vigilance.git` (Primary development repo)
   * `vercel-target`: `git@github.com:SanjeevAryanUni/vigilance-sih.git` (Production Vercel deployment sync)
@@ -53,6 +53,25 @@ Use your web search tools to actively research and ground your implementation:
 
 ### Phase 2.3: Formulate a Structured Implementation Plan
 Output an explicit step-by-step roadmap breaking down your refactoring into sequential phases with verifiable milestones.
+
+---
+
+## 🧠 PART 2.5: AUTONOMOUS PRUNING & EXPANSION DIRECTIVE ("THINK FOR YOURSELF: WHAT TO ADD & WHAT TO DELETE")
+
+Do not blindly accept existing code. Critically evaluate every single file across the entire stack and make bold, professional decisions:
+
+### ❌ What to DELETE / PRUNE (Eliminate All Amateur Elements):
+1. **Fake Cycling Tickers & Mock AI Streams:** Delete or refactor `AgentThoughtStream.tsx` hardcoded string cycling. If there is no real background LLM stream running, replace it with a **Real-Time Pipeline Telemetry HUD** that reflects actual database mutations, WebSocket heartbeats, and model inference events.
+2. **Brittle Mock Data & Duplicated State:** Deprecate `serverStore.ts` memory-store divergence. Ensure **Supabase PostgreSQL / PostGIS** is the single source of truth. When running offline, clearly badge fallback data as `[HISTORICAL BENCHMARK]` rather than pretending it is live.
+3. **Amateur Visual Artifacts:** Strip out all generic white borders, standard gray card backgrounds (`bg-gray-800`), unaligned grids, and placeholder buttons that do nothing.
+4. **Dead Code & Stray Console Logs:** Remove orphaned imports, unused test mocks, and silent empty `catch` blocks that swallow errors.
+
+### ➕ What to ADD / EXPAND (Elevate to Tier-1 Defense Standard):
+1. **Defense-Grade Command HUD:** Add obsidian glassmorphism panels, high-density monospace telemetry, rolling SVG odometer counters, animated corridor distress splines, and live connection status badges (`[● LIVE POSTGIS STREAM]`).
+2. **Tactical Geospatial Layering:** Add glowing vector polyline corridors on MapLibre, custom pulsating radar marker pins for severe potholes (`D40`), and an instant toggle for ISRO Bhuvan satellite imagery.
+3. **Audio-Tactile Sensory Feedback:** Wire up a zero-asset Web Audio API oscillator synthesizer chime on new detection ingestion, and tactile haptic vibration (`navigator.vibrate([70, 40, 70])`) on road impact.
+4. **Government & Municipal PWD Audit Engine:** Implement IRC SP:20 / IRC 82-2015 standard repair cost estimators (`₹4,500/m²` for D40 Mastic Asphalt, `₹1,800/m²` for D20 Slurry Seal, `₹650/m` for D00/D10 Bitumen Sealing), SLA countdown timers, and exportable PDF/CSV audit reports with SHA-256 verification hashes.
+5. **Edge & Hardware Authenticity:** Display verified edge AI benchmark metrics (41.7ms INT8 latency, 3.2MB footprint, 99.998% cellular bandwidth savings vs raw video) and live MJPEG dashcam video stream integration (`edge/stream_video.py` + `VideoCameraGrid.tsx`).
 
 ---
 
@@ -256,7 +275,7 @@ cd vigilance-prototype/dashboard-next && npm run build
 Begin your autonomous work now following this exact order:
 
 1. **Step 1:** Review `docs/audits/2026-09-28/VIGILANCE_Audit.md` and conduct web research on modern dark glassmorphism command center UI patterns.
-2. **Step 2:** Formulate and output your comprehensive architectural refactoring plan.
+2. **Step 2:** Formulate and output your comprehensive architectural refactoring plan, detailing what you will **DELETE** and what you will **ADD**.
 3. **Step 3:** Overhaul the Next.js Frontend styling (`globals.css`, `page.tsx`, `Header.tsx`, `KPICard.tsx`, `WebGISMap.tsx`).
 4. **Step 4:** Refine the Windshield Capture HUD (`capture/page.tsx`) with neon reticle, G-force shockwave, and IndexedDB offline queueing.
 5. **Step 5:** Wire up Analytics & Work Orders pages to live API endpoints.
