@@ -52,11 +52,11 @@ export default function ClusterTable({
               <motion.div
                 key={cluster.id}
                 layout
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
+                initial={{ opacity: 0, y: -10, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.25, delay: Math.min(idx * 0.03, 0.3) }}
-                whileHover={{ x: 2, scale: 1.008 }}
+                transition={{ duration: 0.28, delay: Math.min(idx * 0.04, 0.3) }}
+                whileHover={{ x: 3, scale: 1.012, transition: { type: 'spring', stiffness: 400, damping: 25 } }}
                 onClick={() => onSelectCluster?.(cluster)}
                 className={cn(
                   'p-2.5 rounded-xl bg-slate-950/40 hover:bg-white/[0.06] border backdrop-blur-md transition-colors text-xs flex flex-col gap-2 cursor-pointer shadow-xs',

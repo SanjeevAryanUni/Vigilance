@@ -1,0 +1,41 @@
+{
+  "project": "VIGILANCE — Sovereign Urban Road Intelligence",
+  "problem_statement_organization": "Bharat Electronics Limited (BEL)",
+  "version": "1.4.0",
+  "training": {
+    "current_dataset": "RDD2022 India Subset (7,706 images)",
+    "planned_datasets": [
+      "AIKosh Road Safety Dataset (MoRTH Transport Research Wing)",
+      "AIKosh Road Accident Statistics (Million Plus Cities)",
+      "IndiaAI Compute (AIRAWAT) for GPU-accelerated retraining"
+    ],
+    "platform": "aikosh.indiaai.gov.in",
+    "compute": "IndiaAI Compute Capacity (10,000+ GPUs - AIRAWAT / Yotta Shakti)",
+    "sovereignty_tier": "National AI Infrastructure (Digital India & IndiaAI Mission)",
+    "model_architecture": "YOLOv8-Nano ONNX (Quantized INT8 Edge Deployment)",
+    "target_map50": "65%+",
+    "current_map50": "39.89%"
+  },
+  "government_ecosystem_integrations": {
+    "geospatial": {
+      "provider": "ISRO Bhuvan",
+      "wms_endpoint": "https://bhuvan-vec2.nrsc.gov.in/bhuvan/wms",
+      "purpose": "Sovereign Indian satellite imagery and CartoDem elevation layers"
+    },
+    "vehicle_identity": {
+      "provider": "API Setu / MoRTH Parivahan Sewa",
+      "endpoint": "https://apisetu.gov.in/api/v1/transport/rc",
+      "purpose": "OAuth2-secured vehicle registration and fitness verification for ANPR"
+    },
+    "road_statistics": {
+      "provider": "data.gov.in (OGD Platform India)",
+      "dataset": "MoRTH Basic Road Statistics 2021-22",
+      "purpose": "State-level road density, national highway coverage, and accident benchmarks in PWD reports"
+    },
+    "ai_compute_datasets": {
+      "provider": "AIKosh (IndiaAI)",
+      "portal": "https://aikosh.indiaai.gov.in",
+      "purpose": "Sovereign AI dataset repository and AIRAWAT supercomputer retraining pipeline"
+    }
+  }
+}

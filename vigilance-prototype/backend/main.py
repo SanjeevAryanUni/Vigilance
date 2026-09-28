@@ -156,7 +156,7 @@ class IncidentIn(BaseModel):
     road_name: Optional[str] = Field(None, description="Corridor name")
     speed_kmh: Optional[float] = Field(None, ge=0.0, description="Vehicle speed in km/h")
     reporter_vehicle_id: Optional[str] = Field("BUS-TN01-1042", description="Reporting vehicle identifier")
-    image_b64: Optional[str] = Field(None, description="Optional incident frame proof thumbnail")
+    image_b64: Optional[str] = Field(None, max_length=10485760, description="Optional incident frame proof thumbnail (max 10MB)")
 
 def _update_fleet_position(db: Session, vehicle_id: str, lat: float, lon: float, speed_kmh: float = 0.0, road_name: Optional[str] = None, last_det_type: Optional[str] = None, heading: Optional[float] = None):
     """Upsert fleet position -- prevents unbounded table growth."""
@@ -335,9 +335,16 @@ async def create_detection(request: Request, det: DetectionIn, city: Optional[st
     return {"status": "success", "id": db_det.id, "task_id": task_id}
 
 @app.get("/api/detections")
-def get_detections(limit: int = 100, offset: int = 0, db: Session = Depends(get_db)):
-    """Paginated list of raw detections ordered by timestamp descending."""
-    detections = db.query(Detection).order_by(Detection.timestamp.desc()).offset(offset).limit(limit).all()
+def get_detections(limit: int = 100, offset: int = 0, city: Optional[str] = Query(None), db: Session = Depends(get_db)):
+    """Paginated list of raw detections ordered by timestamp descending, optionally filtered by city."""
+    query = db.query(Detection)
+    if city:
+        from poi_data import get_city_config
+        cfg = get_city_config(city)
+        if cfg and cfg.get("roads"):
+            road_names = [r.get("name") or r.get("road") for r in cfg["roads"]]
+            query = query.filter(Detection.road_name.in_(road_names))
+    detections = query.order_by(Detection.timestamp.desc()).offset(offset).limit(limit).all()
     return [
         {
             "id": d.id,
@@ -356,9 +363,16 @@ def get_detections(limit: int = 100, offset: int = 0, db: Session = Depends(get_
     ]
 
 @app.get("/api/clusters")
-def get_clusters(db: Session = Depends(get_db)):
-    """List deduplicated clusters sorted by dynamic Repair Prioritization Index (RPI) descending."""
-    clusters = db.query(Cluster).order_by(Cluster.rpi_score.desc()).all()
+def get_clusters(city: Optional[str] = Query(None), db: Session = Depends(get_db)):
+    """List deduplicated clusters sorted by dynamic Repair Prioritization Index (RPI) descending, optionally filtered by city."""
+    query = db.query(Cluster)
+    if city:
+        from poi_data import get_city_config
+        cfg = get_city_config(city)
+        if cfg and cfg.get("roads"):
+            road_names = [r.get("name") or r.get("road") for r in cfg["roads"]]
+            query = query.filter(Cluster.road_name.in_(road_names))
+    clusters = query.order_by(Cluster.rpi_score.desc()).all()
     return [
         {
             "id": c.id,
@@ -381,18 +395,31 @@ def get_clusters(db: Session = Depends(get_db)):
     ]
 
 @app.get("/api/stats")
-def get_stats(db: Session = Depends(get_db)):
+def get_stats(city: Optional[str] = Query(None), db: Session = Depends(get_db)):
     """System-wide summary metrics for municipal command center."""
-    total = db.query(Detection).count()
-    clusters_count = db.query(Cluster).count()
-    potholes = db.query(Detection).filter(Detection.defect_type.in_(["D40", "Pothole"])).count()
-    cracks = db.query(Detection).filter(Detection.defect_type.in_(["D00", "D10", "D20", "Crack"])).count()
-    critical = db.query(Detection).filter(Detection.severity == "critical").count()
-    high = db.query(Detection).filter(Detection.severity == "high").count()
+    det_query = db.query(Detection)
+    cls_query = db.query(Cluster)
+    if city:
+        from poi_data import get_city_config
+        cfg = get_city_config(city)
+        if cfg and cfg.get("roads"):
+            road_names = [r.get("name") or r.get("road") for r in cfg["roads"]]
+            det_query = det_query.filter(Detection.road_name.in_(road_names))
+            cls_query = cls_query.filter(Cluster.road_name.in_(road_names))
+
+    total = det_query.count()
+    clusters_count = cls_query.count()
+    potholes = det_query.filter(Detection.defect_type.in_(["D40", "Pothole"])).count()
+    cracks = det_query.filter(Detection.defect_type.in_(["D00", "D10", "D20", "Crack"])).count()
+    critical = det_query.filter(Detection.severity == "critical").count()
+    high = det_query.filter(Detection.severity == "high").count()
     
-    vehicles = [r[0] for r in db.query(Detection.vehicle_id).distinct().all() if r[0]]
-    corridors = [r[0] for r in db.query(Detection.road_name).distinct().all() if r[0]]
-    resolved_count = db.query(Cluster).filter(Cluster.status == "resolved").count()
+    vehicles = [r[0] for r in det_query.with_entities(Detection.vehicle_id).distinct().all() if r[0]]
+    corridors = [r[0] for r in det_query.with_entities(Detection.road_name).distinct().all() if r[0]]
+    resolved_count = cls_query.filter(Cluster.status == "resolved").count()
+
+    all_clusters = cls_query.all()
+    avg_rpi = round(sum(c.rpi_score for c in all_clusters) / len(all_clusters), 1) if all_clusters else 0.0
     
     return {
         "total_detections": total,
@@ -405,7 +432,9 @@ def get_stats(db: Session = Depends(get_db)):
         "vehicle_ids": vehicles,
         "active_potholes": potholes,
         "active_corridors": len(corridors),
-        "potholes_repaired": resolved_count
+        "potholes_repaired": resolved_count,
+        "avg_rpi": avg_rpi,
+        "is_seed": False
     }
 
 @app.get("/api/heatmap")
@@ -471,13 +500,16 @@ async def trigger_dedup(request: Request, db: Session = Depends(get_db)):
     return {"status": "success", "clusters_updated": updated_count}
 
 @app.get("/api/work-orders")
-def get_work_orders(db: Session = Depends(get_db)):
+def get_work_orders(city: Optional[str] = Query(None), db: Session = Depends(get_db)):
     """Returns prioritized work orders corresponding to active road distress clusters."""
-    return get_clusters(db=db)
+    return get_clusters(city=city, db=db)
 
 @app.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket):
+async def websocket_endpoint(websocket: WebSocket, token: Optional[str] = Query(None)):
     """Full-duplex WebSocket channel for real-time edge telemetry streaming."""
+    if API_KEY and token and token != API_KEY:
+        await websocket.close(code=4403, reason="Unauthorized: Invalid API token")
+        return
     await manager.connect(websocket)
     try:
         while True:
@@ -691,9 +723,9 @@ def get_route_delays(db: Session = Depends(get_db)):
 
 
 @app.get("/api/fleet/positions")
-def get_fleet_positions(db: Session = Depends(get_db)):
+def get_fleet_positions(city: Optional[str] = Query(None), db: Session = Depends(get_db)):
     """
-    Returns latest GPS and speed coordinates for all active buses and sensing nodes.
+    Returns latest GPS and speed coordinates for all active buses and sensing nodes, optionally filtered by city.
     """
     # Query latest timestamp per vehicle
     subq = db.query(
@@ -709,15 +741,23 @@ def get_fleet_positions(db: Session = Depends(get_db)):
 
     if not positions:
         # Explicit demonstration seed fleet when freshly started
-        return [
-            {"vehicle_id": "BUS-TN01-1042", "lat": 13.0067, "lon": 80.2030, "speed_kmh": 42.0, "road_name": "Guindy Kathipara", "status": "active", "timestamp": datetime.utcnow().isoformat(), "is_seed": True},
+        seed_fleet = [
+            {"vehicle_id": "BUS-TN01-1042", "lat": 13.0067, "lon": 80.2030, "speed_kmh": 42.0, "road_name": "Kathipara Cloverleaf Junction", "status": "active", "timestamp": datetime.utcnow().isoformat(), "is_seed": True},
             {"vehicle_id": "BUS-TN02-3891", "lat": 13.0604, "lon": 80.2496, "speed_kmh": 38.0, "road_name": "Anna Salai (Mount Road)", "status": "active", "timestamp": datetime.utcnow().isoformat(), "is_seed": True},
             {"vehicle_id": "MUNICIPAL-TRUCK-07", "lat": 12.8231, "lon": 80.0442, "speed_kmh": 28.0, "road_name": "SRM Potheri Corridor", "status": "active", "timestamp": datetime.utcnow().isoformat(), "is_seed": True},
             {"vehicle_id": "PATROL-VAN-12", "lat": 12.9516, "lon": 80.1462, "speed_kmh": 46.0, "road_name": "GST Road (NH-32)", "status": "active", "timestamp": datetime.utcnow().isoformat(), "is_seed": True},
-            {"vehicle_id": "BUS-TN22-5501", "lat": 12.9719, "lon": 80.2500, "speed_kmh": 34.0, "road_name": "Old Mahabalipuram Road", "status": "active", "timestamp": datetime.utcnow().isoformat(), "is_seed": True},
+            {"vehicle_id": "BUS-TN22-5501", "lat": 12.9719, "lon": 80.2500, "speed_kmh": 34.0, "road_name": "Old Mahabalipuram Road (OMR)", "status": "active", "timestamp": datetime.utcnow().isoformat(), "is_seed": True},
         ]
+        if city:
+            from poi_data import get_city_config
+            cfg = get_city_config(city)
+            if cfg and cfg.get("roads"):
+                road_names = {r.get("name") or r.get("road") for r in cfg["roads"]}
+                filtered = [p for p in seed_fleet if p["road_name"] in road_names]
+                return filtered if filtered else seed_fleet
+        return seed_fleet
 
-    return [
+    res = [
         {
             "vehicle_id": p.vehicle_id,
             "lat": p.lat,
@@ -730,6 +770,14 @@ def get_fleet_positions(db: Session = Depends(get_db)):
         }
         for p in positions
     ]
+    if city:
+        from poi_data import get_city_config
+        cfg = get_city_config(city)
+        if cfg and cfg.get("roads"):
+            road_names = {r.get("name") or r.get("road") for r in cfg["roads"]}
+            filtered = [p for p in res if p.get("road_name") in road_names]
+            return filtered if filtered else res
+    return res
 
 
 # ====================================================================
@@ -837,4 +885,49 @@ async def get_city_config():
         "road_count": len(cfg["roads"]),
         "poi_count": len(cfg["pois"]),
     }
+
+
+# ====================================================================
+# Government Platform Integrations (Digital India / BEL Sovereign AI)
+# ====================================================================
+
+@app.get("/api/anpr/verify/{plate_number}", tags=["ANPR"])
+async def verify_plate(plate_number: str):
+    """
+    Verify detected vehicle registration via API Setu -> MoRTH Parivahan.
+    Provides verified owner name, vehicle class, fitness and insurance validity.
+    """
+    from api_setu_client import verify_vehicle_rc
+    return await verify_vehicle_rc(plate_number)
+
+
+@app.get("/api/road-stats/{city}", tags=["Analytics"])
+def get_official_road_stats(city: str):
+    """
+    Official MoRTH road infrastructure statistics from data.gov.in (OGD Platform India).
+    Provides state-level total road length, national/state highways, density, and accident benchmarks.
+    """
+    from data_gov_client import get_road_stats
+    return get_road_stats(city)
+
+
+@app.get("/api/model/metadata", tags=["System"])
+@app.get("/api/models/metadata", tags=["System"])
+def get_model_metadata():
+    """
+    AI model metadata, benchmark metrics, and sovereign retraining architecture
+    leveraging AIKosh (IndiaAI) and AIRAWAT supercluster.
+    """
+    import json
+    metadata_path = os.path.join(os.path.dirname(__file__), "model_metadata.json")
+    if os.path.exists(metadata_path):
+        with open(metadata_path, "r") as f:
+            return json.load(f)
+    return {
+        "status": "configured",
+        "platform": "aikosh.indiaai.gov.in",
+        "compute": "IndiaAI Compute Capacity (AIRAWAT)",
+        "dataset": "RDD2022 India Subset (7,706 images)"
+    }
+
 

@@ -47,12 +47,12 @@ export default function TelemetryFeed({ detections, maxItems = 15, className }: 
               <motion.div
                 key={det.id}
                 layout
-                initial={{ opacity: 0, y: -14, scale: 0.97 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
+                initial={{ opacity: 0, x: -18, scale: 0.96 }}
+                animate={{ opacity: 1, x: 0, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.94 }}
-                transition={{ duration: 0.25 }}
-                whileHover={{ scale: 1.01, x: 2 }}
-                className="p-2.5 rounded-xl bg-slate-950/40 hover:bg-white/[0.06] border border-white/10 transition-colors text-xs flex flex-col gap-1 backdrop-blur-md shadow-xs"
+                transition={{ duration: 0.3, ease: 'easeOut' }}
+                whileHover={{ scale: 1.015, x: 3, transition: { type: 'spring', stiffness: 400, damping: 25 } }}
+                className="relative p-2.5 rounded-xl bg-slate-950/40 hover:bg-white/[0.06] border border-white/10 hover:border-cyan-500/40 transition-all text-xs flex flex-col gap-1 backdrop-blur-md shadow-xs border-l-2 border-l-cyan-400"
               >
                 {/* Top Row: Defect Type + Time */}
                 <div className="flex items-center justify-between">

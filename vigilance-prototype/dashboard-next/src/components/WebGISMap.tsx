@@ -98,6 +98,25 @@ export const MAP_STYLES: Record<string, { label: string; style: maplibregl.Style
       ],
     },
   },
+  bhuvanSatellite: {
+    label: '🇮🇳 Bhuvan (ISRO)',
+    style: {
+      version: 8,
+      sources: {
+        'bhuvan-satellite': {
+          type: 'raster',
+          tiles: [
+            'https://bhuvan-vec2.nrsc.gov.in/bhuvan/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=india3&SRS=EPSG:3857&BBOX={bbox-epsg-3857}&WIDTH=256&HEIGHT=256&FORMAT=image/png',
+          ],
+          tileSize: 256,
+          attribution: '© ISRO Bhuvan | National Remote Sensing Centre (NRSC)',
+        },
+      },
+      layers: [
+        { id: 'bhuvan-satellite-layer', type: 'raster', source: 'bhuvan-satellite', minzoom: 0, maxzoom: 20 },
+      ],
+    },
+  },
   esriTopo: {
     label: '🏔️ Topography',
     style: {
@@ -138,6 +157,7 @@ export default function WebGISMap({
   className,
   activeMapStyle = DEFAULT_STYLE,
 }: WebGISMapProps) {
+  const [isMapReady, setIsMapReady] = useState(false);
   const mapContainer = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markersRef = useRef<maplibregl.Marker[]>([]);
@@ -369,6 +389,7 @@ export default function WebGISMap({
       map.resize();
       addPOIMarkers(map);
       addMarkers(map, clustersRef.current);
+      setIsMapReady(true);
     });
 
     const resizeObserver = new ResizeObserver(() => {
@@ -432,7 +453,20 @@ export default function WebGISMap({
 
   return (
     <div className={`w-full h-full relative rounded-xl overflow-hidden bg-slate-950 ${className || ''}`}>
-      <div ref={mapContainer} className="w-full h-full absolute inset-0" />
+      {!isMapReady && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm">
+          <div className="flex flex-col items-center gap-2.5">
+            <div className="w-7 h-7 rounded-full border-2 border-cyan-400 border-t-transparent animate-spin" />
+            <span className="text-[10.5px] font-mono text-cyan-300 tracking-wider">CONNECTING GIS ENGINE...</span>
+          </div>
+        </div>
+      )}
+      <div
+        ref={mapContainer}
+        className={`w-full h-full absolute inset-0 transition-opacity duration-700 ${
+          isMapReady ? 'opacity-100' : 'opacity-0'
+        }`}
+      />
     </div>
   );
 }

@@ -45,6 +45,13 @@ def get_active_city_config() -> Dict[str, Any]:
     return CITY_CONFIGS[_active_city]
 
 
+def get_city_config(city_key: Optional[str] = None) -> Optional[Dict[str, Any]]:
+    """Returns configuration for the specified city, or the active city if None."""
+    if city_key is None:
+        return CITY_CONFIGS.get(_active_city)
+    return CITY_CONFIGS.get(city_key.lower().strip())
+
+
 def get_all_cities_summary() -> List[Dict[str, Any]]:
     """Returns a summary of all available cities for the frontend dropdown."""
     return [

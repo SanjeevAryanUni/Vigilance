@@ -26,12 +26,18 @@ export function useWebSocket(onMessage?: (msg: WebSocketMessage) => void) {
     }
 
     const base = getApiBase();
-    const wsUrl =
+    let wsUrl =
       process.env.NEXT_PUBLIC_WS_URL ||
       (base ? base.replace(/^http/, 'ws') + '/ws' : '') ||
       (window.location.hostname === 'localhost' ? 'ws://localhost:8000/ws' : '');
 
     if (!wsUrl) return;
+
+    const apiKey = process.env.NEXT_PUBLIC_API_KEY || 'vigilance_sih_2026';
+    if (apiKey && !wsUrl.includes('token=')) {
+      const sep = wsUrl.includes('?') ? '&' : '?';
+      wsUrl = `${wsUrl}${sep}token=${encodeURIComponent(apiKey)}`;
+    }
 
     try {
       const ws = new WebSocket(wsUrl);

@@ -77,7 +77,8 @@ type SidebarTab = 'queue' | 'traffic' | 'analytics';
 const MAP_LAYER_OPTIONS = [
   { key: 'esriDark', label: 'Dark Canvas' },
   { key: 'osmStandard', label: 'Street Map' },
-  { key: 'esriSatellite', label: 'Satellite' },
+  { key: 'esriSatellite', label: 'Satellite (Esri)' },
+  { key: 'bhuvanSatellite', label: '🇮🇳 Bhuvan (ISRO)' },
   { key: 'esriTopo', label: 'Topography' },
 ];
 
@@ -230,7 +231,7 @@ export default function CommandCenterPage() {
               icon={Activity}
               colorClass="text-slate-100"
               spotlightColor="blue"
-              badgeText="LIVE 5Hz"
+              badgeText={stats.is_seed ? "DEMO SEED" : "LIVE 5Hz"}
               sparklineData={[15, 22, 18, 32, 28, 45, 52]}
             />
             <KPICard
@@ -260,7 +261,7 @@ export default function CommandCenterPage() {
               icon={Truck}
               colorClass="text-emerald-400"
               spotlightColor="emerald"
-              badgeText="ONLINE"
+              badgeText={stats.is_seed ? "DEMO SEED" : "ONLINE"}
               sparklineData={[5, 5, 5, 5, 5, 5, 5]}
             />
           </div>
@@ -303,43 +304,40 @@ export default function CommandCenterPage() {
           </div>
 
           {/* Sidebar View Tabs (Queue & Live Feed vs ANPR Incidents vs Corridor Analytics) */}
-          <div className="flex items-center p-1 bg-slate-900/40 backdrop-blur-xl border border-white/10 rounded-xl text-xs font-mono shrink-0 shadow-sm">
-            <button
-              onClick={() => setSidebarTab('queue')}
-              className={cn(
-                'flex-1 py-1.5 px-1.5 rounded-lg flex items-center justify-center gap-1 transition-all font-semibold text-[11px]',
-                sidebarTab === 'queue'
-                  ? 'bg-blue-600/80 text-white shadow-[0_0_12px_rgba(37,99,235,0.4)] border border-blue-400/30'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]'
-              )}
-            >
-              <ListOrdered className="w-3.5 h-3.5" />
-              <span>Queue</span>
-            </button>
-            <button
-              onClick={() => setSidebarTab('traffic')}
-              className={cn(
-                'flex-1 py-1.5 px-1.5 rounded-lg flex items-center justify-center gap-1 transition-all font-semibold text-[11px]',
-                sidebarTab === 'traffic'
-                  ? 'bg-amber-600/80 text-white shadow-[0_0_12px_rgba(245,158,11,0.4)] border border-amber-400/30'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]'
-              )}
-            >
-              <ShieldAlert className="w-3.5 h-3.5" />
-              <span>ANPR Feed</span>
-            </button>
-            <button
-              onClick={() => setSidebarTab('analytics')}
-              className={cn(
-                'flex-1 py-1.5 px-1.5 rounded-lg flex items-center justify-center gap-1 transition-all font-semibold text-[11px]',
-                sidebarTab === 'analytics'
-                  ? 'bg-blue-600/80 text-white shadow-[0_0_12px_rgba(37,99,235,0.4)] border border-blue-400/30'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]'
-              )}
-            >
-              <BarChart3 className="w-3.5 h-3.5" />
-              <span>Analytics</span>
-            </button>
+          <div className="flex items-center p-1 bg-slate-900/40 backdrop-blur-xl border border-white/10 rounded-xl text-xs font-mono shrink-0 shadow-sm relative">
+            {(
+              [
+                { id: 'queue', label: 'Queue', icon: ListOrdered, color: 'from-blue-600/90 to-cyan-600/90' },
+                { id: 'traffic', label: 'ANPR Feed', icon: ShieldAlert, color: 'from-amber-600/90 to-orange-600/90' },
+                { id: 'analytics', label: 'Analytics', icon: BarChart3, color: 'from-blue-600/90 to-indigo-600/90' },
+              ] as const
+            ).map((tab) => {
+              const Icon = tab.icon;
+              const isActive = sidebarTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setSidebarTab(tab.id)}
+                  className={cn(
+                    'relative flex-1 py-1.5 px-1.5 rounded-lg flex items-center justify-center gap-1.5 transition-colors font-semibold text-[11px] z-10',
+                    isActive ? 'text-white' : 'text-slate-400 hover:text-slate-200'
+                  )}
+                >
+                  {isActive && (
+                    <motion.div
+                      layoutId="activeSidebarTabPill"
+                      className={cn(
+                        'absolute inset-0 rounded-lg shadow-[0_0_14px_rgba(37,99,235,0.4)] border border-white/20 bg-gradient-to-r z-[-1]',
+                        tab.color
+                      )}
+                      transition={{ type: 'spring', stiffness: 450, damping: 32 }}
+                    />
+                  )}
+                  <Icon className="w-3.5 h-3.5" />
+                  <span>{tab.label}</span>
+                </button>
+              );
+            })}
           </div>
 
           {/* Tab Content with Fluid Animations */}

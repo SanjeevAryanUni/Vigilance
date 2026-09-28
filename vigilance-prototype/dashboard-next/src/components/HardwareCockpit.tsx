@@ -150,8 +150,14 @@ export default function HardwareCockpit() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.3, delay: idx * 0.05 }}
-                    whileHover={{ y: -3, scale: 1.015 }}
-                    className={`glass-card rounded-xl p-4 ${style.border} ${style.glow} cursor-default transition-colors`}
+                    whileHover={{
+                      y: -4,
+                      scale: 1.025,
+                      rotateY: 3,
+                      transition: { type: 'spring', stiffness: 350, damping: 20 },
+                    }}
+                    style={{ perspective: 1000, transformStyle: 'preserve-3d' }}
+                    className={`glass-card rounded-xl p-4 ${style.border} ${style.glow} cursor-default transition-all`}
                   >
                     {/* Icon + Label */}
                     <div className="flex items-center gap-2.5 mb-3">
@@ -233,6 +239,18 @@ export default function HardwareCockpit() {
               </span>
               <span className="text-[9px] text-slate-600 font-mono">50 Hz</span>
             </div>
+          </div>
+
+          {/* AIKosh Retraining Architecture Banner */}
+          <div className="mt-3 p-2.5 rounded-lg bg-indigo-950/30 border border-indigo-500/20 flex items-center justify-between text-[10.5px] font-mono">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-indigo-400 animate-ping" />
+              <span className="text-indigo-300 font-bold">Planned Sovereign Pipeline:</span>
+              <span className="text-slate-300">AIKosh (aikosh.indiaai.gov.in) Road Safety Dataset + AIRAWAT GPU Retraining</span>
+            </div>
+            <span className="text-[9.5px] px-2 py-0.5 rounded bg-indigo-900/60 text-indigo-200 border border-indigo-700/60 font-semibold">
+              IndiaAI Mission
+            </span>
           </div>
         </motion.div>
       )}

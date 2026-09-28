@@ -43,6 +43,8 @@ export interface DashboardStats {
   critical_severity: number;
   high_severity: number;
   active_vehicles: number;
+  avg_rpi?: number;
+  is_seed?: boolean;
 }
 
 export interface POI {

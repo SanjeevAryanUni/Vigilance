@@ -10,6 +10,15 @@ export const CARTO_DARK_TILES = [
   'https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png',
 ];
 
+export const BHUVAN_SATELLITE_TILES = {
+  type: 'raster' as const,
+  tiles: [
+    'https://bhuvan-vec2.nrsc.gov.in/bhuvan/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=india3&SRS=EPSG:3857&BBOX={bbox-epsg-3857}&WIDTH=256&HEIGHT=256&FORMAT=image/png',
+  ],
+  tileSize: 256,
+  attribution: '© ISRO Bhuvan | National Remote Sensing Centre (NRSC)',
+};
+
 export const DEFECT_INFO: Record<DefectType, { name: string; color: string; desc: string; badgeBg: string }> = {
   D00: {
     name: 'Longitudinal Crack',
@@ -335,4 +344,6 @@ export const INITIAL_STATS: DashboardStats = {
   critical_severity: 14,
   high_severity: 28,
   active_vehicles: 5,
+  avg_rpi: 74.2,
+  is_seed: true,
 };

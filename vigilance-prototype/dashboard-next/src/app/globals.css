@@ -332,3 +332,35 @@ body {
 .neon-glow-red {
   box-shadow: 0 0 15px -2px rgba(239, 68, 68, 0.35), inset 0 0 10px -2px rgba(239, 68, 68, 0.15);
 }
+
+/* Skeleton Loading Shimmer */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.09) 50%, rgba(255,255,255,0.03) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s infinite ease-in-out;
+  border-radius: 8px;
+}
+
+/* Pulse Glow & Radar Ping */
+@keyframes glow-breathe {
+  0%, 100% { opacity: 0.8; transform: scale(1); filter: drop-shadow(0 0 4px currentColor); }
+  50% { opacity: 1; transform: scale(1.02); filter: drop-shadow(0 0 10px currentColor); }
+}
+
+.animate-glow-breathe {
+  animation: glow-breathe 2.4s ease-in-out infinite;
+}
+
+@keyframes radar-ripple {
+  0% { transform: scale(0.6); opacity: 0.9; }
+  100% { transform: scale(2.4); opacity: 0; }
+}
+
+.radar-ping-ring {
+  animation: radar-ripple 2s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+}
