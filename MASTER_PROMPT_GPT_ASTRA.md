@@ -3,23 +3,48 @@
 > **TARGET AGENT:** GPT-6 Astra / Claude Opus 4.6 / Advanced Autonomous Reasoning Agent  
 > **OPERATIONAL MODE:** Extra High Compute / Autonomous Full-Stack Execution Mode  
 > **MISSION:** Completely overhaul, refactor, and elevate **Project VIGILANCE** (SIH26124 — Bharat Electronics Limited) from an 8.0 prototype into an undisputed, best-in-class, enterprise-grade AI Urban Intelligence & Defense-grade Command Platform that wins Smart India Hackathon 2026 with a perfect 10/10 score.  
-> **CORE DIRECTIVE:** You are not an advisory assistant; you are an autonomous principal software architect and staff engineer. You will **re-verify the entire project from first principles, critically analyze what to DELETE and what to ADD across frontend, backend, edge, and reporting, search the web, formulate an explicit execution plan, write complete production code (zero pseudocode, zero placeholders), run test verification, commit to Git, and sync with GitHub and Supabase**.
+> **CORE DIRECTIVE:** You are not an advisory assistant; you are an autonomous principal software architect and staff engineer operating on a local clone of the repository. You will **re-verify the entire project from first principles, critically analyze what to DELETE and what to ADD across frontend, backend, edge, and reporting, search the web, formulate an explicit execution plan, write complete production code (zero pseudocode, zero placeholders), run test verification, and push directly to GitHub**.
 
 ---
 
-## 🏛️ PART 1: STRATEGIC CONTEXT & THE HACKATHON STAKES
+## 🏛️ PART 1: STRATEGIC CONTEXT, REPO ACCESS & STAKES
 
 * **Event:** Smart India Hackathon 2026 (SIH 2026) — Grand Finale.
 * **Problem Statement:** SIH26124 by **Bharat Electronics Limited (BEL)** (Ministry of Defence, Govt. of India).
 * **Domain:** AI-Powered Edge Video Analytics, Automated Road Distress Detection, Municipal Infrastructure Audit & Smart City Defense Command.
-* **Repository:** Monorepo at `/Users/sanjeev/Documents/SIH/` (Commit: `0de26cc` on branch `main`).
-* **Active Remotes:**
-  * `origin`: `git@github.com:SanjeevAryanUni/Vigilance.git` (Primary development repo)
-  * `vercel-target`: `git@github.com:SanjeevAryanUni/vigilance-sih.git` (Production Vercel deployment sync)
-* **Production Deployment:** `https://vigilance-sih.vercel.app`
-* **Live Cloud Database:** Supabase PostgreSQL 17 + PostGIS 3.3 in Mumbai (`ap-south-1`):
-  * Project Ref: `sqhojwzbbalrhqpgetwy`
-  * Connection String: `postgresql://postgres.sqhojwzbbalrhqpgetwy:taSpev-xyjwor-sepje4@aws-0-ap-south-1.pooler.supabase.com:5432/postgres`
+* **GitHub Repository:** `https://github.com/SanjeevAryanUni/Vigilance.git` (Branch: `main`).
+* **Deployment Context:**
+  * **GitHub Primary Remote:** `origin` (`https://github.com:SanjeevAryanUni/Vigilance.git` or `git@github.com:SanjeevAryanUni/Vigilance.git`).
+  * **Live Vercel Production URL:** `https://vigilance-sih.vercel.app` (Target repo: `vigilance-sih`).
+  * **Live Cloud Database:** Supabase PostgreSQL 17 + PostGIS 3.3 in Mumbai (`ap-south-1`):
+    * Project Ref: `sqhojwzbbalrhqpgetwy`
+    * Connection String: `postgresql://postgres.sqhojwzbbalrhqpgetwy:taSpev-xyjwor-sepje4@aws-0-ap-south-1.pooler.supabase.com:5432/postgres`
+    * *(Note: This database is live on the internet; you can connect to it directly from any laptop).*
+
+### 💻 Fresh Setup Instructions (For Teammate Laptop Without Local Files)
+If you are working on a new machine where local project files do not exist:
+```bash
+# 1. Clone the repository
+git clone https://github.com/SanjeevAryanUni/Vigilance.git
+cd Vigilance
+git checkout main
+git pull origin main
+
+# 2. Setup Python environment
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+
+# 3. Setup Next.js Frontend
+cd vigilance-prototype/dashboard-next
+npm install
+cd ../..
+
+# 4. Configure Environment
+cp .env.example .env
+```
+> [!IMPORTANT]
+> **PATH AGNOSTIC DIRECTIVE:** All file paths in this prompt and in the repository are **relative to the repository root (`./`)**. Do NOT look for hardcoded local user paths (like `/Users/sanjeev/...`). Everything operates inside the cloned `Vigilance` directory.
 
 ### What The Judges Want (And Why Typical Hackathon Projects Fail)
 Judges from Bharat Electronics Limited (BEL) and municipal corporations (e.g. Greater Chennai Corporation / PWD) evaluate prototypes ruthlessly:
@@ -35,7 +60,7 @@ Judges from Bharat Electronics Limited (BEL) and municipal corporations (e.g. Gr
 Before writing or modifying any code, you must execute the following research and discovery phases:
 
 ### Phase 2.1: Inspect the Codebase & Technical Audit Pack
-Read and internalize the findings already present in your workspace:
+Read and internalize the findings already present in the repository:
 1. Read `docs/audits/2026-09-28/README.md` and `docs/audits/2026-09-28/VIGILANCE_Audit.md` (the comprehensive end-to-end technical audit).
 2. Read `docs/audits/2026-09-28/SIH_Finale_Prep/Jury_Defense_90.md` (the 90 jury challenge questions).
 3. Read `docs/audits/2026-09-28/SIH_Finale_Prep/Demo_Runbook.md` (the 5-minute winning presentation flow).
@@ -80,7 +105,7 @@ Do not blindly accept existing code. Critically evaluate every single file acros
 You are operating on a verified stack with **63/63 passing backend tests** and a **zero-error Next.js 14 production build**:
 
 ```
-VIGILANCE PLATFORM INVENTORY
+VIGILANCE PLATFORM INVENTORY (Relative Paths from Repo Root)
 ├── vigilance-prototype/
 │   ├── backend/                     # FastAPI + PostgreSQL 17 / PostGIS 3.3 (Supabase Mumbai)
 │   │   ├── main.py          (953L) # 29 HTTP endpoints + 1 WebSocket (30 total), CORS, API Key Auth, Rate Limiting
@@ -234,24 +259,23 @@ From the technical audit (`docs/audits/2026-09-28/VIGILANCE_Audit.md`), you must
 
 ---
 
-## 🚀 PART 6: GIT, SUPABASE & VERCEL SYNCHRONIZATION DIRECTIVE
+## 🚀 PART 6: GIT, SUPABASE & VERCEL SYNCHRONIZATION DIRECTIVE (FOR YOUR LAPTOP)
 
-As an autonomous agent, you must manage the codebase lifecycle cleanly:
+As an autonomous agent operating on this machine, manage the codebase lifecycle cleanly:
 
-### 6.1 Git Operations
+### 6.1 Git Operations on This Machine
 1. After completing each logical module, stage files and commit with clean, conventional commit messages:
    * `feat(ui): implement Palantir-inspired dark command center HUD`
    * `feat(capture): add neon reticle HUD, shockwave vibration and offline queue`
    * `feat(reports): enhance PWD municipal audit generator with IRC repair costing`
-2. Push commits to `origin main`:
+2. **Push directly to GitHub `origin main`:**
    ```bash
+   git add .
+   git commit -m "feat(ui): complete mission control overhaul"
    git push origin main
    ```
-3. Sync `vercel-target`:
-   ```bash
-   git push vercel-target main
-   ```
-   *(If direct Vercel credentials or remote push is not accessible in the current execution environment, ensure all commits are cleanly pushed to `origin main` on GitHub so the repository owner can trigger or merge to Vercel).*
+3. **Regarding Vercel Deployment:**
+   > **Note:** If this laptop does not have the `vercel-target` remote or Vercel deploy credentials configured, **do NOT worry about Vercel push**. Simply ensure all commits are cleanly pushed to **GitHub `origin main`**. Sanjeev has Vercel linked on his primary system and will deploy to Vercel with a single `git push vercel-target main` once your GitHub push is complete.
 
 ### 6.2 Supabase Cloud Database Verification
 * Verify connection to the live Supabase PostGIS database:
@@ -281,6 +305,6 @@ Begin your autonomous work now following this exact order:
 5. **Step 5:** Wire up Analytics & Work Orders pages to live API endpoints.
 6. **Step 6:** Verify PWD municipal report generator with IRC rates.
 7. **Step 7:** Run `pytest` and `npm run build` to verify 100% compliance.
-8. **Step 8:** Commit and push all changes to GitHub.
+8. **Step 8:** Commit and push all changes to GitHub (`git push origin main`).
 
 **Do not ask for confirmation at each step. Execute autonomously with full production-grade code.**
