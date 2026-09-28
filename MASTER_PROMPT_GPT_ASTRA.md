@@ -12,7 +12,7 @@
 * **Event:** Smart India Hackathon 2026 (SIH 2026) — Grand Finale.
 * **Problem Statement:** SIH26124 by **Bharat Electronics Limited (BEL)** (Ministry of Defence, Govt. of India).
 * **Domain:** AI-Powered Edge Video Analytics, Automated Road Distress Detection, Municipal Infrastructure Audit & Smart City Defense Command.
-* **Repository:** Monorepo at `/Users/sanjeev/Documents/SIH/` (Commit: `65fe3ce` on branch `main`).
+* **Repository:** Monorepo at `/Users/sanjeev/Documents/SIH/` (Commit: `eff46f2` on branch `main`).
 * **Active Remotes:**
   * `origin`: `git@github.com:SanjeevAryanUni/Vigilance.git` (Primary development repo)
   * `vercel-target`: `git@github.com:SanjeevAryanUni/vigilance-sih.git` (Production Vercel deployment sync)
@@ -64,7 +64,7 @@ You are operating on a verified stack with **63/63 passing backend tests** and a
 VIGILANCE PLATFORM INVENTORY
 ├── vigilance-prototype/
 │   ├── backend/                     # FastAPI + PostgreSQL 17 / PostGIS 3.3 (Supabase Mumbai)
-│   │   ├── main.py          (947L) # 30 API endpoints + 1 WebSocket, CORS, API Key Auth, Rate Limiting
+│   │   ├── main.py          (953L) # 29 HTTP endpoints + 1 WebSocket (30 total), CORS, API Key Auth, Rate Limiting
 │   │   ├── database.py      (107L) # SQLAlchemy session pooler, PostGIS auto-migration
 │   │   ├── models.py        (147L) # 5 ORM tables: detections, clusters, traffic_observations, incident_reports, fleet_positions
 │   │   ├── dbscan_dedup.py  (171L) # 3-tier spatial clustering: PostGIS ST_ClusterDBSCAN → Sklearn Haversine → Python Leader
