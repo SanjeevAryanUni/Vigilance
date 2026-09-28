@@ -1,0 +1,107 @@
+[
+  {
+    "path": "Requirement_Matrix.md",
+    "bytes": 53546,
+    "sha256": "0c8bc68296a4dbe8351d9be666e3c8ddc73906a30f69a1402c6d2d4a28cc21da"
+  },
+  {
+    "path": "VIGILANCE_Audit.html",
+    "bytes": 595492,
+    "sha256": "bc1c2751c4cde8780c16d365aa6c1efa442a3f7af9bfce4929dabca883812874"
+  },
+  {
+    "path": "VIGILANCE_Audit.md",
+    "bytes": 78730,
+    "sha256": "c9715bc4669f8b786c80c9cfb390dcb482117fb1ff40d4de47cc7b4d3d17cd31"
+  },
+  {
+    "path": "evidence/Verification_Notes.md",
+    "bytes": 1674,
+    "sha256": "a1899115c7fcced2989f73cd84c7487e266e3f17bcdedbd0b7d6576e9d036315"
+  },
+  {
+    "path": "evidence/additional-reproduction.json",
+    "bytes": 695,
+    "sha256": "b26af368600e076269c38bedbe89348c5d70a254ec9ea766c77b43239656c53e"
+  },
+  {
+    "path": "evidence/coverage.json",
+    "bytes": 763,
+    "sha256": "1109b87eafdf9aa02d7d5e3fcac0fa114e3d45127a9eb0ff5548803b78ac9202"
+  },
+  {
+    "path": "evidence/media-summary.json",
+    "bytes": 4525,
+    "sha256": "28ac898e084f52bda1f4a29844a11f1311c5eaa2df5f3b5b4d30497cb274355b"
+  },
+  {
+    "path": "evidence/npm-audit.json",
+    "bytes": 18757,
+    "sha256": "1b7c56c4bd85a042a2e7f7172edc43e6a80e3bb75348d785709e760cb8d4b0fe"
+  },
+  {
+    "path": "evidence/reproduction.json",
+    "bytes": 5001,
+    "sha256": "e0006fc531e0c3adf8d86b42bf8d2f043dd14ab4608359395b661fd095ae7a59"
+  },
+  {
+    "path": "evidence/requirements.json",
+    "bytes": 60802,
+    "sha256": "6ca54133ab90e4912a7a289f4230793ded0ab716d11eced9f1d8fd3cd3a72503"
+  },
+  {
+    "path": "screenshots/analytics-desktop.png",
+    "bytes": 44417,
+    "sha256": "1441502cfdb74e29f370add0cc159146cf267788fefe83c59c21fb0bcb983765"
+  },
+  {
+    "path": "screenshots/capture-mobile-390.png",
+    "bytes": 44474,
+    "sha256": "c08e7acfe0e14d0ce7bc911f9247ae0e50097a71fd66d6d0080d5f5268569b93"
+  },
+  {
+    "path": "screenshots/city-bangalore-chennai-map.png",
+    "bytes": 148653,
+    "sha256": "acf0ffff53ccc802a9436efa2d3e1898e1ca60354d23ebf9ed367863f6c35ccb"
+  },
+  {
+    "path": "screenshots/dashboard-desktop.png",
+    "bytes": 130245,
+    "sha256": "02b5e43c180ba8bfced7bebcde927aa4fe29526e09c1be641413ddb0ee630df7"
+  },
+  {
+    "path": "screenshots/dashboard-laptop-1366.png",
+    "bytes": 129255,
+    "sha256": "08838baeb91ebcb0342128fc3bf8d0e3836a1647a7dcaf9d68632487d1f3f06e"
+  },
+  {
+    "path": "screenshots/dashboard-mobile-390.png",
+    "bytes": 46276,
+    "sha256": "65a7fa154eb8d733c1cfe6d2caa0bd7bdcfc6cffa5f4cea59aae6a75ffe24d0b"
+  },
+  {
+    "path": "screenshots/dashboard-mobile-queue.png",
+    "bytes": 44322,
+    "sha256": "9b03ca51b6944bd7a63b779d58165b5585d0f1df55370adbb04541d30740b2ae"
+  },
+  {
+    "path": "screenshots/fleet-tablet-768.png",
+    "bytes": 85615,
+    "sha256": "c1db190ee02fc6cc02d25946517a8affe9ec27ac4302ac332b16efd5c7b1f6ce"
+  },
+  {
+    "path": "screenshots/orders-mobile-390.png",
+    "bytes": 48092,
+    "sha256": "6b6eec55871e2228e5878321b1ced6b0a809b58456ec02319f6521f2e59348d5"
+  },
+  {
+    "path": "screenshots/real-order-invalid-date.png",
+    "bytes": 97624,
+    "sha256": "fc8af150262cdb26ce6b1302c70b85e2ab76ebd3216da618092aa4fdde56d56a"
+  },
+  {
+    "path": "screenshots/work-orders-desktop.png",
+    "bytes": 116219,
+    "sha256": "42d92c78bbcbba95bb32a7fd2815865b03b6bcaaa4fbe094ca0ce0cbdb33363b"
+  }
+]

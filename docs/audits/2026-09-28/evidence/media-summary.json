@@ -1,0 +1,188 @@
+[
+  {
+    "path": "assets/failsafe_recording.mp4",
+    "bytes": 18055800,
+    "width": 1280.0,
+    "height": 720.0,
+    "fps": 25.0,
+    "seconds": 90.0,
+    "fourcc": 877677894
+  },
+  {
+    "path": "assets/demo_samples/chennai_road.mp4",
+    "bytes": 12179566,
+    "width": 1280.0,
+    "height": 720.0,
+    "fps": 25.0,
+    "seconds": 12.0,
+    "fourcc": 877677894
+  },
+  {
+    "path": "assets/demo_samples/delhi_plates.mp4",
+    "bytes": 3256075,
+    "width": 1280.0,
+    "height": 720.0,
+    "fps": 25.0,
+    "seconds": 15.0,
+    "fourcc": 877677894
+  },
+  {
+    "path": "assets/demo_samples/bangalore_traffic.mp4",
+    "bytes": 3331298,
+    "width": 1280.0,
+    "height": 720.0,
+    "fps": 25.0,
+    "seconds": 15.0,
+    "fourcc": 877677894
+  },
+  {
+    "path": "assets/test_cards/plate_card_TN09BK4481_comm.jpg",
+    "shape": [
+      200,
+      800,
+      3
+    ],
+    "bytes": 31793
+  },
+  {
+    "path": "assets/test_cards/plate_card_KA01MG5678.jpg",
+    "shape": [
+      200,
+      800,
+      3
+    ],
+    "bytes": 29106
+  },
+  {
+    "path": "assets/test_cards/pothole_card_01.jpg",
+    "shape": [
+      800,
+      1200,
+      3
+    ],
+    "bytes": 525119
+  },
+  {
+    "path": "assets/test_cards/plate_card_MH12AB1234.jpg",
+    "shape": [
+      200,
+      800,
+      3
+    ],
+    "bytes": 26762
+  },
+  {
+    "path": "assets/test_cards/plate_card_TN07CK4523.jpg",
+    "shape": [
+      200,
+      800,
+      3
+    ],
+    "bytes": 27549
+  },
+  {
+    "path": "SIH26_TEAM_VIGILANCE.pptx",
+    "slides": 9,
+    "media_files": [
+      "ppt/media/image1.png",
+      "ppt/media/image2.png",
+      "ppt/media/image3.png",
+      "ppt/media/image4.png",
+      "ppt/media/image5.png",
+      "ppt/media/image6.png",
+      "ppt/media/image7.png",
+      "ppt/media/image8.png",
+      "ppt/media/image9.png",
+      "ppt/media/image10.png",
+      "ppt/media/image11.png",
+      "ppt/media/image12.png",
+      "ppt/media/image13.png",
+      "ppt/media/image14.png",
+      "ppt/media/image15.png",
+      "ppt/media/image16.png",
+      "ppt/media/image17.png",
+      "ppt/media/image18.png",
+      "ppt/media/image19.png",
+      "ppt/media/image20.png",
+      "ppt/media/image21.png",
+      "ppt/media/image22.png",
+      "ppt/media/image23.png",
+      "ppt/media/image24.png",
+      "ppt/media/image25.png",
+      "ppt/media/image26.png",
+      "ppt/media/image27.png",
+      "ppt/media/image28.png",
+      "ppt/media/image29.png",
+      "ppt/media/image30.png",
+      "ppt/media/image31.png",
+      "ppt/media/image32.png",
+      "ppt/media/image33.png",
+      "ppt/media/image34.png",
+      "ppt/media/image35.png",
+      "ppt/media/image36.png",
+      "ppt/media/image37.png",
+      "ppt/media/image38.png",
+      "ppt/media/image39.png",
+      "ppt/media/image40.png",
+      "ppt/media/image41.png",
+      "ppt/media/image42.png",
+      "ppt/media/image43.png",
+      "ppt/media/image44.png",
+      "ppt/media/image45.png",
+      "ppt/media/image46.png",
+      "ppt/media/image47.png",
+      "ppt/media/image48.png",
+      "ppt/media/image49.png",
+      "ppt/media/image50.png",
+      "ppt/media/image51.png",
+      "ppt/media/image52.png",
+      "ppt/media/image53.png",
+      "ppt/media/image54.png",
+      "ppt/media/image55.png",
+      "ppt/media/image56.png",
+      "ppt/media/image57.png",
+      "ppt/media/image58.png",
+      "ppt/media/image59.png",
+      "ppt/media/image60.png",
+      "ppt/media/image61.png",
+      "ppt/media/image62.png",
+      "ppt/media/image63.png",
+      "ppt/media/image64.png",
+      "ppt/media/image65.png",
+      "ppt/media/image66.png",
+      "ppt/media/image67.png",
+      "ppt/media/image68.png",
+      "ppt/media/image69.png",
+      "ppt/media/image70.png",
+      "ppt/media/image71.png",
+      "ppt/media/image72.png",
+      "ppt/media/image73.png",
+      "ppt/media/image74.png",
+      "ppt/media/image75.png",
+      "ppt/media/image76.png",
+      "ppt/media/image77.png",
+      "ppt/media/image78.png",
+      "ppt/media/image79.png",
+      "ppt/media/image80.png",
+      "ppt/media/image81.png",
+      "ppt/media/image82.png",
+      "ppt/media/image83.png",
+      "ppt/media/image84.png",
+      "ppt/media/image85.png",
+      "ppt/media/image86.png",
+      "ppt/media/image87.png"
+    ]
+  },
+  {
+    "path": "presentations/VIGILANCE_SIH2026_BEL_Refreshed.pptx",
+    "slides": 7,
+    "media_files": [
+      "ppt/media/image2.png",
+      "ppt/media/image4.jpg",
+      "ppt/media/image1.png",
+      "ppt/media/image3.jpg",
+      "ppt/media/image6.jpg",
+      "ppt/media/image5.jpg"
+    ]
+  }
+]

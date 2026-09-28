@@ -1,0 +1,176 @@
+{
+  "websocket": {
+    "error": "NameError",
+    "detail": "name 'API_KEY' is not defined"
+  },
+  "fresh_stats": {
+    "total_detections": 0,
+    "deduplicated_clusters": 0,
+    "potholes": 0,
+    "cracks": 0,
+    "critical_severity": 0,
+    "high_severity": 0,
+    "active_vehicles": 5,
+    "vehicle_ids": [],
+    "active_potholes": 0,
+    "active_corridors": 0,
+    "potholes_repaired": 0,
+    "avg_rpi": 0.0,
+    "is_seed": false
+  },
+  "auth_missing": 401,
+  "auth_valid": 201,
+  "clusters": [
+    {
+      "id": 1,
+      "centroid_lat": 13.0067,
+      "centroid_lon": 80.203,
+      "detection_count": 1,
+      "dominant_type": "D40",
+      "max_severity": "high",
+      "rpi_score": 54.8,
+      "status": "open",
+      "road_name": "Guindy Kathipara Junction, Chennai",
+      "contractor_name": "NHAI Metro Division Chennai",
+      "contractor_contact": "+91 91760 55667",
+      "sla_hours": 12,
+      "nearest_poi": "MIOT International Hospital",
+      "poi_distance_m": 3385.1,
+      "updated_at": "2026-09-28T13:42:52.654688"
+    }
+  ],
+  "bad_enum": 201,
+  "report_bangalore_with_chennai_data": {
+    "city": "Bangalore",
+    "municipal_body": "Bruhat Bengaluru Mahanagara Palike (BBMP)",
+    "total_defects": 2,
+    "damage_breakdown": {
+      "NOT_A_DEFECT": 1,
+      "D40": 1
+    },
+    "estimated_total_budget_inr": 18000.0,
+    "report_generated_utc": "2026-09-28T13:42:52.660873",
+    "detections": [
+      {
+        "id": 2,
+        "lat": 13.0067,
+        "lon": 80.203,
+        "road_name": "Guindy Kathipara Junction, Chennai",
+        "damage_type": "NOT_A_DEFECT",
+        "defect_type": "NOT_A_DEFECT",
+        "severity": "banana",
+        "confidence": 0.9,
+        "detected_at": "2026-09-28T13:42:52.657655",
+        "timestamp": "2026-09-28T13:42:52.657655"
+      },
+      {
+        "id": 1,
+        "lat": 13.0067,
+        "lon": 80.203,
+        "road_name": "Guindy Kathipara Junction, Chennai",
+        "damage_type": "D40",
+        "defect_type": "D40",
+        "severity": "high",
+        "confidence": 0.9,
+        "detected_at": "2026-09-28T13:42:52.651586",
+        "timestamp": "2026-09-28T13:42:52.651586"
+      }
+    ]
+  },
+  "fleet_bangalore_with_chennai_data": [
+    {
+      "vehicle_id": "AUDIT-BUS",
+      "lat": 13.0067,
+      "lon": 80.203,
+      "speed_kmh": 0.0,
+      "road_name": "Guindy Kathipara Junction, Chennai",
+      "status": "active",
+      "last_detection_type": "NOT_A_DEFECT",
+      "timestamp": "2026-09-28T13:42:52.658053"
+    }
+  ],
+  "report_bad_format": 200,
+  "report_old_data_count": 2,
+  "pdf": {
+    "status": 200,
+    "bytes": 3124
+  },
+  "csv": "ID,Latitude,Longitude,Road Name,Damage Type,Severity,Confidence %,Detected At,Contractor,SLA Hours,Est. Cost (INR),Zone\r\n2,13.0067,80.203,\"Guindy Kathipara Junction, Chennai\",NOT_A_DEFECT,banana,0.9,2026-07-30T13:42:52.663652,NHAI Metro Division Chennai,12,9000.0,\r\n1,13.0067,80.203,\"Guindy Kathipara Junction, Chennai\",D40,high,0.9,2026-07-30T13:42:52.663644,NHAI Metro Division Chennai,12,9000.0,\r\n",
+  "fleet_upsert_rows": 1,
+  "od_after_two_positions": {
+    "matrix": {
+      "Guindy Kathipara Hub": {
+        "Anna Salai Gemini Flyover": 42,
+        "OMR Tidel Park Hub": 38
+      },
+      "GST Road Tambaram Terminal": {
+        "Guindy Kathipara Hub": 58
+      },
+      "SRM Potheri Campus Junction": {
+        "GST Road Tambaram Terminal": 34
+      },
+      "T. Nagar Panagal Park": {
+        "Anna Salai Gemini Flyover": 29
+      },
+      "OMR Tidel Park Hub": {
+        "Velachery Vijayanagar Junction": 25
+      }
+    },
+    "pairs": [
+      {
+        "origin": "GST Road Tambaram Terminal",
+        "destination": "Guindy Kathipara Hub",
+        "trips": 58
+      },
+      {
+        "origin": "Guindy Kathipara Hub",
+        "destination": "Anna Salai Gemini Flyover",
+        "trips": 42
+      },
+      {
+        "origin": "Guindy Kathipara Hub",
+        "destination": "OMR Tidel Park Hub",
+        "trips": 38
+      },
+      {
+        "origin": "SRM Potheri Campus Junction",
+        "destination": "GST Road Tambaram Terminal",
+        "trips": 34
+      },
+      {
+        "origin": "T. Nagar Panagal Park",
+        "destination": "Anna Salai Gemini Flyover",
+        "trips": 29
+      },
+      {
+        "origin": "OMR Tidel Park Hub",
+        "destination": "Velachery Vijayanagar Junction",
+        "trips": 25
+      }
+    ],
+    "stops": [
+      "Guindy Kathipara Hub",
+      "Saidapet Metro / Bridge",
+      "T. Nagar Panagal Park",
+      "Anna Salai Gemini Flyover",
+      "Central / Poonamallee Gateway",
+      "GST Road Tambaram Terminal",
+      "SRM Potheri Campus Junction",
+      "OMR Tidel Park Hub",
+      "Velachery Vijayanagar Junction"
+    ],
+    "total_trips": 226,
+    "is_seed": true
+  },
+  "cluster_has_created_at": false,
+  "road_engine": "onnx_int8",
+  "pothole_card_01.jpg": {
+    "detections": [],
+    "elapsed_ms": 30.46
+  },
+  "plate_card_MH12AB1234.jpg": {
+    "detections": [],
+    "elapsed_ms": 27.65
+  },
+  "anpr_ready": false
+}
