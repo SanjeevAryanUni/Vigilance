@@ -1,0 +1,31 @@
+{
+  "checked": "2026-09-28",
+  "source": "https://aikosh.indiaai.gov.in/home/notebook",
+  "method": "Read public notebook page and expanded Usage Policy / Rules and Limitations in browser; no login or booking",
+  "basic": {
+    "access": "self-service, no approval stated",
+    "advertised_price": "free",
+    "session_hours": 4,
+    "gpu_profile": "NVIDIA A100 1g.5gb",
+    "max_slots_per_week": 3
+  },
+  "advanced": {
+    "approval_required": true,
+    "session_hours": 22,
+    "gpu_profile": "NVIDIA A100 3g.20gb",
+    "booking_lead_time": "at least 3 working days"
+  },
+  "constraints": [
+    "Pilot integration with AIRAWAT; capacity and policies may change",
+    "Files and environments removed at session termination",
+    "Uploads only in Ready for File Copy window",
+    "Download outputs before expiry",
+    "Page requires continued login on same browser and device"
+  ],
+  "not_verified": [
+    "Account eligibility/access",
+    "Available slot",
+    "Training job completion",
+    "Suitability for chosen model workload"
+  ]
+}

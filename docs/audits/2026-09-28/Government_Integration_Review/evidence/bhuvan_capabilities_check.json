@@ -1,0 +1,7 @@
+{
+  "checked": "2026-09-28",
+  "url": "https://bhuvan-vec2.nrsc.gov.in/bhuvan/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetCapabilities",
+  "result": "Read timed out after 20 seconds",
+  "configured_layer": "india3",
+  "layer_validity": "UNVERIFIED; timeout does not prove an invalid layer or permanent outage"
+}

@@ -1,0 +1,17 @@
+{
+  "checked": "2026-09-28",
+  "url": "https://gisgcc.chennaicorporation.gov.in/server/rest/services/GCCPublic/GCC_AdminBoundary/MapServer/4/query?where=1%3D1&outFields=objectid%2Cward&returnGeometry=true&outSR=4326&resultRecordCount=1&f=geojson",
+  "status": 200,
+  "content_type": "application/geo+json;charset=UTF-8",
+  "cors_origin": "https://vigilance-sih.vercel.app",
+  "bytes": 26049,
+  "type": "FeatureCollection",
+  "feature_count": 1,
+  "sample_attributes": {
+    "objectid": 1,
+    "ward": "169"
+  },
+  "geometry_type": "Polygon",
+  "error": null,
+  "limitation": "One public sample query; full dataset completeness, effective boundary date, licensing and production UI integration remain unverified."
+}
