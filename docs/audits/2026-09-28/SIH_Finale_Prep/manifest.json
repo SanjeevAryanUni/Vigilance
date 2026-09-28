@@ -1,0 +1,134 @@
+{
+  "Demo_Runbook.md": {
+    "bytes": 12125,
+    "sha256": "c6ee9974c198e3f3d1648e23382ab81c41f5ff8b4ebae2834519e9946beb95f2"
+  },
+  "Jury_Defense_90.csv": {
+    "bytes": 39875,
+    "sha256": "fdd9c18d46e50045e24fba950c0d8fc3094f4280277c5e1897963c35517c553c"
+  },
+  "Jury_Defense_90.md": {
+    "bytes": 46420,
+    "sha256": "c83e4f5f25f906b31d22b7c8336dc5cc226eb1b9eaa61df4094f8ae1434fde56"
+  },
+  "SIH_Finale_Readiness.html": {
+    "bytes": 1449671,
+    "sha256": "f15b68580f72cb7d8716a0777d4401e9122e6d96241305ef3c727e9735f2cf3d"
+  },
+  "SIH_Finale_Readiness.md": {
+    "bytes": 151533,
+    "sha256": "72b7e6457e210735b8cea611427046fff34e3871fd9d8e7e515c32a603263716"
+  },
+  "SIH_Requirement_Matrix.md": {
+    "bytes": 64831,
+    "sha256": "50bdc7524f94788cb3b92fe118b82815166aa7e2a67ccc6e1198b98963a4c0a8"
+  },
+  "START_HERE.md": {
+    "bytes": 1812,
+    "sha256": "47bb86941be95e8f3b2a5f6d69e1e735497434dd61cbeff46d855e98772b6532"
+  },
+  "Technical_Audit.md": {
+    "bytes": 78734,
+    "sha256": "8377d6e58b17dadbd7c5e3e4c9f7c83190e65bc7270ff63552b3f3030a7c1879"
+  },
+  "evidence/Verification_Notes.md": {
+    "bytes": 1674,
+    "sha256": "a1899115c7fcced2989f73cd84c7487e266e3f17bcdedbd0b7d6576e9d036315"
+  },
+  "evidence/additional-reproduction.json": {
+    "bytes": 695,
+    "sha256": "b26af368600e076269c38bedbe89348c5d70a254ec9ea766c77b43239656c53e"
+  },
+  "evidence/coverage.json": {
+    "bytes": 763,
+    "sha256": "1109b87eafdf9aa02d7d5e3fcac0fa114e3d45127a9eb0ff5548803b78ac9202"
+  },
+  "evidence/incident-heuristic.json": {
+    "bytes": 746,
+    "sha256": "0dc9a81a6b80a792f2157d19953c82e810f40a92f78b1822366be7d1affe4469"
+  },
+  "evidence/jury_questions.json": {
+    "bytes": 49425,
+    "sha256": "8b50b2540303b4f774672163be3b696eb8f3b80786f42b0c57427e85f9ac10a2"
+  },
+  "evidence/live-api-settings.png": {
+    "bytes": 40000,
+    "sha256": "52e37ad08fc4f1bb0b0b02ea4e27c0ce428146734d65ba01ee6a8dfe4dacd81e"
+  },
+  "evidence/live-first-impression.png": {
+    "bytes": 129318,
+    "sha256": "d4911c386ba7a269b8d01152de4082ba0c156e5c1096f0ced708948369938639"
+  },
+  "evidence/media-summary.json": {
+    "bytes": 4525,
+    "sha256": "28ac898e084f52bda1f4a29844a11f1311c5eaa2df5f3b5b4d30497cb274355b"
+  },
+  "evidence/npm-audit.json": {
+    "bytes": 18757,
+    "sha256": "1b7c56c4bd85a042a2e7f7172edc43e6a80e3bb75348d785709e760cb8d4b0fe"
+  },
+  "evidence/package_validation.json": {
+    "bytes": 523,
+    "sha256": "8d8640dfb56e8b1ee8d6cb71f73f5cfbdda24701605ce1cddf3d5eee4c852853"
+  },
+  "evidence/reproduction.json": {
+    "bytes": 5001,
+    "sha256": "e0006fc531e0c3adf8d86b42bf8d2f043dd14ab4608359395b661fd095ae7a59"
+  },
+  "evidence/requirements.json": {
+    "bytes": 60802,
+    "sha256": "6ca54133ab90e4912a7a289f4230793ded0ab716d11eced9f1d8fd3cd3a72503"
+  },
+  "evidence/sih_requirements.json": {
+    "bytes": 76637,
+    "sha256": "ac3d6440e98b2b6f69c41cd705bb61c199ab8505800a0ff676f3e85802a2eb20"
+  },
+  "evidence/sources.json": {
+    "bytes": 955,
+    "sha256": "4c350c7258086c7de44f47b918b5a89bed9dd393696dc463c927b3b9ee9753dc"
+  },
+  "screenshots/analytics-desktop.png": {
+    "bytes": 44417,
+    "sha256": "1441502cfdb74e29f370add0cc159146cf267788fefe83c59c21fb0bcb983765"
+  },
+  "screenshots/capture-mobile-390.png": {
+    "bytes": 44474,
+    "sha256": "c08e7acfe0e14d0ce7bc911f9247ae0e50097a71fd66d6d0080d5f5268569b93"
+  },
+  "screenshots/city-bangalore-chennai-map.png": {
+    "bytes": 148653,
+    "sha256": "acf0ffff53ccc802a9436efa2d3e1898e1ca60354d23ebf9ed367863f6c35ccb"
+  },
+  "screenshots/dashboard-desktop.png": {
+    "bytes": 130245,
+    "sha256": "02b5e43c180ba8bfced7bebcde927aa4fe29526e09c1be641413ddb0ee630df7"
+  },
+  "screenshots/dashboard-laptop-1366.png": {
+    "bytes": 129255,
+    "sha256": "08838baeb91ebcb0342128fc3bf8d0e3836a1647a7dcaf9d68632487d1f3f06e"
+  },
+  "screenshots/dashboard-mobile-390.png": {
+    "bytes": 46276,
+    "sha256": "65a7fa154eb8d733c1cfe6d2caa0bd7bdcfc6cffa5f4cea59aae6a75ffe24d0b"
+  },
+  "screenshots/dashboard-mobile-queue.png": {
+    "bytes": 44322,
+    "sha256": "9b03ca51b6944bd7a63b779d58165b5585d0f1df55370adbb04541d30740b2ae"
+  },
+  "screenshots/fleet-tablet-768.png": {
+    "bytes": 85615,
+    "sha256": "c1db190ee02fc6cc02d25946517a8affe9ec27ac4302ac332b16efd5c7b1f6ce"
+  },
+  "screenshots/orders-mobile-390.png": {
+    "bytes": 48092,
+    "sha256": "6b6eec55871e2228e5878321b1ced6b0a809b58456ec02319f6521f2e59348d5"
+  },
+  "screenshots/real-order-invalid-date.png": {
+    "bytes": 97624,
+    "sha256": "fc8af150262cdb26ce6b1302c70b85e2ab76ebd3216da618092aa4fdde56d56a"
+  },
+  "screenshots/work-orders-desktop.png": {
+    "bytes": 116219,
+    "sha256": "42d92c78bbcbba95bb32a7fd2815865b03b6bcaaa4fbe094ca0ce0cbdb33363b"
+  }
+}
