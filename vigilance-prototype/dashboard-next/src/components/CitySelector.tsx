@@ -101,9 +101,9 @@ export default function CitySelector({ onCityChange }: CitySelectorProps) {
       {/* Trigger Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-2.5 py-1 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-slate-200 border border-white/10 hover:border-cyan-500/30 transition-all text-xs font-mono backdrop-blur-md shadow-xs group"
+        className="flex items-center gap-2 px-2.5 py-1 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] text-slate-200 border border-white/10 hover:border-amber-500/30 transition-all text-xs font-mono backdrop-blur-md shadow-xs group"
       >
-        <Globe className="w-3.5 h-3.5 text-cyan-400 group-hover:text-cyan-300 transition-colors" />
+        <Globe className="w-3.5 h-3.5 text-amber-400 group-hover:text-amber-300 transition-colors" />
         <span className="hidden sm:inline font-semibold">
           {activeCityData?.display_name || 'Chennai'}
         </span>
@@ -128,18 +128,18 @@ export default function CitySelector({ onCityChange }: CitySelectorProps) {
                   disabled={isLoading}
                   className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all ${
                     isActive
-                      ? 'bg-cyan-500/15 border border-cyan-500/30 shadow-[0_0_15px_rgba(34,211,238,0.1)]'
+                      ? 'bg-amber-500/15 border border-amber-500/30 shadow-[0_0_15px_rgba(245,158,11,0.1)]'
                       : 'hover:bg-white/[0.06] border border-transparent'
                   }`}
                 >
-                  <MapPin className={`w-4 h-4 ${isActive ? 'text-cyan-400' : 'text-slate-500'}`} />
+                  <MapPin className={`w-4 h-4 ${isActive ? 'text-amber-400' : 'text-slate-500'}`} />
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      <span className={`text-sm font-semibold font-mono ${isActive ? 'text-cyan-300' : 'text-slate-200'}`}>
+                      <span className={`text-sm font-semibold font-mono ${isActive ? 'text-amber-300' : 'text-slate-200'}`}>
                         {city.display_name}
                       </span>
                       {isActive && (
-                        <span className="text-[9px] bg-cyan-500/20 text-cyan-400 px-1.5 py-0.5 rounded-full font-mono font-bold border border-cyan-500/30">
+                        <span className="text-[9px] bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded-full font-mono font-bold border border-amber-500/30">
                           ACTIVE
                         </span>
                       )}
@@ -148,7 +148,7 @@ export default function CitySelector({ onCityChange }: CitySelectorProps) {
                       {city.state} • {city.municipal_body}
                     </span>
                   </div>
-                  {isActive && <Check className="w-4 h-4 text-cyan-400" />}
+                  {isActive && <Check className="w-4 h-4 text-amber-400" />}
                 </button>
               );
             })}

@@ -38,7 +38,7 @@ export default function HardwareCockpit() {
         className="px-4 py-3 bg-slate-900/60 flex items-center justify-between cursor-pointer border-b border-white/10 hover:bg-slate-800/50 transition-colors"
       >
         <div className="flex items-center gap-2.5">
-          <div className="p-1.5 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-cyan-400">
+          <div className="p-1.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400">
             <Cpu className="w-4 h-4" />
           </div>
           <div>
@@ -55,7 +55,7 @@ export default function HardwareCockpit() {
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="hidden sm:flex items-center gap-1.5 text-[11px] font-mono text-cyan-400">
+          <div className="hidden sm:flex items-center gap-1.5 text-[11px] font-mono text-amber-400">
             <Zap className="w-3.5 h-3.5" />
             <span>41.74ms INT8</span>
           </div>
@@ -81,7 +81,7 @@ export default function HardwareCockpit() {
                 className={cn(
                   'flex-1 py-1.5 px-2 rounded-lg flex items-center justify-center gap-1.5 transition font-semibold text-[11px]',
                   activeTab === 'quantization'
-                    ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-[0_0_12px_rgba(6,182,212,0.2)]'
+                    ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-[0_0_12px_rgba(245,158,11,0.2)]'
                     : 'text-slate-400 hover:text-slate-200'
                 )}
               >
@@ -93,7 +93,7 @@ export default function HardwareCockpit() {
                 className={cn(
                   'flex-1 py-1.5 px-2 rounded-lg flex items-center justify-center gap-1.5 transition font-semibold text-[11px]',
                   activeTab === 'bandwidth'
-                    ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-[0_0_12px_rgba(6,182,212,0.2)]'
+                    ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-[0_0_12px_rgba(245,158,11,0.2)]'
                     : 'text-slate-400 hover:text-slate-200'
                 )}
               >
@@ -105,7 +105,7 @@ export default function HardwareCockpit() {
                 className={cn(
                   'flex-1 py-1.5 px-2 rounded-lg flex items-center justify-center gap-1.5 transition font-semibold text-[11px]',
                   activeTab === 'bom'
-                    ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-[0_0_12px_rgba(6,182,212,0.2)]'
+                    ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-[0_0_12px_rgba(245,158,11,0.2)]'
                     : 'text-slate-400 hover:text-slate-200'
                 )}
               >
@@ -120,11 +120,11 @@ export default function HardwareCockpit() {
                 <div className="p-3 rounded-xl bg-slate-900/60 border border-white/10 flex flex-col justify-between">
                   <span className="text-[10px] uppercase font-mono text-slate-400">Inference Latency</span>
                   <div className="my-1.5 flex items-baseline gap-2">
-                    <span className="text-xl font-bold font-mono text-cyan-300">41.74 ms</span>
+                    <span className="text-xl font-bold font-mono text-amber-300">41.74 ms</span>
                     <span className="text-[10px] text-emerald-400 font-mono font-semibold">2.3× Speedup</span>
                   </div>
                   <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
-                    <div className="bg-gradient-to-r from-cyan-500 to-emerald-400 h-full w-[43%]" />
+                    <div className="bg-gradient-to-r from-amber-500 to-emerald-400 h-full w-[43%]" />
                   </div>
                   <span className="text-[9.5px] font-mono text-slate-400 mt-1.5">INT8 vs 96.0ms FP32 baseline</span>
                 </div>
@@ -136,7 +136,7 @@ export default function HardwareCockpit() {
                     <span className="text-[10px] text-emerald-400 font-mono font-semibold">72.6% Reduced</span>
                   </div>
                   <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
-                    <div className="bg-gradient-to-r from-emerald-500 to-cyan-400 h-full w-[27%]" />
+                    <div className="bg-gradient-to-r from-emerald-500 to-amber-400 h-full w-[27%]" />
                   </div>
                   <span className="text-[9.5px] font-mono text-slate-400 mt-1.5">INT8 vs 11.70MB FP32 model</span>
                 </div>
@@ -156,7 +156,7 @@ export default function HardwareCockpit() {
                         className={cn(
                           'px-2 py-0.5 rounded text-[10.5px] font-mono transition',
                           transitHours === hrs
-                            ? 'bg-cyan-500/30 text-cyan-200 border border-cyan-400/50'
+                            ? 'bg-amber-500/30 text-amber-200 border border-amber-400/50'
                             : 'bg-white/[0.04] text-slate-400 hover:text-slate-200'
                         )}
                       >
@@ -194,14 +194,14 @@ export default function HardwareCockpit() {
               <div className="flex flex-col gap-2 font-mono text-xs">
                 <div className="p-2.5 rounded-xl bg-slate-900/60 border border-white/10 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Server className="w-4 h-4 text-cyan-400" />
+                    <Server className="w-4 h-4 text-zinc-300" />
                     <div>
                       <div className="font-semibold text-slate-200 text-[11.5px]">Apple Silicon M5 Host</div>
                       <div className="text-[9.5px] text-slate-400">Development Baseline Node</div>
                     </div>
                   </div>
                   <div className="text-right">
-                    <span className="text-cyan-300 font-bold">24 FPS Real</span>
+                    <span className="text-zinc-200 font-bold">24 FPS Real</span>
                     <div className="text-[9px] text-emerald-400">0ms Dropped</div>
                   </div>
                 </div>
@@ -222,14 +222,14 @@ export default function HardwareCockpit() {
 
                 <div className="p-2.5 rounded-xl bg-slate-900/60 border border-white/10 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Smartphone className="w-4 h-4 text-indigo-400" />
+                    <Smartphone className="w-4 h-4 text-amber-400" />
                     <div>
                       <div className="font-semibold text-slate-200 text-[11.5px]">Android Smartphone / Termux</div>
                       <div className="text-[9.5px] text-slate-400">Zero-Procurement Option</div>
                     </div>
                   </div>
                   <div className="text-right">
-                    <span className="text-indigo-300 font-bold">~12 FPS</span>
+                    <span className="text-amber-300 font-bold">~12 FPS</span>
                     <div className="text-[9px] text-emerald-400">85ms Mobile</div>
                   </div>
                 </div>

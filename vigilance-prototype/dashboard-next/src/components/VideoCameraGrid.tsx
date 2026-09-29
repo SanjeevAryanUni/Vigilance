@@ -159,7 +159,7 @@ export default function VideoCameraGrid({
       {/* ── Top Header Toolbar ────────────────────────────────────────── */}
       <div className="flex items-center justify-between px-4 py-3 bg-slate-900/60 border-b border-white/10">
         <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-cyan-400">
+          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400">
             <Camera className="w-4 h-4" />
           </div>
           <div>
@@ -199,7 +199,7 @@ export default function VideoCameraGrid({
               className={cn(
                 'px-2 py-1 rounded text-xs font-mono flex items-center gap-1 transition-all',
                 viewMode === 'single'
-                  ? 'bg-cyan-500/20 text-cyan-300 font-semibold'
+                  ? 'bg-amber-500/20 text-amber-300 font-semibold'
                   : 'text-slate-400 hover:text-slate-200'
               )}
               title="Single Camera Focus"
@@ -212,7 +212,7 @@ export default function VideoCameraGrid({
               className={cn(
                 'px-2 py-1 rounded text-xs font-mono flex items-center gap-1 transition-all',
                 viewMode === 'grid'
-                  ? 'bg-cyan-500/20 text-cyan-300 font-semibold'
+                  ? 'bg-amber-500/20 text-amber-300 font-semibold'
                   : 'text-slate-400 hover:text-slate-200'
               )}
               title="4-Camera Quad Grid"
@@ -228,7 +228,7 @@ export default function VideoCameraGrid({
             className={cn(
               'p-1.5 rounded-lg border text-xs transition-colors',
               showOverlays
-                ? 'bg-sky-500/20 border-sky-500/40 text-sky-300'
+                ? 'bg-amber-500/20 border-amber-500/40 text-amber-300'
                 : 'bg-slate-900 border-white/10 text-slate-400 hover:text-slate-200'
             )}
             title="Toggle AI HUD Annotations"
@@ -299,7 +299,7 @@ export default function VideoCameraGrid({
             ) : activeCam === 'CAM_02' ? (
               /* CAM_02: Rear Traffic Sensor */
               <div className="w-full h-full flex flex-col items-center justify-center bg-slate-950 p-6 text-center">
-                <Car className="w-12 h-12 text-sky-400 mb-3 animate-pulse" />
+                <Car className="w-12 h-12 text-zinc-300 mb-3 animate-pulse" />
                 <h4 className="font-mono text-sm font-semibold text-slate-200">
                   REAR HIGHWAY CONGESTION RADAR
                 </h4>
@@ -309,7 +309,7 @@ export default function VideoCameraGrid({
                 <div className="grid grid-cols-2 gap-3 mt-4 w-full max-w-xs font-mono text-xs">
                   <div className="p-2.5 bg-slate-900 border border-slate-800 rounded-lg">
                     <span className="text-slate-400 block text-[10px]">TAIL VEHICLES</span>
-                    <span className="text-sky-400 font-bold text-base">4 UNITS</span>
+                    <span className="text-zinc-200 font-bold text-base">4 UNITS</span>
                   </div>
                   <div className="p-2.5 bg-slate-900 border border-slate-800 rounded-lg">
                     <span className="text-slate-400 block text-[10px]">GAP DISTANCE</span>
@@ -375,7 +375,7 @@ export default function VideoCameraGrid({
                   <span className="text-white/40">|</span>
                   <span>960x540 @ {stats.fps.toFixed(1)} FPS</span>
                   <span className="text-white/40">|</span>
-                  <span className="text-cyan-400">INT8 QUANTIZED</span>
+                  <span className="text-amber-400">INT8 QUANTIZED</span>
                 </div>
 
                 <div className="flex items-center gap-2 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-md border border-white/10">
@@ -399,7 +399,7 @@ export default function VideoCameraGrid({
                 className={cn(
                   'relative bg-black rounded-xl overflow-hidden border transition-all cursor-pointer group flex flex-col justify-between p-2',
                   activeCam === cam.id
-                    ? 'border-cyan-500/60 shadow-[0_0_20px_rgba(6,182,212,0.2)]'
+                    ? 'border-amber-500/60 shadow-[0_0_20px_rgba(245,158,11,0.2)]'
                     : 'border-white/10 hover:border-white/30'
                 )}
               >
@@ -407,7 +407,7 @@ export default function VideoCameraGrid({
                   <span className="font-mono text-[10px] font-semibold text-slate-200 bg-black/70 px-2 py-0.5 rounded">
                     {cam.name}
                   </span>
-                  <span className="text-[9px] font-mono text-cyan-400 bg-cyan-950/80 border border-cyan-800/60 px-1.5 py-0.5 rounded">
+                  <span className="text-[9px] font-mono text-amber-400 bg-amber-950/80 border border-amber-800/60 px-1.5 py-0.5 rounded">
                     {cam.badge}
                   </span>
                 </div>
@@ -425,7 +425,7 @@ export default function VideoCameraGrid({
                   </div>
                 ) : (
                   <div className="flex-1 flex flex-col items-center justify-center text-slate-500 my-4">
-                    <Video className="w-8 h-8 mb-1 group-hover:text-cyan-400 transition-colors" />
+                    <Video className="w-8 h-8 mb-1 group-hover:text-amber-400 transition-colors" />
                     <span className="font-mono text-[10px]">{cam.sub}</span>
                   </div>
                 )}
@@ -448,7 +448,7 @@ export default function VideoCameraGrid({
               className={cn(
                 'flex flex-col text-left p-2 rounded-xl border transition-all text-xs font-mono',
                 activeCam === cam.id
-                  ? 'bg-cyan-500/15 border-cyan-500/50 shadow-[0_0_15px_rgba(6,182,212,0.15)] text-cyan-200'
+                  ? 'bg-amber-500/15 border-amber-500/50 shadow-[0_0_15px_rgba(245,158,11,0.15)] text-amber-200'
                   : 'bg-slate-900/60 border-white/5 hover:border-white/15 text-slate-400 hover:text-slate-200'
               )}
             >
@@ -457,7 +457,7 @@ export default function VideoCameraGrid({
                 <span
                   className={cn(
                     'w-1.5 h-1.5 rounded-full',
-                    activeCam === cam.id ? 'bg-cyan-400 animate-pulse' : 'bg-slate-600'
+                    activeCam === cam.id ? 'bg-amber-400 animate-pulse' : 'bg-slate-600'
                   )}
                 />
               </div>
@@ -484,15 +484,15 @@ export default function VideoCameraGrid({
           </div>
 
           {/* Traffic Metric */}
-          <div className="flex items-center gap-2.5 p-2 rounded-xl bg-slate-900/40 border border-sky-500/20">
-            <div className="p-1.5 rounded-lg bg-sky-500/10 text-sky-400">
+          <div className="flex items-center gap-2.5 p-2 rounded-xl bg-slate-900/40 border border-zinc-500/20">
+            <div className="p-1.5 rounded-lg bg-zinc-500/10 text-zinc-300">
               <Car className="w-4 h-4" />
             </div>
             <div>
               <span className="text-[10px] uppercase font-mono text-slate-400 block">
                 Traffic Vehicles
               </span>
-              <span className="text-sm font-bold font-mono text-sky-400">
+              <span className="text-sm font-bold font-mono text-zinc-200">
                 {stats.detections?.vehicles ?? 0} TRACKED
               </span>
             </div>

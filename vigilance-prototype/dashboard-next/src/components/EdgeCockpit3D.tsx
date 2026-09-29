@@ -106,8 +106,8 @@ export default function EdgeCockpit3D({
     // Dynamic Road Markings (Shoulder & Broken Lane Lines)
     const lineCount = 35;
     const laneLines: THREE.Mesh[] = [];
-    const laneMat = new THREE.MeshBasicMaterial({ color: 0x06b6d4 }); // Cyan glowing center divider
-    const shoulderMat = new THREE.MeshBasicMaterial({ color: 0xf59e0b }); // Amber shoulder lines
+    const laneMat = new THREE.MeshBasicMaterial({ color: 0xf59e0b }); // Amber glowing center divider
+    const shoulderMat = new THREE.MeshBasicMaterial({ color: 0xd97706 }); // Amber shoulder lines
 
     // Center broken dashed lines
     for (let i = 0; i < lineCount; i++) {
@@ -143,11 +143,11 @@ export default function EdgeCockpit3D({
       positions[i * 3 + 1] = Math.random() * 8 + 0.5;
       positions[i * 3 + 2] = -Math.random() * 200;
 
-      // Cyan or Amber light trails
+      // Zinc or Amber light trails
       if (Math.random() > 0.5) {
-        colors[i * 3] = 0.02;
-        colors[i * 3 + 1] = 0.71;
-        colors[i * 3 + 2] = 0.83; // Cyan
+        colors[i * 3] = 0.85;
+        colors[i * 3 + 1] = 0.85;
+        colors[i * 3 + 2] = 0.85; // Titanium White
       } else {
         colors[i * 3] = 0.96;
         colors[i * 3 + 1] = 0.62;
@@ -226,7 +226,7 @@ export default function EdgeCockpit3D({
     <div
       ref={containerRef}
       className={cn(
-        'relative w-full h-full min-h-[440px] bg-slate-950 rounded-xl overflow-hidden border border-cyan-900/80 shadow-2xl font-mono select-none flex flex-col',
+        'relative w-full h-full min-h-[440px] bg-slate-950 rounded-xl overflow-hidden border border-zinc-800 shadow-2xl font-mono select-none flex flex-col',
         className
       )}
     >
@@ -238,10 +238,10 @@ export default function EdgeCockpit3D({
       <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%)] bg-[length:100%_4px] opacity-30 z-10" />
 
       {/* HUD Header Telemetry Bar */}
-      <div className="relative z-20 p-3 bg-slate-950/80 backdrop-blur-md border-b border-cyan-900/60 flex items-center justify-between text-xs">
+      <div className="relative z-20 p-3 bg-slate-950/80 backdrop-blur-md border-b border-zinc-800/80 flex items-center justify-between text-xs">
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 bg-cyan-950/80 border border-cyan-700/80 px-2.5 py-1 rounded text-cyan-300 font-bold">
-            <Camera className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
+          <div className="flex items-center gap-1.5 bg-zinc-900 border border-zinc-700 px-2.5 py-1 rounded text-zinc-100 font-bold">
+            <Camera className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
             <span>ONBOARD EDGE COCKPIT // {vehicleId}</span>
           </div>
           <div className="hidden sm:flex items-center gap-1.5 text-slate-400 text-[11px]">
@@ -266,7 +266,7 @@ export default function EdgeCockpit3D({
 
           <button
             onClick={() => setAudioEnabled(!audioEnabled)}
-            className="p-1.5 bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-cyan-300 rounded border border-slate-800 transition"
+            className="p-1.5 bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-amber-300 rounded border border-slate-800 transition"
             title="Toggle Audio Feedback"
           >
             {audioEnabled ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
@@ -335,16 +335,16 @@ export default function EdgeCockpit3D({
         )}
 
         {/* Crosshair Pitch Center Guidelines */}
-        <div className="w-20 h-20 border border-cyan-500/20 rounded-full flex items-center justify-center pointer-events-none">
-          <div className="w-1.5 h-1.5 bg-cyan-400/60 rounded-full" />
+        <div className="w-20 h-20 border border-amber-500/20 rounded-full flex items-center justify-center pointer-events-none">
+          <div className="w-1.5 h-1.5 bg-amber-400/60 rounded-full" />
         </div>
       </div>
 
       {/* HUD Bottom Tactical Dashboard Footer */}
-      <div className="relative z-20 p-3 bg-slate-950/90 backdrop-blur-md border-t border-cyan-900/60 grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+      <div className="relative z-20 p-3 bg-slate-950/90 backdrop-blur-md border-t border-zinc-800/80 grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
         {/* Speedometer */}
         <div className="bg-slate-900/80 p-2 rounded-lg border border-slate-800 flex items-center gap-2">
-          <Gauge className="w-4 h-4 text-cyan-400" />
+          <Gauge className="w-4 h-4 text-amber-400" />
           <div>
             <div className="text-[10px] text-slate-400">VEHICLE VELOCITY</div>
             <div className="text-base font-bold text-slate-100 tabular-nums">{currentSpeed} km/h</div>

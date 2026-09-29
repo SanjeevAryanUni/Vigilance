@@ -14,8 +14,8 @@ export default function RPIProgressBar({ score, showLabel = true, className }: R
   const getBarColor = () => {
     if (clamped >= 85) return 'bg-gradient-to-r from-orange-500 to-red-500';
     if (clamped >= 70) return 'bg-gradient-to-r from-amber-500 to-orange-500';
-    if (clamped >= 50) return 'bg-gradient-to-r from-blue-500 to-amber-500';
-    return 'bg-gradient-to-r from-cyan-500 to-blue-500';
+    if (clamped >= 50) return 'bg-gradient-to-r from-zinc-500 to-amber-500';
+    return 'bg-gradient-to-r from-emerald-500 to-zinc-500';
   };
 
   return (

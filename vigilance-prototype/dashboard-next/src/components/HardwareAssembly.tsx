@@ -15,8 +15,8 @@ export default function HardwareAssembly() {
       cost: '₹650',
       icon: Camera,
       badge: 'OPTICS',
-      color: 'border-blue-500 text-blue-400 bg-blue-950/30',
-      activeColor: 'border-blue-500 bg-blue-950/60 shadow-[0_0_15px_rgba(59,130,246,0.3)]',
+      color: 'border-zinc-500 text-zinc-300 bg-zinc-900/40',
+      activeColor: 'border-zinc-400 bg-zinc-800/80 shadow-[0_0_15px_rgba(255,255,255,0.08)]',
       description:
         'Wide-angle 120° FOV lens with dynamic auto-exposure and anti-glare polarization filter. Calibrated specifically for Indian road asphalt variations, monsoon water-reflection compensation, and bright tropical sunlight.',
       metrics: [
@@ -49,8 +49,8 @@ export default function HardwareAssembly() {
       cost: '₹350',
       icon: Radio,
       badge: 'POSITIONING',
-      color: 'border-cyan-500 text-cyan-400 bg-cyan-950/30',
-      activeColor: 'border-cyan-500 bg-cyan-950/60 shadow-[0_0_15px_rgba(6,182,212,0.3)]',
+      color: 'border-amber-500 text-amber-400 bg-amber-950/30',
+      activeColor: 'border-amber-500 bg-amber-950/60 shadow-[0_0_15px_rgba(245,158,11,0.25)]',
       description:
         'Dedicated 50-channel tracking engine equipped with a 25mm ceramic patch antenna. Provides 5Hz real-time coordinate polling, ground speed, and heading vector logging even under dense flyovers and elevated metro corridors.',
       metrics: [
@@ -83,8 +83,8 @@ export default function HardwareAssembly() {
       cost: '₹200',
       icon: Zap,
       badge: 'POWER & CASING',
-      color: 'border-purple-500 text-purple-400 bg-purple-950/30',
-      activeColor: 'border-purple-500 bg-purple-950/60 shadow-[0_0_15px_rgba(168,85,247,0.3)]',
+      color: 'border-zinc-500 text-zinc-300 bg-zinc-900/50',
+      activeColor: 'border-zinc-500 bg-zinc-900/80 shadow-[0_0_15px_rgba(255,255,255,0.06)]',
       description:
         'Connects directly to the bus ignition auxiliary power. Features wide 9V–36V DC buck regulation with ISO 7637-2 alternator load-dump protection, reverse polarity defense, and thermal dissipation fins for 50°C summer heat.',
       metrics: [
@@ -103,7 +103,7 @@ export default function HardwareAssembly() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
         <div>
           <div className="flex items-center gap-2">
-            <Layers className="w-5 h-5 text-cyan-400" />
+            <Layers className="w-5 h-5 text-amber-400" />
             <h2 className="text-base font-bold text-slate-100 uppercase tracking-tight">
               Interactive Sub-₹3,000 Hardware Architecture Breakdown
             </h2>
@@ -158,11 +158,11 @@ export default function HardwareAssembly() {
                 </div>
 
                 <div className="flex items-center gap-2 text-right">
-                  <span className="text-xs font-bold text-cyan-400">{layer.cost}</span>
+                  <span className="text-xs font-bold text-amber-400">{layer.cost}</span>
                   <ChevronRight
                     className={cn(
                       'w-3.5 h-3.5 text-slate-500 transition-transform',
-                      isSelected && 'rotate-90 text-cyan-400'
+                      isSelected && 'rotate-90 text-amber-400'
                     )}
                   />
                 </div>
@@ -176,10 +176,10 @@ export default function HardwareAssembly() {
           <div>
             <div className="flex items-center justify-between pb-3 border-b border-slate-800/80">
               <div className="flex items-center gap-2">
-                <activeItem.icon className="w-5 h-5 text-cyan-400" />
+                <activeItem.icon className="w-5 h-5 text-amber-400" />
                 <div>
                   <h3 className="text-sm font-bold text-slate-100">{activeItem.title}</h3>
-                  <div className="text-[11px] text-cyan-300">{activeItem.spec}</div>
+                  <div className="text-[11px] text-amber-300">{activeItem.spec}</div>
                 </div>
               </div>
               <div className="text-sm font-bold text-emerald-400 bg-emerald-950 px-2.5 py-1 rounded border border-emerald-800">

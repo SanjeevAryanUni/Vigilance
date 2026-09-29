@@ -202,7 +202,7 @@ export default function CommandPalette({
       >
         {/* Search Header */}
         <div className="flex items-center px-4 py-3 border-b border-slate-800 gap-3 bg-slate-900/90">
-          <Search className="w-4 h-4 text-blue-400 shrink-0" />
+          <Search className="w-4 h-4 text-amber-400 shrink-0" />
           <input
             type="text"
             value={query}
@@ -237,7 +237,7 @@ export default function CommandPalette({
                       className="w-full flex items-center justify-between p-2.5 rounded-lg hover:bg-slate-800 text-left transition-colors group cursor-pointer"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="p-1.5 rounded-md bg-slate-800 border border-slate-700 text-slate-300 group-hover:text-blue-400 group-hover:border-blue-500/40 transition-colors">
+                        <div className="p-1.5 rounded-md bg-slate-800 border border-slate-700 text-slate-300 group-hover:text-amber-400 group-hover:border-amber-500/40 transition-colors">
                           <Icon className="w-4 h-4" />
                         </div>
                         <div>
@@ -249,7 +249,7 @@ export default function CommandPalette({
                           </div>
                         </div>
                       </div>
-                      <ArrowRight className="w-3.5 h-3.5 text-slate-600 group-hover:text-blue-400 transition-colors" />
+                      <ArrowRight className="w-3.5 h-3.5 text-slate-600 group-hover:text-amber-400 transition-colors" />
                     </button>
                   );
                 })}

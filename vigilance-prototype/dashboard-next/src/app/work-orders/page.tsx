@@ -87,7 +87,7 @@ function getSlaStatus(cluster: any) {
     return {
       label: `ACTIVE (${Math.round(remaining)}h REMAINING)`,
       isBreached: false,
-      color: 'bg-blue-950/80 text-cyan-300 border-blue-700/80',
+      color: 'bg-zinc-800 text-zinc-200 border-zinc-600',
     };
   }
 }
@@ -198,7 +198,7 @@ export default function WorkOrdersPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h1 className="text-xl font-bold font-mono tracking-tight flex items-center gap-2 text-white">
-              <ClipboardList className="w-5 h-5 text-cyan-400" />
+              <ClipboardList className="w-5 h-5 text-amber-400" />
               <span>Municipal Work Orders & PWD Dispatch</span>
             </h1>
             <p className="text-xs text-slate-400 font-mono mt-0.5">
@@ -208,17 +208,17 @@ export default function WorkOrdersPage() {
           <div className="flex items-center gap-2 self-start sm:self-auto">
             <button
               onClick={handleDownloadPDF}
-              className="flex items-center gap-1.5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white px-3 py-2 rounded-lg text-xs font-mono font-bold transition shadow-lg shadow-cyan-600/20"
+              className="flex items-center gap-1.5 bg-zinc-100 hover:bg-white text-zinc-950 px-3 py-2 rounded-lg text-xs font-mono font-bold transition shadow-xs"
               title="Generate Official Indian Road Congress Audit PDF"
             >
-              <FileText className="w-3.5 h-3.5" />
+              <FileText className="w-3.5 h-3.5 text-zinc-900" />
               <span>Official PWD Audit (PDF)</span>
             </button>
             <button
               onClick={handleExportCSV}
               className="flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 px-3 py-2 rounded-lg text-xs font-mono font-bold transition shadow"
             >
-              <Download className="w-3.5 h-3.5 text-cyan-400" />
+              <Download className="w-3.5 h-3.5 text-slate-400" />
               <span>Export CSV</span>
             </button>
           </div>
@@ -232,7 +232,7 @@ export default function WorkOrdersPage() {
             subtitle="Deduplicated Hazard Clusters"
             icon={ClipboardList}
             colorClass="text-slate-100"
-            spotlightColor="cyan"
+            spotlightColor="zinc"
             sparklineData={[8, 10, 12, 14, 13, 15, 16]}
           />
           <KPICard
@@ -240,8 +240,8 @@ export default function WorkOrdersPage() {
             value={`₹${(totalIrcBudget / 100000).toFixed(2)}L`}
             subtitle="IRC SP:20 / 82-2015 Cost Norms"
             icon={IndianRupee}
-            colorClass="text-cyan-400"
-            spotlightColor="cyan"
+            colorClass="text-amber-400"
+            spotlightColor="amber"
             badgeText="PWD EST."
             sparklineData={[12, 14, 13, 17, 18, 21, 20]}
           />
@@ -319,7 +319,7 @@ export default function WorkOrdersPage() {
             <button
               onClick={() => setSortBy('rpi')}
               className={`px-2 py-1 rounded ${
-                sortBy === 'rpi' ? 'bg-cyan-950 text-cyan-300 border border-cyan-800' : 'hover:text-slate-200'
+                sortBy === 'rpi' ? 'bg-white/[0.12] text-zinc-100 border border-white/20' : 'hover:text-slate-200'
               }`}
             >
               RPI Score
@@ -327,7 +327,7 @@ export default function WorkOrdersPage() {
             <button
               onClick={() => setSortBy('cost')}
               className={`px-2 py-1 rounded ${
-                sortBy === 'cost' ? 'bg-cyan-950 text-cyan-300 border border-cyan-800' : 'hover:text-slate-200'
+                sortBy === 'cost' ? 'bg-white/[0.12] text-zinc-100 border border-white/20' : 'hover:text-slate-200'
               }`}
             >
               Est. Cost
@@ -335,7 +335,7 @@ export default function WorkOrdersPage() {
             <button
               onClick={() => setSortBy('passes')}
               className={`px-2 py-1 rounded ${
-                sortBy === 'passes' ? 'bg-cyan-950 text-cyan-300 border border-cyan-800' : 'hover:text-slate-200'
+                sortBy === 'passes' ? 'bg-white/[0.12] text-zinc-100 border border-white/20' : 'hover:text-slate-200'
               }`}
             >
               Bus Passes
@@ -343,7 +343,7 @@ export default function WorkOrdersPage() {
             <button
               onClick={() => setSortBy('date')}
               className={`px-2 py-1 rounded ${
-                sortBy === 'date' ? 'bg-cyan-950 text-cyan-300 border border-cyan-800' : 'hover:text-slate-200'
+                sortBy === 'date' ? 'bg-white/[0.12] text-zinc-100 border border-white/20' : 'hover:text-slate-200'
               }`}
             >
               Date
@@ -387,7 +387,7 @@ export default function WorkOrdersPage() {
                         onClick={() => setSelectedCluster(cluster)}
                         className="hover:bg-slate-800/40 transition-colors cursor-pointer group"
                       >
-                        <td className="py-3.5 px-4 font-bold text-cyan-400 group-hover:underline">
+                        <td className="py-3.5 px-4 font-bold text-amber-400 group-hover:underline">
                           WO-{cluster.id.toString().padStart(4, '0')}
                         </td>
                         <td className="py-3.5 px-4">

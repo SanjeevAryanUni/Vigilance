@@ -29,7 +29,7 @@ export default function AgentThoughtStream() {
         id: 'init-1',
         icon: Database,
         tag: backendAvailable ? 'POSTGIS 3.3' : 'BENCHMARK',
-        tagClass: backendAvailable ? 'text-cyan-400 border-cyan-800/80 bg-cyan-950/60' : 'text-amber-400 border-amber-800/80 bg-amber-950/60',
+        tagClass: backendAvailable ? 'text-emerald-400 border-emerald-800/80 bg-emerald-950/60' : 'text-amber-400 border-amber-800/80 bg-amber-950/60',
         text: backendAvailable
           ? 'PostgreSQL 17 + PostGIS 3.3 spatial pool connected in Mumbai (ap-south-1) • ST_ClusterDBSCAN ready.'
           : 'Operating in Offline Reference Benchmark mode • Serving verified historical distress baseline.',
@@ -49,7 +49,7 @@ export default function AgentThoughtStream() {
         id: 'init-3',
         icon: Navigation,
         tag: 'IRC RPI ENGINE',
-        tagClass: 'text-indigo-400 border-indigo-800/80 bg-indigo-950/60',
+        tagClass: 'text-amber-400 border-amber-800/80 bg-amber-950/60',
         text: 'IRC Road Priority Index formula active: RPI = 0.40*Severity + 0.25*Density + 0.20*Traffic + 0.15*POI.',
         timestamp: new Date().toISOString(),
         isLive: true,
@@ -66,7 +66,7 @@ export default function AgentThoughtStream() {
         id: `det-${latest.id}-${Date.now()}`,
         icon: Radio,
         tag: 'INGESTED OBSERVATION',
-        tagClass: 'text-cyan-300 border-cyan-500/50 bg-cyan-950/70',
+        tagClass: 'text-amber-300 border-amber-500/50 bg-amber-950/70',
         text: `Ingested ${latest.defect_type} (${Math.round((latest.confidence || 0.9) * 100)}% conf) from ${latest.vehicle_id || 'FLEET-NODE'} on ${latest.road_name || 'Corridor'}.`,
         timestamp: latest.timestamp || new Date().toISOString(),
         isLive: true,
@@ -133,7 +133,7 @@ export default function AgentThoughtStream() {
             className={cn(
               'w-2 h-2 rounded-full',
               backendAvailable
-                ? 'bg-cyan-400 animate-pulse shadow-[0_0_8px_rgba(34,211,238,0.7)]'
+                ? 'bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.7)]'
                 : 'bg-amber-400 shadow-[0_0_8px_rgba(245,158,11,0.7)]'
             )}
           />
@@ -168,7 +168,7 @@ export default function AgentThoughtStream() {
       {/* Real Hardware & Connectivity Badge */}
       <div className="hidden md:flex items-center gap-2 text-[10px] text-slate-400 shrink-0 pl-3">
         <div className="flex items-center gap-1">
-          <Activity className="w-3 h-3 text-cyan-400" />
+          <Activity className="w-3 h-3 text-amber-400" />
           <span className="text-slate-300 font-semibold">Edge INT8: 41.7ms</span>
         </div>
         <div className="h-3 w-px bg-white/10" />

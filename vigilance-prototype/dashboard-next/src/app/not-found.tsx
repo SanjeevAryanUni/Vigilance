@@ -11,7 +11,7 @@ export default function NotFound() {
           <AlertTriangle className="h-8 w-8 animate-pulse" />
         </div>
 
-        <div className="mb-2 font-mono text-xs uppercase tracking-widest text-cyan-400">
+        <div className="mb-2 font-mono text-xs uppercase tracking-widest text-amber-400">
           Status 404 • Coordinate Not Found
         </div>
         <h1 className="mb-3 text-2xl font-bold tracking-tight text-white sm:text-3xl">
@@ -24,7 +24,7 @@ export default function NotFound() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <Link
             href="/"
-            className="flex items-center justify-center gap-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 px-4 py-2.5 text-xs font-semibold text-white transition-all shadow-lg shadow-cyan-600/20 active:scale-95"
+            className="flex items-center justify-center gap-2 rounded-xl bg-zinc-100 hover:bg-white px-4 py-2.5 text-xs font-semibold text-zinc-950 transition-all shadow-sm active:scale-95"
           >
             <LayoutDashboard className="h-4 w-4" />
             Command Center

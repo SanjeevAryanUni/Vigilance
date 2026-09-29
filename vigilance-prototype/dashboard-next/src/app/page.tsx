@@ -48,7 +48,7 @@ const WebGISMap = dynamic(() => import('@/components/WebGISMap'), {
   ssr: false,
   loading: () => (
     <div className="w-full h-full flex flex-col items-center justify-center bg-slate-950 text-slate-400 font-mono text-xs gap-3">
-      <div className="w-8 h-8 rounded-full border-2 border-blue-500 border-t-transparent animate-spin" />
+      <div className="w-8 h-8 rounded-full border-2 border-amber-500 border-t-transparent animate-spin" />
       <span>Loading Chennai Spatial Grid (MapLibre GL)...</span>
     </div>
   ),
@@ -66,7 +66,7 @@ const EdgeCockpit3D = dynamic(() => import('@/components/EdgeCockpit3D'), {
 const VideoCameraGrid = dynamic(() => import('@/components/VideoCameraGrid'), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-full flex items-center justify-center bg-slate-950 text-cyan-400 font-mono text-xs">
+    <div className="w-full h-full flex items-center justify-center bg-slate-950 text-amber-400 font-mono text-xs">
       Connecting to Edge AI Dashcam Pipeline...
     </div>
   ),
@@ -148,11 +148,11 @@ export default function CommandCenterPage() {
 
   return (
     <AnimatedLayout>
-      <div className="flex flex-col h-[100dvh] w-screen bg-[#030712] text-slate-100 overflow-hidden font-sans select-none relative">
+      <div className="flex flex-col min-h-screen lg:h-[100dvh] w-screen bg-[#030712] text-slate-100 overflow-x-hidden lg:overflow-hidden font-sans select-none relative">
         {/* Ambient Glowing Background Orbs (Diffuses through frosted glass panels) */}
-        <div className="absolute -top-40 -left-40 w-96 h-96 bg-blue-600/15 rounded-full blur-[128px] pointer-events-none z-0" />
-        <div className="absolute top-1/2 -right-40 w-96 h-96 bg-indigo-600/12 rounded-full blur-[128px] pointer-events-none z-0" />
-        <div className="absolute -bottom-40 left-1/3 w-96 h-96 bg-emerald-600/10 rounded-full blur-[128px] pointer-events-none z-0" />
+        <div className="absolute -top-40 -left-40 w-96 h-96 bg-amber-600/10 rounded-full blur-[140px] pointer-events-none z-0" />
+        <div className="absolute top-1/2 -right-40 w-96 h-96 bg-zinc-700/10 rounded-full blur-[140px] pointer-events-none z-0" />
+        <div className="absolute -bottom-40 left-1/3 w-96 h-96 bg-emerald-600/10 rounded-full blur-[140px] pointer-events-none z-0" />
 
       {/* 1. Master Header Bar */}
       <Header
@@ -200,7 +200,7 @@ export default function CommandCenterPage() {
             className={cn(
               'flex-1 py-1.5 px-2 rounded-md flex items-center justify-center gap-1.5 transition font-semibold',
               mobileTab === 'map'
-                ? 'bg-blue-600/80 text-white shadow-[0_0_12px_rgba(37,99,235,0.4)] border border-blue-400/30'
+                ? 'bg-zinc-100 text-zinc-950 font-bold shadow-xs border border-zinc-200'
                 : 'text-slate-400 hover:text-slate-200'
             )}
           >
@@ -212,7 +212,7 @@ export default function CommandCenterPage() {
             className={cn(
               'flex-1 py-1.5 px-2 rounded-md flex items-center justify-center gap-1.5 transition font-semibold',
               mobileTab === 'telemetry'
-                ? 'bg-blue-600/80 text-white shadow-[0_0_12px_rgba(37,99,235,0.4)] border border-blue-400/30'
+                ? 'bg-zinc-100 text-zinc-950 font-bold shadow-xs border border-zinc-200'
                 : 'text-slate-400 hover:text-slate-200'
             )}
           >
@@ -228,11 +228,11 @@ export default function CommandCenterPage() {
       </div>
 
       {/* 3. Main Workstation Grid */}
-      <div className="flex-1 flex overflow-hidden p-3 gap-3 min-h-0 z-10">
+      <div className="flex-1 flex flex-col lg:flex-row overflow-visible lg:overflow-hidden p-3 gap-3 min-h-0 z-10">
         {/* Left Sidebar: Executive KPIs + Tabbed Operations / Analytics */}
         <aside
           className={cn(
-            'w-full lg:w-[410px] xl:w-[440px] flex flex-col gap-2.5 shrink-0 overflow-hidden',
+            'w-full lg:w-[410px] xl:w-[440px] flex flex-col gap-2.5 shrink-0 overflow-y-auto custom-scrollbar pr-0.5',
             mobileTab !== 'telemetry' && 'hidden lg:flex'
           )}
         >
@@ -244,7 +244,7 @@ export default function CommandCenterPage() {
               subtitle="Continuous Fleet Perception"
               icon={Activity}
               colorClass="text-slate-100"
-              spotlightColor="blue"
+              spotlightColor="zinc"
               badgeText={stats.is_seed ? "DEMO SEED" : "LIVE 5Hz"}
               sparklineData={[15, 22, 18, 32, 28, 45, 52]}
             />
@@ -283,7 +283,7 @@ export default function CommandCenterPage() {
           {/* Real-Time Urban Traffic & Flow Intelligence Strip */}
           <div className="bg-slate-900/40 backdrop-blur-xl border border-white/10 rounded-xl p-2.5 flex items-center justify-between text-xs font-mono shadow-sm shrink-0">
             <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded-lg bg-sky-500/10 border border-sky-500/20 text-sky-400">
+              <div className="p-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400">
                 <Car className="w-3.5 h-3.5" />
               </div>
               <div>
@@ -321,9 +321,9 @@ export default function CommandCenterPage() {
           <div className="flex items-center p-1 bg-slate-900/40 backdrop-blur-xl border border-white/10 rounded-xl text-xs font-mono shrink-0 shadow-sm relative">
             {(
               [
-                { id: 'queue', label: 'Queue', icon: ListOrdered, color: 'from-blue-600/90 to-cyan-600/90' },
-                { id: 'traffic', label: 'ANPR Feed', icon: ShieldAlert, color: 'from-amber-600/90 to-orange-600/90' },
-                { id: 'analytics', label: 'Analytics', icon: BarChart3, color: 'from-blue-600/90 to-indigo-600/90' },
+                { id: 'queue', label: 'Queue', icon: ListOrdered },
+                { id: 'traffic', label: 'ANPR Feed', icon: ShieldAlert },
+                { id: 'analytics', label: 'Analytics', icon: BarChart3 },
               ] as const
             ).map((tab) => {
               const Icon = tab.icon;
@@ -334,16 +334,13 @@ export default function CommandCenterPage() {
                   onClick={() => setSidebarTab(tab.id)}
                   className={cn(
                     'relative flex-1 py-1.5 px-1.5 rounded-lg flex items-center justify-center gap-1.5 transition-colors font-semibold text-[11px] z-10',
-                    isActive ? 'text-white' : 'text-slate-400 hover:text-slate-200'
+                    isActive ? 'text-zinc-100' : 'text-slate-400 hover:text-slate-200'
                   )}
                 >
                   {isActive && (
                     <motion.div
                       layoutId="activeSidebarTabPill"
-                      className={cn(
-                        'absolute inset-0 rounded-lg shadow-[0_0_14px_rgba(37,99,235,0.4)] border border-white/20 bg-gradient-to-r z-[-1]',
-                        tab.color
-                      )}
+                      className="absolute inset-0 rounded-lg shadow-xs border border-white/15 bg-white/[0.12] z-[-1]"
                       transition={{ type: 'spring', stiffness: 450, damping: 32 }}
                     />
                   )}
@@ -403,7 +400,7 @@ export default function CommandCenterPage() {
                 <div className="bg-slate-900/40 backdrop-blur-xl border border-white/10 rounded-2xl p-3.5 flex flex-col shadow-[0_8px_32px_0_rgba(0,0,0,0.37),inset_0_1px_0_0_rgba(255,255,255,0.08)]">
                   <div className="flex items-center justify-between pb-2 mb-1 border-b border-white/10 font-mono text-xs">
                     <div className="flex items-center gap-1.5 font-bold uppercase tracking-wider text-slate-200">
-                      <TrendingUp className="w-3.5 h-3.5 text-blue-400" />
+                      <TrendingUp className="w-3.5 h-3.5 text-amber-400" />
                       <span>Corridor Distress Velocity</span>
                     </div>
                     <span className="text-[10px] text-slate-400 font-semibold bg-white/[0.05] px-1.5 py-0.5 rounded border border-white/10">24H TIMELINE</span>
@@ -439,7 +436,7 @@ export default function CommandCenterPage() {
             {/* Left Section: Region Title & View Mode Tabs */}
             <div className="flex items-center gap-1.5 shrink-0">
               <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-slate-200 bg-white/[0.05] backdrop-blur-md px-2.5 py-1 rounded-lg border border-white/10 shadow-xs">
-                <MapPin className="w-3.5 h-3.5 text-blue-400" />
+                <MapPin className="w-3.5 h-3.5 text-amber-400" />
                 <span>Chennai Arterial Grid</span>
                 <span className="text-slate-500 hidden sm:inline">•</span>
                 <span className="text-[10px] text-slate-400 font-normal hidden sm:inline">EPSG:4326</span>
@@ -452,7 +449,7 @@ export default function CommandCenterPage() {
                   className={cn(
                     'flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] transition-all',
                     workstationMode === 'full-gis'
-                      ? 'bg-blue-600/80 text-white font-bold shadow-[0_0_10px_rgba(37,99,235,0.4)] border border-blue-400/30'
+                      ? 'bg-zinc-100 text-zinc-950 font-bold shadow-xs border border-zinc-200'
                       : 'text-slate-400 hover:text-slate-200'
                   )}
                 >
@@ -464,7 +461,7 @@ export default function CommandCenterPage() {
                   className={cn(
                     'flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] transition-all',
                     workstationMode === 'split-ops'
-                      ? 'bg-blue-600/80 text-white font-bold shadow-[0_0_10px_rgba(37,99,235,0.4)] border border-blue-400/30'
+                      ? 'bg-zinc-100 text-zinc-950 font-bold shadow-xs border border-zinc-200'
                       : 'text-slate-400 hover:text-slate-200'
                   )}
                 >
@@ -496,7 +493,7 @@ export default function CommandCenterPage() {
             <div className="flex items-center gap-1.5 shrink-0">
               <Link
                 href="/capture"
-                className="bg-blue-600/90 hover:bg-blue-500 text-white px-2.5 py-1 rounded-lg flex items-center gap-1.5 text-xs font-mono transition-all font-bold border border-blue-400/30 shadow-[0_0_15px_rgba(37,99,235,0.3)] active:scale-95"
+                className="bg-zinc-100 hover:bg-white text-zinc-950 px-2.5 py-1 rounded-lg flex items-center gap-1.5 text-xs font-mono transition-all font-bold border border-zinc-200 shadow-xs active:scale-95"
                 title="Launch phone camera windshield dashcam"
               >
                 <Smartphone className="w-3.5 h-3.5" />
@@ -505,11 +502,11 @@ export default function CommandCenterPage() {
 
               <button
                 onClick={() => setShowCameraGridModal(true)}
-                className="bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-400/40 text-cyan-200 px-2.5 py-1 rounded-lg flex items-center gap-1.5 text-xs font-mono backdrop-blur-md transition-all font-bold shadow-[0_0_15px_rgba(6,182,212,0.25)] active:scale-95"
+                className="bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-300 px-2.5 py-1 rounded-lg flex items-center gap-1.5 text-xs font-mono backdrop-blur-md transition-all font-bold shadow-xs active:scale-95"
                 title="View Live Dashcam AI Multi-Model Stream (Port 8001)"
               >
-                <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-                <Video className="w-3.5 h-3.5 text-cyan-300" />
+                <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                <Video className="w-3.5 h-3.5 text-amber-300" />
                 <span>Live Cam</span>
               </button>
 
@@ -527,7 +524,7 @@ export default function CommandCenterPage() {
                 className="bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 text-slate-200 px-2 py-1 rounded-lg flex items-center gap-1.5 text-xs font-mono backdrop-blur-md transition-all hidden sm:flex shadow-xs"
                 title="View SIH26124 Executive Architecture Brief"
               >
-                <ShieldCheck className="w-3.5 h-3.5 text-purple-400" />
+                <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
                 <span>BEL Brief</span>
               </button>
 
@@ -547,7 +544,7 @@ export default function CommandCenterPage() {
             {workstationMode === 'split-ops' && (
               <div className="w-1/2 h-full border-r border-white/10 p-2 relative bg-slate-950/80">
                 <div className="absolute top-2 left-3 z-10 text-[10px] font-mono text-slate-300 font-bold flex items-center gap-1.5 bg-slate-900/60 backdrop-blur-md border border-white/10 px-2 py-0.5 rounded-md shadow-xs">
-                  <Camera className="w-3 h-3 text-blue-400" />
+                  <Camera className="w-3 h-3 text-amber-400" />
                   <span>3D WINDSHIELD HUD</span>
                 </div>
                 <ErrorBoundary fallbackTitle="3D Windshield Cockpit Error">
@@ -583,7 +580,7 @@ export default function CommandCenterPage() {
                   <span className="text-[10.5px] text-slate-200 font-medium">Alligator Crack (D20)</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-blue-500 shadow-[0_0_6px_rgba(59,130,246,0.6)]" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-zinc-400 shadow-[0_0_6px_rgba(161,161,170,0.6)]" />
                   <span className="text-[10.5px] text-slate-200 font-medium">Linear (D00/D10)</span>
                 </div>
                 <div className="hidden sm:flex items-center gap-1.5">
@@ -656,7 +653,7 @@ export default function CommandCenterPage() {
                 <div>
                   <div className="flex items-center justify-between pb-3 border-b border-white/10">
                     <div className="flex items-center gap-2">
-                      <ShieldCheck className="w-5 h-5 text-purple-400" />
+                      <ShieldCheck className="w-5 h-5 text-amber-400" />
                       <span className="text-sm font-bold text-slate-100">
                         SIH26124 • BHARAT ELECTRONICS LIMITED (BEL) EXECUTIVE BRIEF
                       </span>
@@ -671,7 +668,7 @@ export default function CommandCenterPage() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
                     <div className="bg-slate-900/50 backdrop-blur-md p-4 rounded-xl border border-white/10 shadow-xs">
-                      <h4 className="font-bold text-blue-400 mb-1.5">Problem Context</h4>
+                      <h4 className="font-bold text-amber-400 mb-1.5">Problem Context</h4>
                       <p className="text-slate-300 leading-relaxed text-[11px]">
                         Municipal corporations lose ₹2.5L Cr annually to undetected road distress. VIGILANCE converts existing public transit bus fleets into continuous 5Hz edge AI perception units.
                       </p>
@@ -701,7 +698,7 @@ export default function CommandCenterPage() {
                   <span>VIGILANCE SIH 2026 • SRM Institute of Science and Technology</span>
                   <button
                     onClick={() => setShowExecutiveBrief(false)}
-                    className="px-4 py-1.5 bg-blue-600/90 hover:bg-blue-500 text-white font-bold rounded-xl border border-blue-400/30 shadow-[0_0_15px_rgba(37,99,235,0.3)] transition"
+                    className="px-4 py-1.5 bg-zinc-100 hover:bg-white text-zinc-950 font-bold rounded-xl border border-zinc-200 shadow-xs transition"
                   >
                     Close Brief
                   </button>

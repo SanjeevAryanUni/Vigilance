@@ -19,7 +19,7 @@ export default function FleetRadarChart({ className, vehicleId = 'BUS-TN01-1042'
       toolbar: { show: false },
       fontFamily: 'monospace',
     },
-    colors: ['#06b6d4', '#f59e0b'],
+    colors: ['#f59e0b', '#71717a'],
     stroke: {
       width: 2,
     },

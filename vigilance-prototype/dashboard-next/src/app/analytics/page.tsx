@@ -81,7 +81,7 @@ export default function AnalyticsPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold font-mono tracking-tight flex items-center gap-2">
-              <BarChart3 className="w-5 h-5 text-cyan-400" />
+              <BarChart3 className="w-5 h-5 text-amber-400" />
               <span>Urban Road Distress Analytics & Intelligence</span>
             </h1>
             <p className="text-xs text-slate-400 font-mono mt-0.5">
@@ -97,8 +97,8 @@ export default function AnalyticsPage() {
             value={stats.total_detections}
             subtitle="Raw Mobile Ingests"
             icon={Eye}
-            colorClass="text-cyan-400"
-            spotlightColor="cyan"
+            colorClass="text-amber-400"
+            spotlightColor="amber"
             sparklineData={[20, 28, 25, 42, 38, 55, 62]}
           />
           <KPICard
@@ -136,10 +136,10 @@ export default function AnalyticsPage() {
           <div className="lg:col-span-8 bg-slate-900/80 backdrop-blur-xl border border-slate-800/80 rounded-xl p-4 flex flex-col shadow-xl">
             <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-800 font-mono text-xs">
               <div className="flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-cyan-400" />
+                <TrendingUp className="w-4 h-4 text-amber-400" />
                 <span className="font-bold text-slate-200 uppercase">Corridor Distress Ingestion vs Velocity</span>
               </div>
-              <span className="text-[10px] text-cyan-400 font-bold">APEXCHARTS DUAL-SPLINE</span>
+              <span className="text-[10px] text-amber-400 font-bold">APEXCHARTS DUAL-SPLINE</span>
             </div>
             <p className="text-xs text-slate-400 font-mono mb-2">
               Time-series correlation between bus operating speed (km/h) and distress frequency along arterial routes
@@ -154,10 +154,10 @@ export default function AnalyticsPage() {
             <div>
               <div className="flex items-center justify-between pb-2 border-b border-slate-800 font-mono text-xs">
                 <div className="flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-purple-400" />
+                  <Sparkles className="w-4 h-4 text-amber-400" />
                   <span className="font-bold text-slate-200 uppercase">RPI Weight Distribution</span>
                 </div>
-                <span className="text-[10px] text-purple-400 font-bold">RADIAL BAR</span>
+                <span className="text-[10px] text-amber-400 font-bold">RADIAL BAR</span>
               </div>
               <p className="text-xs text-slate-400 font-mono mt-2 mb-1">
                 Multi-radial breakdown of the 4 priority factors: Severity, Frequency, Highway, and POI proximity
@@ -169,7 +169,7 @@ export default function AnalyticsPage() {
 
             <div className="pt-2 border-t border-slate-800 text-[10px] font-mono text-slate-400 flex items-center justify-between">
               <span>Target: Zero Accident Corridor</span>
-              <span className="text-cyan-400">Formula V2.4 Active</span>
+              <span className="text-amber-400">Formula V2.4 Active</span>
             </div>
           </div>
         </div>
@@ -179,7 +179,7 @@ export default function AnalyticsPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-800">
             <div>
               <div className="flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-cyan-400" />
+                <MapPin className="w-4 h-4 text-amber-400" />
                 <h2 className="text-sm font-bold font-mono uppercase text-slate-100">
                   Chennai Arterial Road Corridor Risk Matrix
                 </h2>
@@ -188,7 +188,7 @@ export default function AnalyticsPage() {
                 Dynamic risk priority index calculated across primary transit routes in the Greater Chennai region
               </p>
             </div>
-            <span className="text-[11px] font-mono text-cyan-400 bg-cyan-950 px-2.5 py-1 rounded border border-cyan-800 self-start sm:self-auto">
+            <span className="text-[11px] font-mono text-amber-400 bg-amber-950 px-2.5 py-1 rounded border border-amber-800 self-start sm:self-auto">
               8 Arterials Monitored
             </span>
           </div>
@@ -210,12 +210,12 @@ export default function AnalyticsPage() {
                 {roadStats.map((r, idx) => (
                   <tr key={idx} className="hover:bg-slate-800/40 transition-colors">
                     <td className="py-3 font-bold text-slate-200 flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
                       <span>{r.road}</span>
                     </td>
                     <td className="py-3 text-slate-400 text-[11px]">{r.significance}</td>
                     <td className="py-3 text-center text-slate-300">{r.clusterCount}</td>
-                    <td className="py-3 text-center text-cyan-400 font-bold">{r.totalDetections}</td>
+                    <td className="py-3 text-center text-amber-400 font-bold">{r.totalDetections}</td>
                     <td className="py-3 text-center">
                       {r.criticalCount > 0 ? (
                         <span className="px-2 py-0.5 rounded bg-red-950 text-red-300 border border-red-800 font-bold">
@@ -270,7 +270,7 @@ export default function AnalyticsPage() {
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                 </div>
                 <div className="flex items-baseline justify-between mt-1">
-                  <span className="text-xl font-bold font-mono text-cyan-400">{vData.count}</span>
+                  <span className="text-xl font-bold font-mono text-zinc-100">{vData.count}</span>
                   <span className="text-[10px] font-mono text-slate-400">ingests</span>
                 </div>
                 <div className="text-[10px] text-slate-400 font-mono truncate">

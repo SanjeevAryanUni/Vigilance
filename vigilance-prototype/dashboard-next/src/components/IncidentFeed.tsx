@@ -123,7 +123,7 @@ export default function IncidentFeed({ incidents = DEFAULT_INCIDENTS }: { incide
                       <td className="py-2 text-slate-200">
                         <div className="font-medium text-slate-100 flex items-center gap-1">
                           {inc.type}
-                          <ChevronRight className={`w-3 h-3 text-slate-500 transition-transform ${isSelected ? 'rotate-90 text-cyan-400' : ''}`} />
+                          <ChevronRight className={`w-3 h-3 text-slate-500 transition-transform ${isSelected ? 'rotate-90 text-amber-400' : ''}`} />
                         </div>
                         <div className="text-[9px] text-slate-400 font-mono">{inc.timestamp} • {(inc.confidence * 100).toFixed(0)}% conf</div>
                       </td>
@@ -146,10 +146,10 @@ export default function IncidentFeed({ incidents = DEFAULT_INCIDENTS }: { incide
                     </motion.tr>
 
                     {isSelected && (
-                      <tr className="bg-slate-950/60 border-b border-cyan-900/40">
+                      <tr className="bg-slate-950/60 border-b border-amber-900/30">
                         <td colSpan={4} className="p-2 text-[10px] text-slate-300">
-                          <div className="p-2 rounded-lg bg-cyan-950/30 border border-cyan-800/40 flex flex-col gap-1">
-                            <div className="flex items-center justify-between text-cyan-300 font-bold">
+                          <div className="p-2 rounded-lg bg-amber-950/20 border border-amber-800/30 flex flex-col gap-1">
+                            <div className="flex items-center justify-between text-amber-300 font-bold">
                               <span className="flex items-center gap-1">
                                 <ShieldCheck className="w-3 h-3 text-emerald-400" /> MoRTH Parivahan Registry Verification (API Setu)
                               </span>
@@ -158,7 +158,7 @@ export default function IncidentFeed({ incidents = DEFAULT_INCIDENTS }: { incide
                             <div className="grid grid-cols-2 gap-2 text-slate-300 pt-1 text-[9.5px]">
                               <div>Owner: <span className="text-white font-semibold">Verified Transport Citizen</span></div>
                               <div>Vehicle Class: <span className="text-white font-semibold">LMV Motor Transport</span></div>
-                              <div>Issuing RTO: <span className="text-cyan-400">{inc.plate.slice(0, 4)} Transport Dept</span></div>
+                              <div>Issuing RTO: <span className="text-amber-400">{inc.plate.slice(0, 4)} Transport Dept</span></div>
                               <div>Fitness Validity: <span className="text-emerald-400">Valid (2037)</span></div>
                             </div>
                           </div>

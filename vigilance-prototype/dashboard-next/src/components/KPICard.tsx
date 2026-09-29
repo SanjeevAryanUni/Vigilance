@@ -16,20 +16,22 @@ interface KPICardProps {
   glowColor?: string;
   badgeText?: string;
   sparklineData?: number[];
-  spotlightColor?: 'cyan' | 'amber' | 'red' | 'emerald' | 'blue';
+  spotlightColor?: 'cyan' | 'amber' | 'red' | 'emerald' | 'blue' | 'zinc';
 }
 
 const SPOTLIGHT_BORDER_MAP = {
-  blue: 'hover:border-blue-400/40 hover:shadow-[0_8px_30px_rgba(37,99,235,0.25)]',
-  cyan: 'hover:border-sky-400/40 hover:shadow-[0_8px_30px_rgba(56,189,248,0.25)]',
+  blue: 'hover:border-zinc-400/40 hover:shadow-[0_8px_30px_rgba(255,255,255,0.06)]',
+  cyan: 'hover:border-amber-400/40 hover:shadow-[0_8px_30px_rgba(245,158,11,0.25)]',
+  zinc: 'hover:border-zinc-400/40 hover:shadow-[0_8px_30px_rgba(255,255,255,0.06)]',
   amber: 'hover:border-amber-400/40 hover:shadow-[0_8px_30px_rgba(245,158,11,0.25)]',
   red: 'hover:border-rose-400/40 hover:shadow-[0_8px_30px_rgba(244,63,94,0.25)]',
   emerald: 'hover:border-emerald-400/40 hover:shadow-[0_8px_30px_rgba(16,185,129,0.25)]',
 };
 
 const SPARKLINE_COLOR_MAP = {
-  blue: '#3b82f6',
-  cyan: '#38bdf8',
+  blue: '#a1a1aa',
+  cyan: '#fbbf24',
+  zinc: '#a1a1aa',
   amber: '#f59e0b',
   red: '#ef4444',
   emerald: '#10b981',
@@ -43,7 +45,7 @@ export default function KPICard({
   colorClass = 'text-slate-100',
   badgeText,
   sparklineData,
-  spotlightColor = 'blue',
+  spotlightColor = 'zinc',
 }: KPICardProps) {
   const sparkline = sparklineData || [12, 19, 15, 28, 22, 34, 42];
   const isNumeric = typeof value === 'number';
@@ -80,7 +82,7 @@ export default function KPICard({
         <div
           className="pointer-events-none absolute -inset-px rounded-2xl opacity-60 transition-opacity duration-300"
           style={{
-            background: `radial-gradient(180px circle at ${mousePos.x}px ${mousePos.y}px, rgba(34, 211, 238, 0.12), transparent 80%)`,
+            background: `radial-gradient(180px circle at ${mousePos.x}px ${mousePos.y}px, rgba(255, 255, 255, 0.08), transparent 80%)`,
           }}
         />
       )}
@@ -114,7 +116,7 @@ export default function KPICard({
       <div className="mt-1.5 -mb-0.5 opacity-80 group-hover:opacity-100 transition-opacity">
         <KPISparkline
           data={sparkline}
-          color={SPARKLINE_COLOR_MAP[spotlightColor] || '#3b82f6'}
+          color={SPARKLINE_COLOR_MAP[spotlightColor] || '#a1a1aa'}
         />
       </div>
 

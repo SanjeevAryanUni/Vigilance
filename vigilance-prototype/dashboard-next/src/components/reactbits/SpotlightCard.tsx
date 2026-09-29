@@ -6,33 +6,35 @@ import { cn } from '@/lib/utils';
 interface SpotlightCardProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
   className?: string;
-  spotlightColor?: 'cyan' | 'amber' | 'red' | 'emerald' | 'blue';
+  spotlightColor?: 'amber' | 'red' | 'emerald' | 'zinc' | 'cyan' | 'blue';
 }
 
 export default function SpotlightCard({
   children,
   className,
-  spotlightColor = 'cyan',
+  spotlightColor = 'amber',
   ...props
 }: SpotlightCardProps) {
   const divRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [opacity, setOpacity] = useState(0);
 
-  const colors = {
-    cyan: 'rgba(6, 182, 212, 0.18)',
+  const colors: Record<string, string> = {
     amber: 'rgba(245, 158, 11, 0.18)',
     red: 'rgba(239, 68, 68, 0.18)',
     emerald: 'rgba(16, 185, 129, 0.18)',
-    blue: 'rgba(59, 130, 246, 0.18)',
+    zinc: 'rgba(255, 255, 255, 0.10)',
+    cyan: 'rgba(245, 158, 11, 0.18)',
+    blue: 'rgba(255, 255, 255, 0.10)',
   };
 
-  const borderColors = {
-    cyan: 'rgba(6, 182, 212, 0.4)',
+  const borderColors: Record<string, string> = {
     amber: 'rgba(245, 158, 11, 0.4)',
     red: 'rgba(239, 68, 68, 0.4)',
     emerald: 'rgba(16, 185, 129, 0.4)',
-    blue: 'rgba(59, 130, 246, 0.4)',
+    zinc: 'rgba(255, 255, 255, 0.25)',
+    cyan: 'rgba(245, 158, 11, 0.4)',
+    blue: 'rgba(255, 255, 255, 0.25)',
   };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {

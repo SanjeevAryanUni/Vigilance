@@ -22,8 +22,8 @@ export const BHUVAN_SATELLITE_TILES = {
 export const DEFECT_INFO: Record<DefectType, { name: string; color: string; desc: string; badgeBg: string }> = {
   D00: {
     name: 'Longitudinal Crack',
-    color: '#3B82F6',
-    badgeBg: 'bg-blue-950/80 text-blue-300 border-blue-800',
+    color: '#A1A1AA',
+    badgeBg: 'bg-zinc-800/80 text-zinc-300 border-zinc-700',
     desc: 'Cracks parallel to road direction',
   },
   D10: {

@@ -732,14 +732,14 @@ export default function MobileCapturePage() {
           href="/"
           className="flex items-center gap-1.5 text-slate-300 hover:text-white transition text-xs font-mono font-semibold"
         >
-          <ArrowLeft className="w-4 h-4 text-cyan-400" />
+          <ArrowLeft className="w-4 h-4 text-amber-400" />
           <span>Exit to Dashboard</span>
         </Link>
         <div className="flex items-center gap-2">
           {offlineQueueCount > 0 && (
             <button
               onClick={flushOfflineQueue}
-              className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-950/90 border border-amber-600 text-amber-300 text-[10px] font-mono font-bold animate-pulse"
+              className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-950/90 border border-amber-600 text-amber-300 text-[10px] font-mono font-bold animate-pulse"
               title="Offline Outbox — Click to synchronize"
             >
               <span>📴 {offlineQueueCount} QUEUED</span>
@@ -751,7 +751,7 @@ export default function MobileCapturePage() {
             title={soundEnabled ? 'Mute Chimes' : 'Enable Chimes'}
           >
             {soundEnabled ? (
-              <Volume2 className="w-3.5 h-3.5 text-cyan-400" />
+              <Volume2 className="w-3.5 h-3.5 text-amber-400" />
             ) : (
               <VolumeX className="w-3.5 h-3.5 text-slate-500" />
             )}
@@ -763,7 +763,7 @@ export default function MobileCapturePage() {
                 : 'bg-slate-800/80 border-slate-700 text-slate-300'
             }`}
           >
-            <span className={`w-1.5 h-1.5 rounded-full ${vibrationGated ? 'bg-amber-400' : 'bg-cyan-400'}`} />
+            <span className={`w-1.5 h-1.5 rounded-full ${vibrationGated ? 'bg-amber-400' : 'bg-emerald-400'}`} />
             <span>{vibrationGated ? 'SHOCK GATED' : 'IMU STABLE'}</span>
           </div>
           {streamActive ? (
@@ -796,7 +796,7 @@ export default function MobileCapturePage() {
         {!streamActive && (
           <div className="w-full h-full bg-gradient-to-b from-slate-900 via-slate-950 to-black flex flex-col items-center justify-center p-4 sm:p-6 text-center z-10">
             <div className="relative mb-3">
-              <Camera className="w-14 h-14 text-cyan-400 animate-pulse" />
+              <Camera className="w-14 h-14 text-amber-400 animate-pulse" />
               <Shield className="w-6 h-6 text-emerald-400 absolute -bottom-1 -right-1" />
             </div>
             <h2 className="text-base sm:text-lg font-bold text-slate-200 font-mono">
@@ -817,7 +817,7 @@ export default function MobileCapturePage() {
             <div className="flex flex-col gap-2 mt-4 w-full max-w-xs">
               <button
                 onClick={() => startCamera()}
-                className="w-full px-4 py-2.5 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white rounded-lg text-xs font-bold flex items-center justify-center gap-2 shadow-lg shadow-cyan-600/30 transition active:scale-95"
+                className="w-full px-4 py-2.5 bg-zinc-100 hover:bg-white text-zinc-950 rounded-lg text-xs font-bold flex items-center justify-center gap-2 shadow-xs transition active:scale-95"
               >
                 <RefreshCw className="w-3.5 h-3.5" /> Enable Smartphone Camera
               </button>
@@ -838,8 +838,8 @@ export default function MobileCapturePage() {
             {/* Top HUD Telemetry Info */}
             <div className="flex justify-between items-start gap-2">
               <div className="bg-slate-950/85 backdrop-blur-md border border-slate-800 p-2 sm:p-2.5 rounded-lg text-xs font-mono space-y-0.5 shadow-lg">
-                <div className="flex items-center gap-1.5 text-cyan-400 font-bold">
-                  <Navigation className="w-3.5 h-3.5 text-cyan-400" />
+                <div className="flex items-center gap-1.5 text-amber-400 font-bold">
+                  <Navigation className="w-3.5 h-3.5 text-amber-400" />
                   <span>
                     {coords.lat.toFixed(4)}°N, {coords.lon.toFixed(4)}°E
                   </span>
@@ -855,7 +855,7 @@ export default function MobileCapturePage() {
                   {streamActive && (
                     <button
                       onClick={toggleCameraFacing}
-                      className="p-1.5 rounded-lg bg-slate-950/85 border border-slate-800 text-cyan-400 hover:text-white text-xs shadow-lg transition active:scale-95"
+                      className="p-1.5 rounded-lg bg-slate-950/85 border border-slate-800 text-slate-300 hover:text-white text-xs shadow-lg transition active:scale-95"
                       title="Flip camera"
                     >
                       <RefreshCw className="w-3.5 h-3.5" />
@@ -868,8 +868,8 @@ export default function MobileCapturePage() {
 
                 {/* Live Traffic Counting Badges */}
                 <div className="flex items-center gap-1 font-mono text-[10px]">
-                  <div className="bg-slate-950/85 border border-slate-800 px-2 py-0.5 rounded flex items-center gap-1 text-sky-300">
-                    <Car className="w-3 h-3 text-sky-400" />
+                  <div className="bg-slate-950/85 border border-slate-800 px-2 py-0.5 rounded flex items-center gap-1 text-zinc-300">
+                    <Car className="w-3 h-3 text-zinc-400" />
                     <span>{trafficData.vehicleCount}</span>
                   </div>
                   <div className="bg-slate-950/85 border border-slate-800 px-2 py-0.5 rounded flex items-center gap-1 text-emerald-300">
@@ -886,8 +886,8 @@ export default function MobileCapturePage() {
 
                 {/* Frame Gating Active Badge */}
                 {frameGatingEnabled && (
-                  <div className="bg-purple-950/90 border border-purple-700 px-2 py-0.5 rounded text-[9px] font-mono text-purple-300 flex items-center gap-1">
-                    <BellRing className="w-3 h-3 text-purple-400 animate-bounce" />
+                  <div className="bg-amber-950/90 border border-amber-700 px-2 py-0.5 rounded text-[9px] font-mono text-amber-300 flex items-center gap-1">
+                    <BellRing className="w-3 h-3 text-amber-400 animate-bounce" />
                     <span>GATING: {lastShock} m/s²</span>
                   </div>
                 )}
@@ -896,8 +896,8 @@ export default function MobileCapturePage() {
 
             {/* Shock Flash Banner (When Pothole Vibration Triggers Gated Capture) */}
             {shockAlert && (
-              <div className="self-center bg-purple-600/90 text-white font-mono text-xs font-bold px-4 py-1.5 rounded-full shadow-lg border border-purple-400 animate-pulse flex items-center gap-1.5">
-                <Zap className="w-4 h-4 text-amber-300 fill-amber-300" />
+              <div className="self-center bg-amber-600/90 text-white font-mono text-xs font-bold px-4 py-1.5 rounded-full shadow-lg border border-amber-400 animate-pulse flex items-center gap-1.5">
+                <Zap className="w-4 h-4 text-amber-200 fill-amber-200" />
                 <span>{shockAlert}</span>
               </div>
             )}
@@ -917,7 +917,7 @@ export default function MobileCapturePage() {
                 <div className="bg-red-600 text-white font-mono text-[9px] font-extrabold px-1.5 py-0.5 self-start rounded-tl rounded-br shadow uppercase tracking-wider">
                   {box.label} • {(box.confidence * 100).toFixed(0)}%
                 </div>
-                <div className="bg-black/80 text-cyan-300 font-mono text-[8px] px-1 py-0.5 self-end rounded-tl rounded-br">
+                <div className="bg-black/80 text-emerald-400 font-mono text-[8px] px-1 py-0.5 self-end rounded-tl rounded-br">
                   LIVE SENT
                 </div>
               </div>
@@ -942,9 +942,9 @@ export default function MobileCapturePage() {
             ))}
 
             {/* Perception Region of Interest (ROI) with HUD Reticle */}
-            <div className="self-center w-60 sm:w-72 h-44 sm:h-52 border border-cyan-500/40 rounded-xl relative flex items-center justify-center shadow-[0_0_20px_rgba(6,182,212,0.2)]">
-              <div className="absolute -top-3 bg-slate-950/95 text-cyan-300 border border-cyan-800 text-[9px] px-2.5 py-0.5 rounded-full font-mono uppercase tracking-wider font-bold shadow flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping" />
+            <div className="self-center w-60 sm:w-72 h-44 sm:h-52 border border-amber-500/40 rounded-xl relative flex items-center justify-center shadow-[0_0_20px_rgba(245,158,11,0.15)]">
+              <div className="absolute -top-3 bg-slate-950/95 text-amber-300 border border-amber-800 text-[9px] px-2.5 py-0.5 rounded-full font-mono uppercase tracking-wider font-bold shadow flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
                 <span>
                   {frameGatingEnabled
                     ? '⚡ Shock-Gated Frame Perception'
@@ -962,9 +962,9 @@ export default function MobileCapturePage() {
 
               {/* Center Targeting Crosshair */}
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-30">
-                <div className="w-10 h-[1px] bg-cyan-400" />
-                <div className="h-10 w-[1px] bg-cyan-400 absolute" />
-                <div className="w-3 h-3 border border-cyan-400 rounded-full absolute" />
+                <div className="w-10 h-[1px] bg-amber-400" />
+                <div className="h-10 w-[1px] bg-amber-400 absolute" />
+                <div className="w-3 h-3 border border-amber-400 rounded-full absolute" />
               </div>
 
               {isCapturing && (
@@ -981,7 +981,7 @@ export default function MobileCapturePage() {
               <div className="bg-slate-950/85 backdrop-blur-md border border-slate-800 px-2.5 py-1.5 rounded-lg text-[10px] text-slate-300 font-mono shadow flex items-center gap-1.5">
                 <span
                   className={`w-2 h-2 rounded-full ${
-                    isOnnxLoaded ? 'bg-emerald-400' : 'bg-cyan-400'
+                    isOnnxLoaded ? 'bg-emerald-400' : 'bg-amber-400'
                   } animate-ping`}
                 />
                 <span>
@@ -1007,9 +1007,9 @@ export default function MobileCapturePage() {
       <div className="px-3 sm:px-4 py-1.5 bg-slate-950/95 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-2 text-[10px] font-mono shrink-0">
         <div className="flex items-center gap-2">
           <span className="text-slate-400 font-semibold">IMU TELEMETRY:</span>
-          <span className="text-cyan-400">X: {currentGForce.x >= 0 ? `+${currentGForce.x}` : currentGForce.x}G</span>
-          <span className="text-cyan-400">Y: {currentGForce.y >= 0 ? `+${currentGForce.y}` : currentGForce.y}G</span>
-          <span className="text-cyan-400">Z: {currentGForce.z >= 0 ? `+${currentGForce.z}` : currentGForce.z}G</span>
+          <span className="text-amber-400">X: {currentGForce.x >= 0 ? `+${currentGForce.x}` : currentGForce.x}G</span>
+          <span className="text-amber-400">Y: {currentGForce.y >= 0 ? `+${currentGForce.y}` : currentGForce.y}G</span>
+          <span className="text-amber-400">Z: {currentGForce.z >= 0 ? `+${currentGForce.z}` : currentGForce.z}G</span>
         </div>
         <div className="flex items-center gap-2">
           <span
@@ -1024,7 +1024,7 @@ export default function MobileCapturePage() {
             <div className="absolute top-0 bottom-0 left-[35%] w-0.5 bg-amber-400 z-10 opacity-75" title="Shock Gate 3.5m/s²" />
             <div
               className={`h-full transition-all duration-75 ${
-                currentGForce.shock >= SHOCK_THRESHOLD ? 'bg-amber-500 animate-pulse' : 'bg-cyan-500'
+                currentGForce.shock >= SHOCK_THRESHOLD ? 'bg-amber-500 animate-pulse' : 'bg-zinc-600'
               }`}
               style={{ width: `${Math.min(100, (currentGForce.shock / 10.0) * 100)}%` }}
             />
@@ -1040,11 +1040,11 @@ export default function MobileCapturePage() {
             onClick={toggleFrameGating}
             className={`py-2 px-3 rounded-lg text-xs font-mono font-bold flex items-center justify-center gap-1.5 border transition ${
               frameGatingEnabled
-                ? 'bg-purple-950/80 border-purple-500 text-purple-300'
+                ? 'bg-amber-950/80 border-amber-500 text-amber-300'
                 : 'bg-slate-800 border-slate-700 text-slate-400'
             }`}
           >
-            <Activity className="w-3.5 h-3.5 text-purple-400" />
+            <Activity className="w-3.5 h-3.5 text-amber-400" />
             <span>Gating: {frameGatingEnabled ? 'SMART SHOCK' : 'CONTINUOUS'}</span>
           </button>
 
@@ -1079,7 +1079,7 @@ export default function MobileCapturePage() {
             onClick={() => fileInputRef.current?.click()}
             className="flex-1 py-2 px-3 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition"
           >
-            <Upload className="w-3.5 h-3.5 text-cyan-400" />
+            <Upload className="w-3.5 h-3.5 text-slate-400" />
             <span>Upload Photo</span>
           </button>
           <input
@@ -1113,7 +1113,7 @@ export default function MobileCapturePage() {
         <div className="bg-slate-950 border border-slate-800/80 rounded-lg p-2 max-h-20 overflow-y-auto font-mono text-[10px] custom-scrollbar">
           <div className="text-slate-400 font-bold mb-1 border-b border-slate-800/60 pb-1 flex items-center justify-between">
             <span>Dispatched Live Telemetry:</span>
-            <span className="text-[9px] text-cyan-400">{detectionLogs.length} transmitted</span>
+            <span className="text-[9px] text-amber-400">{detectionLogs.length} transmitted</span>
           </div>
           {detectionLogs.length === 0 ? (
             <div className="text-slate-600 italic py-1">
@@ -1143,7 +1143,7 @@ export default function MobileCapturePage() {
                     {log.lon.toFixed(4)}
                   </span>
                 </div>
-                <span className="text-cyan-400 shrink-0">
+                <span className="text-amber-400 shrink-0">
                   {new Date(log.timestamp).toLocaleTimeString()}
                 </span>
               </div>

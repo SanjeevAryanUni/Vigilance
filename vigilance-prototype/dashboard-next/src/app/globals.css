@@ -15,7 +15,7 @@
   /* Borders & Dividers */
   --border-subtle: #1E293B;
   --border-active: #334155;
-  --border-accent: rgba(6, 182, 212, 0.4);
+  --border-accent: rgba(245, 158, 11, 0.35);
 
   /* Text & Foreground */
   --text-primary: #F8FAFC;
@@ -25,9 +25,9 @@
   /* Semantic State Colors */
   --status-critical: #EF4444;
   --status-warning: #F59E0B;
-  --status-info: #3B82F6;
+  --status-info: #94A3B8;
   --status-success: #10B981;
-  --status-telemetry: #00F2FE;
+  --status-telemetry: #F59E0B;
 }
 
 body {
@@ -71,9 +71,10 @@ body {
 }
 
 .glass-pill-active {
-  background: rgba(37, 99, 235, 0.25);
-  border-color: rgba(96, 165, 250, 0.45);
-  box-shadow: 0 0 15px rgba(59, 130, 246, 0.3), inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.30);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.06), inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
+  color: #FFFFFF;
 }
 
 /* Professional Glass Scrollbar */
@@ -139,7 +140,7 @@ body {
 }
 
 .maplibregl-ctrl-group button:hover svg {
-  fill: #38bdf8 !important;
+  fill: #f59e0b !important;
 }
 
 /* MapLibre scale control */
@@ -224,15 +225,15 @@ body {
 
 /* Cockpit gauge progress bar */
 .cockpit-gauge {
-  background: linear-gradient(90deg, rgba(34, 211, 238, 0.1), rgba(34, 211, 238, 0.03));
-  border: 1px solid rgba(34, 211, 238, 0.2);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.10);
   border-radius: 6px;
   overflow: hidden;
 }
 
 .cockpit-gauge-fill {
-  background: linear-gradient(90deg, #06b6d4, #22d3ee);
-  box-shadow: 0 0 12px rgba(34, 211, 238, 0.5);
+  background: linear-gradient(90deg, #d97706, #f59e0b);
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.4);
   border-radius: 4px;
   height: 100%;
   transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
@@ -240,8 +241,13 @@ body {
 
 /* Stat card with left accent border */
 .stat-card-cyan {
-  border-left: 3px solid #22d3ee;
-  box-shadow: -4px 0 12px rgba(34, 211, 238, 0.15);
+  border-left: 3px solid #f59e0b;
+  box-shadow: -4px 0 12px rgba(245, 158, 11, 0.15);
+}
+
+.stat-card-zinc {
+  border-left: 3px solid #71717a;
+  box-shadow: -4px 0 12px rgba(113, 113, 122, 0.15);
 }
 
 .stat-card-green {
@@ -270,7 +276,7 @@ body {
 
 .g-force-bar {
   animation: g-force-wave 0.8s ease-in-out infinite;
-  background: linear-gradient(to top, #22d3ee, #06b6d4);
+  background: linear-gradient(to top, #f59e0b, #d97706);
   border-radius: 2px;
 }
 
@@ -285,7 +291,7 @@ body {
 }
 
 .bg-radial-vignette {
-  background: radial-gradient(circle at 50% 0%, rgba(34, 211, 238, 0.08) 0%, transparent 70%);
+  background: radial-gradient(circle at 50% 0%, rgba(245, 158, 11, 0.04) 0%, transparent 70%);
 }
 
 /* Animated Shimmer for Skeleton Loaders */
@@ -341,15 +347,19 @@ body {
   left: 0;
   right: 0;
   height: 2px;
-  background: linear-gradient(90deg, transparent, #22d3ee, #60a5fa, transparent);
-  box-shadow: 0 0 10px #22d3ee;
+  background: linear-gradient(90deg, transparent, #f59e0b, #fbbf24, transparent);
+  box-shadow: 0 0 10px #f59e0b;
   animation: scan-beam 4s ease-in-out infinite;
   pointer-events: none;
 }
 
 /* Neon Glow Outline on Active Elements */
+.neon-glow-amber {
+  box-shadow: 0 0 15px -2px rgba(245, 158, 11, 0.35), inset 0 0 10px -2px rgba(245, 158, 11, 0.15);
+}
+
 .neon-glow-cyan {
-  box-shadow: 0 0 15px -2px rgba(34, 211, 238, 0.3), inset 0 0 10px -2px rgba(34, 211, 238, 0.15);
+  box-shadow: 0 0 15px -2px rgba(245, 158, 11, 0.35), inset 0 0 10px -2px rgba(245, 158, 11, 0.15);
 }
 
 .neon-glow-red {
@@ -402,8 +412,8 @@ body {
 
 .glass-obsidian-hover:hover {
   background: rgba(17, 24, 39, 0.80);
-  border-color: rgba(56, 189, 248, 0.40);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 25px rgba(56, 189, 248, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  border-color: rgba(245, 158, 11, 0.30);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 25px rgba(245, 158, 11, 0.10), inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
 /* Tactical HUD Reticle & Crosshair Styling */
@@ -411,7 +421,7 @@ body {
   position: absolute;
   width: 18px;
   height: 18px;
-  border-color: #00F2FE;
+  border-color: #f59e0b;
   pointer-events: none;
 }
 
@@ -433,10 +443,10 @@ body {
 
 /* Monospace Telemetry Badges */
 .telemetry-pill-cyan {
-  background: rgba(6, 182, 212, 0.12);
-  border: 1px solid rgba(6, 182, 212, 0.40);
-  color: #22d3ee;
-  box-shadow: 0 0 12px rgba(6, 182, 212, 0.20);
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.40);
+  color: #fbbf24;
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.20);
 }
 
 .telemetry-pill-emerald {

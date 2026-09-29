@@ -64,7 +64,7 @@ export default function ClusterTable({
                     ? 'border-l-4 border-l-rose-500 border-white/10 hover:border-l-rose-400 hover:shadow-[0_0_15px_rgba(244,63,94,0.15)]'
                     : isHigh
                     ? 'border-l-4 border-l-amber-500 border-white/10 hover:border-l-amber-400 hover:shadow-[0_0_15px_rgba(245,158,11,0.15)]'
-                    : 'border-l-4 border-l-blue-500 border-white/10 hover:border-l-blue-400 hover:shadow-[0_0_15px_rgba(59,130,246,0.15)]'
+                    : 'border-l-4 border-l-zinc-500 border-white/10 hover:border-l-zinc-400 hover:shadow-xs'
                 )}
               >
                 {/* Row 1: Rank Badge + Defect Type + Severity Badge */}
@@ -93,7 +93,7 @@ export default function ClusterTable({
                   )}
                   {cluster.contractor_name && (
                     <div className="text-[10px] text-slate-400 font-mono pl-5 flex items-center gap-2 mt-0.5">
-                      <span className="text-sky-400 font-medium flex items-center gap-1">
+                      <span className="text-zinc-300 font-medium flex items-center gap-1">
                         <Building2 className="w-3 h-3" />
                         {cluster.contractor_name}
                       </span>

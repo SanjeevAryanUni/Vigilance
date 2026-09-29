@@ -189,12 +189,12 @@ export default function TrafficAnalyticsSection() {
         <div className="lg:col-span-6 bg-slate-900/80 backdrop-blur-xl border border-slate-800/80 rounded-xl p-4 flex flex-col shadow-xl">
           <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-800 font-mono text-xs">
             <div className="flex items-center gap-2">
-              <Car className="w-4 h-4 text-cyan-400" />
+              <Car className="w-4 h-4 text-amber-400" />
               <span className="font-bold text-slate-200 uppercase">
                 Hourly Transit & Pedestrian Density
               </span>
             </div>
-            <span className="text-[10px] text-cyan-400 font-bold">COCO PERCEPTION</span>
+            <span className="text-[10px] text-amber-400 font-bold">COCO PERCEPTION</span>
           </div>
           <p className="text-xs text-slate-400 font-mono mb-2">
             Aggregated traffic count time-series recorded across active fleet dashcam nodes
@@ -207,8 +207,8 @@ export default function TrafficAnalyticsSection() {
               >
                 <defs>
                   <linearGradient id="colorVehicles" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#0ea5e9" stopOpacity={0.8} />
-                    <stop offset="95%" stopColor="#0ea5e9" stopOpacity={0} />
+                    <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.8} />
+                    <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
                   </linearGradient>
                   <linearGradient id="colorPeds" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#10b981" stopOpacity={0.8} />
@@ -230,7 +230,7 @@ export default function TrafficAnalyticsSection() {
                 <Area
                   type="monotone"
                   dataKey="vehicles"
-                  stroke="#0ea5e9"
+                  stroke="#f59e0b"
                   fillOpacity={1}
                   fill="url(#colorVehicles)"
                   name="Vehicles"
@@ -306,12 +306,12 @@ export default function TrafficAnalyticsSection() {
       <div className="glass-obsidian rounded-xl p-4 lg:p-5 flex flex-col gap-3 shadow-xl">
         <div className="flex items-center justify-between pb-2 border-b border-slate-800">
           <div className="flex items-center gap-2">
-            <ArrowRightLeft className="w-4 h-4 text-cyan-400" />
+            <ArrowRightLeft className="w-4 h-4 text-amber-400" />
             <h2 className="text-sm font-bold font-mono uppercase text-slate-100">
               Urban Fleet Origin-Destination (OD) Passenger Flow Matrix
             </h2>
           </div>
-          <span className="text-[10px] font-mono text-cyan-400 bg-cyan-950 px-2.5 py-1 rounded border border-cyan-800">
+          <span className="text-[10px] font-mono text-amber-400 bg-amber-950 px-2.5 py-1 rounded border border-amber-800">
             Daily Transit Volume (Trips)
           </span>
         </div>
@@ -333,7 +333,7 @@ export default function TrafficAnalyticsSection() {
                 <tr key={idx} className="hover:bg-slate-800/40 transition-colors">
                   <td className="py-2.5 font-bold text-slate-200">{row.origin}</td>
                   <td className="py-2.5 text-center text-slate-300">{row.tambaram}</td>
-                  <td className="py-2.5 text-center text-cyan-400 font-semibold">{row.guindy}</td>
+                  <td className="py-2.5 text-center text-amber-400 font-semibold">{row.guindy}</td>
                   <td className="py-2.5 text-center text-slate-300">{row.central}</td>
                   <td className="py-2.5 text-center text-slate-300">{row.omr}</td>
                   <td className="py-2.5 text-center text-slate-300">{row.koyambedu}</td>

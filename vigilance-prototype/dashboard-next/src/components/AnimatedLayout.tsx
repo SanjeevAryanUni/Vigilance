@@ -40,17 +40,17 @@ export function AnimatedLayout({ children }: AnimatedLayoutProps) {
                 <motion.div
                   animate={{ rotate: 360 }}
                   transition={{ repeat: Infinity, duration: 3, ease: 'linear' }}
-                  className="absolute -inset-3 rounded-full border border-cyan-500/20 border-t-cyan-400"
+                  className="absolute -inset-3 rounded-full border border-amber-500/20 border-t-amber-400"
                 />
-                <div className="w-14 h-14 rounded-2xl bg-cyan-950/60 border border-cyan-500/40 flex items-center justify-center shadow-[0_0_25px_rgba(34,211,238,0.3)]">
-                  <ShieldCheck className="w-8 h-8 text-cyan-400" />
+                <div className="w-14 h-14 rounded-2xl bg-zinc-900 border border-zinc-700 flex items-center justify-center shadow-[0_0_25px_rgba(245,158,11,0.15)]">
+                  <ShieldCheck className="w-8 h-8 text-amber-400" />
                 </div>
               </div>
-              <h1 className="text-xl font-bold tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-300 to-blue-500">
+              <h1 className="text-xl font-extrabold tracking-widest text-zinc-100 font-sans">
                 VIGILANCE
               </h1>
-              <p className="text-[11px] tracking-wider uppercase text-cyan-400/70 font-mono mt-1 flex items-center gap-1.5">
-                <Activity className="w-3 h-3 animate-pulse" />
+              <p className="text-[11px] tracking-wider uppercase text-zinc-400 font-mono mt-1 flex items-center gap-1.5">
+                <Activity className="w-3 h-3 text-amber-400 animate-pulse" />
                 AI Edge Road Telemetry Platform
               </p>
             </motion.div>

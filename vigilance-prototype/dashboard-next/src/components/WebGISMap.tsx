@@ -204,7 +204,7 @@ export default function WebGISMap({
 
       const isHospital = poi.type === 'hospital';
       const icon = isHospital ? '🏥' : '🎓';
-      const badgeBg = isHospital ? '#ef4444' : '#3b82f6';
+      const badgeBg = isHospital ? '#ef4444' : '#d97706';
 
       // Shorten name if too long for clean map display
       const shortName = poi.name.split(',')[0].replace('Senior Secondary School', 'School');
@@ -290,9 +290,9 @@ export default function WebGISMap({
       const isResolved = c.status === 'resolved';
       const isAssigned = c.status === 'assigned';
 
-      const bgColor = isResolved ? '#10b981' : isCrit ? '#ef4444' : isHigh ? '#f59e0b' : '#3b82f6';
-      const borderColor = isResolved ? '#34d399' : isCrit ? '#f87171' : isHigh ? '#fbbf24' : '#60a5fa';
-      const glowColor = isResolved ? 'rgba(16, 185, 129, 0.4)' : isCrit ? 'rgba(239, 68, 68, 0.5)' : isHigh ? 'rgba(245, 158, 11, 0.4)' : 'rgba(59, 130, 246, 0.35)';
+      const bgColor = isResolved ? '#10b981' : isCrit ? '#ef4444' : isHigh ? '#f59e0b' : '#71717a';
+      const borderColor = isResolved ? '#34d399' : isCrit ? '#f87171' : isHigh ? '#fbbf24' : '#a1a1aa';
+      const glowColor = isResolved ? 'rgba(16, 185, 129, 0.4)' : isCrit ? 'rgba(239, 68, 68, 0.5)' : isHigh ? 'rgba(245, 158, 11, 0.4)' : 'rgba(161, 161, 170, 0.35)';
 
       const el = document.createElement('div');
       el.className = 'cluster-marker cursor-pointer group transition-transform duration-200 hover:scale-125';
@@ -363,11 +363,11 @@ export default function WebGISMap({
           <div><b style="color: #94a3b8;">Road:</b> <span style="color: #f1f5f9;">${escapeHtml(c.road_name)}</span></div>
           <div><b style="color: #94a3b8;">RPI Score:</b> <span style="font-weight: bold; color: #ef4444;">${c.rpi_score.toFixed(1)} / 100</span></div>
           <div><b style="color: #94a3b8;">Fleet Passes:</b> <span style="color: #f1f5f9;">${c.detection_count} passes</span></div>
-          ${c.contractor_name ? `<div style="color: #38bdf8; margin-top: 2px;"><b>Contractor:</b> ${escapeHtml(c.contractor_name)} <span style="color: #f87171;">(${c.sla_hours || 24}h SLA)</span></div>` : ''}
+          ${c.contractor_name ? `<div style="color: #fbbf24; margin-top: 2px;"><b>Contractor:</b> ${escapeHtml(c.contractor_name)} <span style="color: #f87171;">(${c.sla_hours || 24}h SLA)</span></div>` : ''}
           ${c.nearest_poi ? `<div style="color: #cbd5e1;"><b>Near POI:</b> ${escapeHtml(c.nearest_poi)} (${c.poi_distance_m}m)</div>` : ''}
           <div style="margin-top: 4px;">
             <b style="color: #94a3b8;">Status:</b> <span style="text-transform: uppercase; font-weight: bold; color: ${
-              isResolved ? '#10b981' : isAssigned ? '#3b82f6' : '#ef4444'
+              isResolved ? '#10b981' : isAssigned ? '#f59e0b' : '#ef4444'
             };">${escapeHtml(c.status)}</span>
           </div>
         </div>
@@ -375,9 +375,9 @@ export default function WebGISMap({
           <button id="btn-inspect-${c.id}" style="
             flex: 1;
             padding: 5px 8px;
-            background: #1e293b;
-            color: #38bdf8;
-            border: 1px solid #334155;
+            background: #27272a;
+            color: #f4f4f5;
+            border: 1px solid #3f3f46;
             border-radius: 5px;
             font-size: 10.5px;
             font-weight: bold;
@@ -386,12 +386,12 @@ export default function WebGISMap({
           <button id="btn-assign-${c.id}" style="
             flex: 1;
             padding: 5px 8px;
-            background: #2563eb;
-            color: white;
-            border: 1px solid #3b82f6;
+            background: #f59e0b;
+            color: #09090b;
+            border: 1px solid #d97706;
             border-radius: 5px;
             font-size: 10.5px;
-            font-weight: bold;
+            font-weight: 800;
             cursor: pointer;
           ">Dispatch PWD</button>
           <button id="btn-resolve-${c.id}" style="
@@ -533,8 +533,8 @@ export default function WebGISMap({
       {!isMapReady && (
         <div className="absolute inset-0 z-10 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm">
           <div className="flex flex-col items-center gap-2.5">
-            <div className="w-7 h-7 rounded-full border-2 border-cyan-400 border-t-transparent animate-spin" />
-            <span className="text-[10.5px] font-mono text-cyan-300 tracking-wider">CONNECTING GIS ENGINE...</span>
+            <div className="w-7 h-7 rounded-full border-2 border-amber-500 border-t-transparent animate-spin" />
+            <span className="text-[10.5px] font-mono text-amber-400 tracking-wider">CONNECTING GIS ENGINE...</span>
           </div>
         </div>
       )}

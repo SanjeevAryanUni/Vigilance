@@ -35,7 +35,7 @@ export default function ErrorBoundary({
         <div className="flex gap-3 justify-center">
           <button
             onClick={() => reset()}
-            className="flex items-center justify-center gap-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 px-4 py-2.5 text-xs font-semibold text-white transition-all shadow-lg shadow-cyan-600/20 active:scale-95"
+            className="flex items-center justify-center gap-2 rounded-xl bg-zinc-100 hover:bg-white px-4 py-2.5 text-xs font-semibold text-zinc-950 transition-all shadow-sm active:scale-95"
           >
             <RotateCw className="h-4 w-4" />
             Restart Pipeline

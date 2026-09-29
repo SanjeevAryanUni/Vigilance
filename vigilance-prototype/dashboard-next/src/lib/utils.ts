@@ -42,7 +42,7 @@ export function getRPIBadgeColor(rpi: number): { bg: string; text: string; borde
   if (rpi >= 50) {
     return { bg: 'bg-amber-950/80', text: 'text-amber-400', border: 'border-amber-800' };
   }
-  return { bg: 'bg-blue-950/80', text: 'text-blue-400', border: 'border-blue-800' };
+  return { bg: 'bg-emerald-950/80', text: 'text-emerald-400', border: 'border-emerald-800' };
 }
 
 export function getSeverityStyle(severity: Severity) {

@@ -53,7 +53,7 @@ export default function RPIRadialGauge({ className, rpiScore = 91.2, factors }: 
         },
       },
     },
-    colors: ['#ef4444', '#f59e0b', '#3b82f6', '#10b981'],
+    colors: ['#ef4444', '#f59e0b', '#d4d4d8', '#10b981'],
     labels: ['Severity (40%)', 'Density (25%)', 'Hierarchy (20%)', 'POI Prox (15%)'],
     stroke: {
       lineCap: 'round',

@@ -92,22 +92,22 @@ export default function Header({
       <div className="flex items-center gap-3.5">
         <Link href="/" className="flex items-center gap-2.5 group">
           <motion.div
-            whileHover={{ scale: 1.05, rotate: 2 }}
+            whileHover={{ scale: 1.05, rotate: 1 }}
             whileTap={{ scale: 0.95 }}
-            className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white border border-cyan-400/40 shadow-[0_0_18px_rgba(34,211,238,0.4)] transition-all"
+            className="w-8 h-8 rounded-lg bg-zinc-900 flex items-center justify-center text-zinc-100 border border-zinc-700/80 shadow-[0_0_15px_rgba(255,255,255,0.05)] transition-all"
           >
-            <ShieldAlert className="w-4 h-4 text-white" />
+            <ShieldAlert className="w-4 h-4 text-amber-400" />
           </motion.div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-extrabold text-sm tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-200 to-blue-400 font-mono animate-hue-cycle">
+              <span className="font-extrabold text-sm tracking-wider text-zinc-100 font-sans">
                 VIGILANCE
               </span>
-              <span className="bg-white/[0.06] backdrop-blur-md text-slate-300 text-[10px] font-mono px-1.5 py-0.5 rounded-md border border-white/10 font-semibold tracking-wide shadow-xs">
+              <span className="bg-amber-500/10 text-amber-400 text-[10px] font-mono px-1.5 py-0.5 rounded border border-amber-500/20 font-semibold tracking-wide">
                 SIH26124 • BEL
               </span>
             </div>
-            <p className="text-[9.5px] text-slate-400 font-mono hidden sm:block">
+            <p className="text-[9.5px] text-zinc-400 font-sans hidden sm:block">
               Urban Road Intelligence & Maintenance Dispatch
             </p>
           </div>
@@ -125,14 +125,14 @@ export default function Header({
                 className={cn(
                   'relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors z-10',
                   isActive
-                    ? 'text-cyan-300 font-semibold'
-                    : 'text-slate-400 hover:text-slate-100 hover:bg-white/[0.04]'
+                    ? 'text-zinc-100 font-semibold'
+                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.04]'
                 )}
               >
                 {isActive && (
                   <motion.div
                     layoutId="activeNavTab"
-                    className="absolute inset-0 rounded-lg bg-cyan-500/15 border border-cyan-400/40 shadow-[0_0_12px_rgba(34,211,238,0.25)] z-[-1]"
+                    className="absolute inset-0 rounded-lg bg-white/[0.08] border border-white/15 shadow-xs z-[-1]"
                     transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                   />
                 )}
@@ -164,7 +164,7 @@ export default function Header({
         {/* Mobile Direct Dashcam Button */}
         <Link
           href="/capture"
-          className="md:hidden flex items-center gap-1.5 bg-blue-600/90 hover:bg-blue-500 text-white text-[11px] font-mono font-bold px-2.5 py-1 rounded-lg border border-blue-400/30 shadow-[0_0_15px_rgba(37,99,235,0.3)] active:scale-95 transition"
+          className="md:hidden flex items-center gap-1.5 bg-zinc-100 hover:bg-white text-zinc-950 text-[11px] font-sans font-bold px-2.5 py-1 rounded-lg border border-zinc-200 shadow-xs active:scale-95 transition"
         >
           <Smartphone className="w-3.5 h-3.5" />
           <span>Dashcam</span>
@@ -175,10 +175,10 @@ export default function Header({
           className={cn(
             'flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10.5px] font-mono border backdrop-blur-md transition-all shadow-xs',
             isLive
-              ? 'bg-cyan-950/40 border-cyan-500/40 text-cyan-300 shadow-[0_0_12px_rgba(6,182,212,0.25)]'
+              ? 'bg-emerald-950/50 border-emerald-600/40 text-emerald-400 shadow-[0_0_12px_rgba(16,185,129,0.2)]'
               : isColdStarting
               ? 'bg-amber-950/50 border-amber-500/50 text-amber-300 shadow-[0_0_12px_rgba(245,158,11,0.25)] animate-pulse'
-              : 'bg-amber-950/40 border-amber-500/40 text-amber-300 shadow-[0_0_12px_rgba(245,158,11,0.2)]'
+              : 'bg-zinc-900/80 border-zinc-700/60 text-zinc-300 shadow-xs'
           )}
           title={
             isLive
@@ -192,10 +192,10 @@ export default function Header({
             className={cn(
               'w-2 h-2 rounded-full',
               isLive
-                ? 'bg-cyan-400 animate-pulse'
+                ? 'bg-emerald-400 animate-pulse'
                 : isColdStarting
                 ? 'bg-amber-400 animate-ping'
-                : 'bg-amber-400'
+                : 'bg-zinc-400'
             )}
           />
           <span className="font-semibold tracking-wide">
@@ -208,16 +208,16 @@ export default function Header({
           href={`${getApiBase() || ''}/api/reports/pwd-summary?format=pdf`}
           target="_blank"
           rel="noopener noreferrer"
-          className="hidden xl:flex items-center gap-1.5 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 hover:border-cyan-400/50 text-xs px-2.5 py-1 rounded-lg font-mono backdrop-blur-md transition-all shadow-[0_0_12px_rgba(6,182,212,0.15)] active:scale-95"
+          className="hidden xl:flex items-center gap-1.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-zinc-700/80 hover:border-zinc-500 text-xs px-2.5 py-1 rounded-lg font-mono backdrop-blur-md transition-all shadow-xs active:scale-95"
           title="Download Official PWD Municipal Audit Report (PDF)"
         >
-          <FileText className="w-3.5 h-3.5 text-cyan-400" />
+          <FileText className="w-3.5 h-3.5 text-amber-400" />
           <span>PWD Audit PDF</span>
         </a>
 
         {/* Active Fleet Node Count */}
         <div className="hidden sm:flex items-center gap-1.5 bg-white/[0.04] border border-white/10 px-2 py-1 rounded-lg text-xs text-slate-300 font-mono backdrop-blur-md">
-          <Radio className="w-3.5 h-3.5 text-blue-400" />
+          <Radio className="w-3.5 h-3.5 text-amber-400" />
           <span>{activeVehicles} Nodes</span>
         </div>
 
@@ -239,7 +239,7 @@ export default function Header({
             className="flex items-center gap-1.5 bg-white/[0.04] hover:bg-white/[0.08] text-slate-200 border border-white/10 hover:border-white/20 text-xs px-2.5 py-1 rounded-lg font-mono backdrop-blur-md transition-all disabled:opacity-50 active:scale-95"
             title="Trigger manual 15m DBSCAN spatial deduplication"
           >
-            <Cpu className={cn('w-3.5 h-3.5 text-blue-400', isDeduping && 'animate-spin')} />
+            <Cpu className={cn('w-3.5 h-3.5 text-zinc-400', isDeduping && 'animate-spin')} />
             <span className="hidden sm:inline">{isDeduping ? 'Deduping...' : 'Dedup'}</span>
           </button>
         )}

@@ -20,7 +20,7 @@ import { getFleetPositions } from '@/lib/api';
 const EdgeCockpit3D = dynamic(() => import('@/components/EdgeCockpit3D'), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-80 flex items-center justify-center bg-slate-950 text-cyan-400 font-mono text-xs rounded-xl border border-slate-800">
+    <div className="w-full h-80 flex items-center justify-center bg-slate-950 text-amber-400 font-mono text-xs rounded-xl border border-slate-800">
       Initializing 3D Transit Highway Telemetry...
     </div>
   ),
@@ -141,7 +141,7 @@ export default function FleetPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
             <h1 className="text-xl font-bold font-mono tracking-tight flex items-center gap-2">
-              <Truck className="w-5 h-5 text-cyan-400" />
+              <Truck className="w-5 h-5 text-amber-400" />
               <span>Public Transit Edge AI Fleet Monitoring & Cockpit</span>
             </h1>
             <p className="text-xs text-slate-400 font-mono mt-0.5">
@@ -170,8 +170,8 @@ export default function FleetPage() {
             value="MQTT / 4G"
             subtitle="TLS 8883 / Cellular eSIM"
             icon={Radio}
-            colorClass="text-cyan-400"
-            spotlightColor="cyan"
+            colorClass="text-amber-400"
+            spotlightColor="amber"
             sparklineData={[12, 16, 14, 22, 19, 28, 30]}
           />
           <KPICard
@@ -188,8 +188,8 @@ export default function FleetPage() {
             value="< ₹3,000"
             subtitle="Zero Fleet Capex Reused"
             icon={ShieldCheck}
-            colorClass="text-blue-400"
-            spotlightColor="blue"
+            colorClass="text-zinc-200"
+            spotlightColor="zinc"
             sparklineData={[2850, 2850, 2850, 2850, 2850, 2850, 2850]}
           />
         </div>
@@ -200,7 +200,7 @@ export default function FleetPage() {
           <div className="lg:col-span-8 flex flex-col gap-2.5">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div className="flex items-center gap-2 text-xs font-mono">
-                <Camera className="w-4 h-4 text-cyan-400" />
+                <Camera className="w-4 h-4 text-amber-400" />
                 <span className="font-bold text-slate-200 uppercase tracking-wider">
                   Live Windshield Edge AI Perception Stream (WebGL Three.js)
                 </span>
@@ -213,7 +213,7 @@ export default function FleetPage() {
                     onClick={() => setSelectedVehicleId(v.id)}
                     className={`px-2 py-1 rounded transition whitespace-nowrap font-bold ${
                       selectedVehicleId === v.id
-                        ? 'bg-cyan-950 text-cyan-300 border border-cyan-700/80 shadow-[0_0_10px_rgba(6,182,212,0.3)]'
+                        ? 'bg-amber-950/40 text-amber-300 border border-amber-500/60 shadow-[0_0_10px_rgba(245,158,11,0.2)]'
                         : 'text-slate-400 hover:text-slate-200'
                     }`}
                   >
@@ -236,10 +236,10 @@ export default function FleetPage() {
             <div>
               <div className="flex items-center justify-between pb-2 border-b border-slate-800/80 text-xs font-mono">
                 <div className="flex items-center gap-1.5 font-bold text-slate-200">
-                  <Sliders className="w-3.5 h-3.5 text-cyan-400" />
+                  <Sliders className="w-3.5 h-3.5 text-amber-400" />
                   <span>6-Axis Sensor Diagnostics</span>
                 </div>
-                <span className="text-[10px] text-cyan-400 font-bold">{activeVehicle.id}</span>
+                <span className="text-[10px] text-amber-400 font-bold">{activeVehicle.id}</span>
               </div>
               <p className="text-[11px] text-slate-400 font-mono mt-2">
                 Real-time edge hardware performance benchmarking comparing active node against fleet-wide baseline
@@ -275,11 +275,11 @@ export default function FleetPage() {
               return (
                 <TiltedCard key={veh.id} maxTilt={6}>
                   <SpotlightCard
-                    spotlightColor={isSelected ? 'cyan' : 'blue'}
+                    spotlightColor={isSelected ? 'amber' : 'zinc'}
                     onClick={() => setSelectedVehicleId(veh.id)}
                     className={`p-4 flex flex-col justify-between gap-3 transition-all duration-300 shadow-sm cursor-pointer ${
                       isSelected
-                        ? 'border-cyan-500/80 shadow-[0_0_15px_rgba(6,182,212,0.2)] bg-slate-900'
+                        ? 'border-amber-500/60 shadow-[0_0_15px_rgba(245,158,11,0.15)] bg-slate-900'
                         : 'border-slate-800 hover:border-slate-700'
                     }`}
                   >
@@ -300,7 +300,7 @@ export default function FleetPage() {
                         </div>
                         <p className="text-[11px] text-slate-400 font-mono mt-0.5">{veh.type}</p>
                       </div>
-                      <div className="p-2 rounded-lg bg-slate-800 border border-slate-700 text-cyan-400">
+                      <div className="p-2 rounded-lg bg-slate-800 border border-slate-700 text-amber-400">
                         <Radio className="w-4 h-4 animate-pulse" />
                       </div>
                     </div>
@@ -319,14 +319,14 @@ export default function FleetPage() {
                       </div>
                       <div className="bg-slate-950/50 p-2 rounded border border-slate-800/50">
                         <span className="text-slate-500">Onboard Compute</span>
-                        <div className="text-cyan-300 font-semibold truncate mt-0.5">{veh.edgeSoC}</div>
+                        <div className="text-zinc-200 font-semibold truncate mt-0.5">{veh.edgeSoC}</div>
                       </div>
                     </div>
 
                     {/* Telemetry Footer */}
                     <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px] font-mono">
                       <div className="flex items-center gap-1 text-slate-400">
-                        <Activity className="w-3.5 h-3.5 text-cyan-400" />
+                        <Activity className="w-3.5 h-3.5 text-amber-400" />
                         <span>Speed: <b>{veh.speedKmh} km/h</b></span>
                       </div>
                       <div className="text-slate-400 text-[10px]">
@@ -341,9 +341,9 @@ export default function FleetPage() {
         </div>
 
         {/* Store & Forward Resilient Network Banner */}
-        <div className="bg-gradient-to-r from-blue-950/40 via-slate-900 to-cyan-950/40 border border-cyan-800/60 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs font-mono">
+        <div className="bg-zinc-900/80 border border-zinc-800 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs font-mono">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-lg bg-cyan-950 border border-cyan-800 text-cyan-400">
+            <div className="p-2.5 rounded-lg bg-amber-950/40 border border-amber-600/40 text-amber-400">
               <Navigation className="w-5 h-5" />
             </div>
             <div>
@@ -354,7 +354,7 @@ export default function FleetPage() {
               </p>
             </div>
           </div>
-          <span className="px-2.5 py-1 rounded bg-blue-900/60 text-blue-300 border border-blue-700 text-[11px] font-bold shrink-0">
+          <span className="px-2.5 py-1 rounded bg-zinc-800 text-amber-400 border border-zinc-700 text-[11px] font-bold shrink-0">
             ZERO PACKET LOSS
           </span>
         </div>

@@ -13,7 +13,7 @@ interface KPISparklineProps {
 
 export default function KPISparkline({
   data,
-  color = '#06b6d4',
+  color = '#f59e0b',
 }: KPISparklineProps) {
   const options: ApexOptions = {
     chart: {
