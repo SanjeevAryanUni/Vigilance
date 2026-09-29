@@ -136,9 +136,30 @@ export const MAP_STYLES: Record<string, { label: string; style: maplibregl.Style
       ],
     },
   },
+  cartoDark: {
+    label: '🌑 Carto Dark Matter',
+    style: {
+      version: 8,
+      sources: {
+        'carto-dark': {
+          type: 'raster',
+          tiles: [
+            'https://a.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}@2x.png',
+            'https://b.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}@2x.png',
+            'https://c.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}@2x.png',
+          ],
+          tileSize: 256,
+          attribution: '© CARTO, © OpenStreetMap contributors',
+        },
+      },
+      layers: [
+        { id: 'carto-dark-layer', type: 'raster', source: 'carto-dark', minzoom: 0, maxzoom: 20 },
+      ],
+    },
+  },
 };
 
-const DEFAULT_STYLE = 'esriDark';
+const DEFAULT_STYLE = 'cartoDark';
 
 function escapeHtml(val: unknown): string {
   if (val === null || val === undefined) return '';
@@ -171,12 +192,12 @@ export default function WebGISMap({
     clustersRef.current = clusters;
   }, [clusters]);
 
-  // Helper to add Chennai POI markers (Hospitals, Institutions, Arterials)
-  const addPOIMarkers = (map: maplibregl.Map) => {
+  // Helper to add POI markers (Hospitals, Institutions, Arterials)
+  const addPOIMarkers = (map: maplibregl.Map, poisList: any[] = CHENNAI_POIS) => {
     poiMarkersRef.current.forEach((m) => m.remove());
     poiMarkersRef.current = [];
 
-    CHENNAI_POIS.forEach((poi) => {
+    (poisList || CHENNAI_POIS).forEach((poi) => {
       const el = document.createElement('div');
       el.className = 'poi-marker';
       el.title = `${poi.name} (${poi.type === 'hospital' ? '1.5x POI' : '1.2x POI'})`;
@@ -219,6 +240,27 @@ export default function WebGISMap({
       poiMarkersRef.current.push(marker);
     });
   };
+
+  // Listen for dynamic city switching events and smoothly fly to city center
+  useEffect(() => {
+    const handleCityChange = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const city = customEvent.detail;
+      if (city && mapRef.current && city.center) {
+        mapRef.current.flyTo({
+          center: [city.center.lon, city.center.lat],
+          zoom: city.zoom || 12,
+          essential: true,
+          speed: 1.2,
+        });
+        if (city.pois && mapRef.current) {
+          addPOIMarkers(mapRef.current, city.pois);
+        }
+      }
+    };
+    window.addEventListener('vigilance:city_change', handleCityChange);
+    return () => window.removeEventListener('vigilance:city_change', handleCityChange);
+  }, []);
 
   // Helper to render Cluster markers with interactive popups
   const addMarkers = (map: maplibregl.Map, currentClusters: Cluster[]) => {

@@ -3,6 +3,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MapPin, ChevronDown, Check, Globe } from 'lucide-react';
 
+import { getApiBase, getAuthHeaders } from '@/lib/api';
+
 interface CityInfo {
   key: string;
   display_name: string;
@@ -17,8 +19,6 @@ interface CitySelectorProps {
   onCityChange?: (city: CityInfo) => void;
 }
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
-
 export default function CitySelector({ onCityChange }: CitySelectorProps) {
   const [cities, setCities] = useState<CityInfo[]>([]);
   const [activeCity, setActiveCity] = useState<string>('chennai');
@@ -28,7 +28,9 @@ export default function CitySelector({ onCityChange }: CitySelectorProps) {
 
   // Fetch cities on mount
   useEffect(() => {
-    fetch(`${BACKEND_URL}/api/cities`)
+    const base = getApiBase();
+    const url = base ? `${base}/api/cities` : '/api/cities';
+    fetch(url)
       .then(res => res.json())
       .then(data => {
         setCities(data.cities || []);
@@ -37,9 +39,9 @@ export default function CitySelector({ onCityChange }: CitySelectorProps) {
       .catch(() => {
         // Fallback if backend is down
         setCities([
-          { key: 'chennai', display_name: 'Chennai', state: 'Tamil Nadu', center: { lat: 13.0827, lon: 80.2707 }, zoom: 12, municipal_body: 'GCC', is_active: true },
-          { key: 'bangalore', display_name: 'Bangalore', state: 'Karnataka', center: { lat: 12.9716, lon: 77.5946 }, zoom: 12, municipal_body: 'BBMP', is_active: false },
-          { key: 'delhi', display_name: 'Delhi', state: 'NCT Delhi', center: { lat: 28.6139, lon: 77.2090 }, zoom: 11, municipal_body: 'MCD', is_active: false },
+          { key: 'chennai', display_name: 'Chennai', state: 'Tamil Nadu', center: { lat: 13.0827, lon: 80.2707 }, zoom: 12, municipal_body: 'Greater Chennai Corporation (GCC)', is_active: true },
+          { key: 'bangalore', display_name: 'Bangalore', state: 'Karnataka', center: { lat: 12.9716, lon: 77.5946 }, zoom: 12, municipal_body: 'Bruhat Bengaluru Mahanagara Palike (BBMP)', is_active: false },
+          { key: 'delhi', display_name: 'Delhi', state: 'NCT Delhi', center: { lat: 28.6139, lon: 77.2090 }, zoom: 11, municipal_body: 'Municipal Corporation of Delhi (MCD)', is_active: false },
         ]);
       });
   }, []);
@@ -61,23 +63,31 @@ export default function CitySelector({ onCityChange }: CitySelectorProps) {
       return;
     }
     setIsLoading(true);
+    const base = getApiBase();
+    const switchUrl = base ? `${base}/api/cities/switch?city_key=${cityKey}` : `/api/cities/switch?city_key=${cityKey}`;
     try {
-      await fetch(`${BACKEND_URL}/api/cities/switch?city_key=${cityKey}`, {
+      await fetch(switchUrl, {
         method: 'POST',
-        headers: {
-          'X-API-Key': (typeof window !== 'undefined' ? localStorage.getItem('vigilance_api_key') : null) || process.env.NEXT_PUBLIC_API_KEY || 'vigilance_sih_2026'
-        }
+        headers: getAuthHeaders(),
       });
       setActiveCity(cityKey);
       const selected = cities.find(c => c.key === cityKey);
-      if (selected && onCityChange) {
-        onCityChange({ ...selected, is_active: true });
+      if (selected) {
+        if (onCityChange) onCityChange({ ...selected, is_active: true });
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('vigilance:city_change', { detail: selected }));
+        }
       }
     } catch {
       // Still switch locally for demo mode
       setActiveCity(cityKey);
       const selected = cities.find(c => c.key === cityKey);
-      if (selected && onCityChange) onCityChange({ ...selected, is_active: true });
+      if (selected) {
+        if (onCityChange) onCityChange({ ...selected, is_active: true });
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('vigilance:city_change', { detail: selected }));
+        }
+      }
     } finally {
       setIsLoading(false);
       setIsOpen(false);

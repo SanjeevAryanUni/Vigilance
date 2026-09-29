@@ -6,18 +6,32 @@ and contractor SLA status.
 """
 import io
 import csv
+import hashlib
 from datetime import datetime, timedelta
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 from fpdf import FPDF
 from poi_data import (
     get_active_city_config,
+    get_city_config,
     get_active_city,
     IRC_REPAIR_RATES,
     get_contractor,
     estimate_repair_cost,
     match_nearest_road,
 )
+
+
+def sanitize_csv_cell(val: Any) -> Any:
+    """Neutralizes formula injection in CSV exports."""
+    if isinstance(val, str) and val and val[0] in ("=", "+", "-", "@", "\t", "\r"):
+        return f"'{val}"
+    return val
+
+
+def compute_sha256(data: bytes) -> str:
+    """Computes SHA-256 audit digest for verification."""
+    return hashlib.sha256(data).hexdigest()
 
 
 class PWDReportPDF(FPDF):
@@ -46,18 +60,19 @@ class PWDReportPDF(FPDF):
         self.cell(0, 10, f"VIGILANCE SIH2026 | Confidential -- {self.city_name} PWD Internal Use Only | Page {self.page_no()}/{{nb}}", align="C")
 
 
-def generate_pwd_pdf(detections: List[Dict[str, Any]]) -> bytes:
+def generate_pwd_pdf(detections: List[Dict[str, Any]], city: Optional[str] = None) -> bytes:
     """
     Generates a complete PWD Municipal Audit Report in PDF format.
     
     Args:
         detections: List of detection records from the database, each containing:
             - lat, lon, damage_type / defect_type, severity, confidence, road_name, detected_at / timestamp
+        city: Optional city key to scope the report to ('chennai', 'bangalore', 'delhi')
     
     Returns:
         PDF file as bytes.
     """
-    cfg = get_active_city_config()
+    cfg = get_city_config(city) if city else get_active_city_config()
     city_name = cfg["display_name"]
     pdf = PWDReportPDF(city_name, orientation="P", unit="mm", format="A4")
     pdf.alias_nb_pages()
@@ -245,10 +260,13 @@ def generate_pwd_pdf(detections: List[Dict[str, Any]]) -> bytes:
     return bytes(pdf.output())
 
 
-def generate_pwd_csv(detections: List[Dict[str, Any]]) -> str:
+def generate_pwd_csv(detections: List[Dict[str, Any]], city: Optional[str] = None) -> str:
     """
     Generates a CSV export of all detections for spreadsheet analysis.
     """
+    cfg = get_city_config(city) if city else get_active_city_config()
+    city_zones = cfg.get("zones", {})
+
     output = io.StringIO()
     writer = csv.writer(output)
     writer.writerow([
@@ -258,24 +276,45 @@ def generate_pwd_csv(detections: List[Dict[str, Any]]) -> str:
     ])
 
     for d in detections:
-        dtype = d.get("damage_type") or d.get("defect_type") or "D40"
+        dtype = str(d.get("damage_type") or d.get("defect_type") or "D40")
         class_code = dtype.split(" ")[0] if " " in dtype else dtype
         cost = estimate_repair_cost(class_code)
-        road = d.get("road_name") or match_nearest_road(d.get("lat", 0.0), d.get("lon", 0.0))
-        contractor = get_contractor(road)
+        road = d.get("road_name") or match_nearest_road(d.get("lat", 0.0), d.get("lon", 0.0), city_key=city)
+        contractor = get_contractor(road, city_key=city)
+
+        # Match zone from road or config
+        zone_name = d.get("zone") or ""
+        if not zone_name and city_zones:
+            for zk, zv in city_zones.items():
+                if any(w.lower() in str(road).lower() for w in zv.split("/")[0].split()):
+                    zone_name = f"{zk} ({zv})"
+                    break
+            if not zone_name:
+                zone_name = list(city_zones.keys())[0] if city_zones else "Zone 1"
+
+        raw_conf = d.get("confidence")
+        if raw_conf is not None and raw_conf != "":
+            try:
+                conf_val = float(raw_conf)
+                conf_pct = f"{round(conf_val * 100, 1)}%" if conf_val <= 1.0 else f"{round(conf_val, 1)}%"
+            except (ValueError, TypeError):
+                conf_pct = str(raw_conf)
+        else:
+            conf_pct = "N/A"
+
         writer.writerow([
-            d.get("id", ""),
-            d.get("lat", ""),
-            d.get("lon", ""),
-            road,
-            dtype,
-            d.get("severity", ""),
-            d.get("confidence", ""),
-            d.get("detected_at") or d.get("timestamp", ""),
-            contractor["name"],
-            contractor["sla_hours"],
-            cost["estimated_cost_inr"],
-            d.get("zone", ""),
+            sanitize_csv_cell(d.get("id", "")),
+            sanitize_csv_cell(d.get("lat", "")),
+            sanitize_csv_cell(d.get("lon", "")),
+            sanitize_csv_cell(road),
+            sanitize_csv_cell(dtype),
+            sanitize_csv_cell(d.get("severity", "")),
+            sanitize_csv_cell(conf_pct),
+            sanitize_csv_cell(d.get("detected_at") or d.get("timestamp", "")),
+            sanitize_csv_cell(contractor["name"]),
+            sanitize_csv_cell(contractor["sla_hours"]),
+            sanitize_csv_cell(cost["estimated_cost_inr"]),
+            sanitize_csv_cell(zone_name),
         ])
 
     return output.getvalue()

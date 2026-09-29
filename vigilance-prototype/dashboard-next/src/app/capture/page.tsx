@@ -60,6 +60,59 @@ interface DetectedBox {
 }
 
 const SHOCK_THRESHOLD = 3.5; // m/s² dynamic acceleration threshold above gravity
+const OFFLINE_DB_NAME = 'vigilance_offline_store';
+const OFFLINE_STORE_NAME = 'detections_outbox';
+
+function openOfflineDB(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    if (typeof window === 'undefined' || !('indexedDB' in window)) {
+      return reject(new Error('IndexedDB not supported'));
+    }
+    const req = indexedDB.open(OFFLINE_DB_NAME, 1);
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains(OFFLINE_STORE_NAME)) {
+        db.createObjectStore(OFFLINE_STORE_NAME, { keyPath: 'id' });
+      }
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function enqueueOfflineDetection(detection: any): Promise<void> {
+  try {
+    const db = await openOfflineDB();
+    const tx = db.transaction(OFFLINE_STORE_NAME, 'readwrite');
+    tx.objectStore(OFFLINE_STORE_NAME).put(detection);
+  } catch (e) {
+    console.warn('[OfflineDB] Enqueue error:', e);
+  }
+}
+
+async function getOfflineDetections(): Promise<any[]> {
+  try {
+    const db = await openOfflineDB();
+    return new Promise((resolve) => {
+      const tx = db.transaction(OFFLINE_STORE_NAME, 'readonly');
+      const req = tx.objectStore(OFFLINE_STORE_NAME).getAll();
+      req.onsuccess = () => resolve(req.result || []);
+      req.onerror = () => resolve([]);
+    });
+  } catch {
+    return [];
+  }
+}
+
+async function removeOfflineDetection(id: number | string): Promise<void> {
+  try {
+    const db = await openOfflineDB();
+    const tx = db.transaction(OFFLINE_STORE_NAME, 'readwrite');
+    tx.objectStore(OFFLINE_STORE_NAME).delete(id);
+  } catch (e) {
+    console.warn('[OfflineDB] Remove error:', e);
+  }
+}
 
 export default function MobileCapturePage() {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -74,6 +127,13 @@ export default function MobileCapturePage() {
   const [vehicleId] = useState('MOBILE-NODE-01');
   const [autoDetectEnabled, setAutoDetectEnabled] = useState(true);
   const [soundEnabled, setSoundEnabled] = useState(true);
+
+  // Offline Store-and-Forward Outbox State
+  const [offlineQueueCount, setOfflineQueueCount] = useState(0);
+
+  // Dynamic Accelerometer Shockwave State
+  const [currentGForce, setCurrentGForce] = useState({ x: 0.0, y: 0.0, z: 1.0, shock: 0.0 });
+  const [isShockImpact, setIsShockImpact] = useState(false);
 
   // Accelerometer Frame Gating State
   const [frameGatingEnabled, setFrameGatingEnabled] = useState(false);
@@ -112,23 +172,81 @@ export default function MobileCapturePage() {
   const [vibrationGated, setVibrationGated] = useState(false);
   const isVibratingRef = useRef(false);
 
-  // Accelerometer Vibration Frame Gating (DeviceMotion API)
+  // Synchronize IndexedDB Offline Outbox
+  const flushOfflineQueue = useCallback(async () => {
+    try {
+      const queued = await getOfflineDetections();
+      if (!queued || queued.length === 0) {
+        setOfflineQueueCount(0);
+        return;
+      }
+      for (const item of queued) {
+        try {
+          const res = await createDetection(item);
+          if (res) {
+            await removeOfflineDetection(item.id);
+          }
+        } catch {
+          break; // Still offline or backend unreachable
+        }
+      }
+      const remaining = await getOfflineDetections();
+      setOfflineQueueCount(remaining.length);
+    } catch (e) {
+      console.warn('[OfflineDB] Flush failed:', e);
+    }
+  }, []);
+
+  // Initial outbox check and online listener
+  useEffect(() => {
+    getOfflineDetections().then((items) => setOfflineQueueCount(items.length));
+    const handleOnline = () => {
+      flushOfflineQueue();
+    };
+    window.addEventListener('online', handleOnline);
+    const flushInterval = setInterval(flushOfflineQueue, 15000);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      clearInterval(flushInterval);
+    };
+  }, [flushOfflineQueue]);
+
+  // Accelerometer G-Force & Vibration Shockwave Detection (DeviceMotion API)
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const handleMotion = (event: DeviceMotionEvent) => {
-      const acc = event.accelerationIncludingGravity;
-      if (acc) {
-        const x = Math.abs(acc.x ?? 0);
-        const y = Math.abs(acc.y ?? 0);
-        const zDelta = Math.abs((acc.z ?? 9.8) - 9.8);
-        if (x > 18 || y > 18 || zDelta > 8) {
-          isVibratingRef.current = true;
-          setVibrationGated(true);
-          setTimeout(() => {
-            isVibratingRef.current = false;
-            setVibrationGated(false);
-          }, 450);
-        }
+      const acc = event.accelerationIncludingGravity || event.acceleration;
+      if (!acc) return;
+      const rawX = acc.x ?? 0;
+      const rawY = acc.y ?? 0;
+      const rawZ = acc.z ?? 9.8;
+
+      const totalAcc = Math.sqrt(rawX * rawX + rawY * rawY + rawZ * rawZ);
+      const dynamicShock = Math.abs(totalAcc - 9.8);
+
+      setCurrentGForce({
+        x: Number((rawX / 9.8).toFixed(2)),
+        y: Number((rawY / 9.8).toFixed(2)),
+        z: Number((rawZ / 9.8).toFixed(2)),
+        shock: Number(dynamicShock.toFixed(2)),
+      });
+
+      // Frame gating detection for extreme vibration
+      if (Math.abs(rawX) > 18 || Math.abs(rawY) > 18 || Math.abs(rawZ - 9.8) > 8) {
+        isVibratingRef.current = true;
+        setVibrationGated(true);
+        setTimeout(() => {
+          isVibratingRef.current = false;
+          setVibrationGated(false);
+        }, 450);
+      }
+
+      // Dynamic Shock Impact Gate (>= 3.5 m/s² dynamic acceleration)
+      if (dynamicShock >= SHOCK_THRESHOLD && Date.now() - lastShockTimeRef.current > 750) {
+        lastShockTimeRef.current = Date.now();
+        setIsShockImpact(true);
+        triggerHaptic();
+        setTimeout(() => setIsShockImpact(false), 850);
       }
     };
     window.addEventListener('devicemotion', handleMotion);
@@ -248,10 +366,14 @@ export default function MobileCapturePage() {
         if (res) {
           setLastSent(`Sent #${payload.id.toString().slice(-4)}`);
         } else {
-          setLastSent(`Broadcasted Locally`);
+          await enqueueOfflineDetection(payload);
+          setLastSent(`Queued Offline (#${payload.id.toString().slice(-4)})`);
+          setOfflineQueueCount((c) => c + 1);
         }
       } catch (e) {
-        setLastSent(`Broadcasted Locally`);
+        await enqueueOfflineDetection(payload);
+        setLastSent(`Queued Offline (#${payload.id.toString().slice(-4)})`);
+        setOfflineQueueCount((c) => c + 1);
       }
 
       setDetectionLogs((prev) => [payload, ...prev.slice(0, 9)]);
@@ -599,7 +721,11 @@ export default function MobileCapturePage() {
   const densityMeta = getDensityBadge(trafficData.density);
 
   return (
-    <div className="flex flex-col h-[100dvh] bg-slate-950 text-slate-100 font-sans select-none overflow-hidden">
+    <div
+      className={`flex flex-col h-[100dvh] bg-slate-950 text-slate-100 font-sans select-none overflow-hidden transition-all duration-150 ${
+        isShockImpact ? 'ring-4 ring-amber-500 shadow-[inset_0_0_50px_rgba(245,158,11,0.6)] animate-shockwave' : ''
+      }`}
+    >
       {/* Top Header */}
       <header className="bg-slate-900/95 backdrop-blur-md border-b border-slate-800 px-3 sm:px-4 py-2.5 flex items-center justify-between shadow-md shrink-0 z-30">
         <Link
@@ -610,6 +736,15 @@ export default function MobileCapturePage() {
           <span>Exit to Dashboard</span>
         </Link>
         <div className="flex items-center gap-2">
+          {offlineQueueCount > 0 && (
+            <button
+              onClick={flushOfflineQueue}
+              className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-950/90 border border-amber-600 text-amber-300 text-[10px] font-mono font-bold animate-pulse"
+              title="Offline Outbox — Click to synchronize"
+            >
+              <span>📴 {offlineQueueCount} QUEUED</span>
+            </button>
+          )}
           <button
             onClick={() => setSoundEnabled((prev) => !prev)}
             className="p-1.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-white text-xs"
@@ -621,11 +756,13 @@ export default function MobileCapturePage() {
               <VolumeX className="w-3.5 h-3.5 text-slate-500" />
             )}
           </button>
-          <div className={`hidden sm:flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[10px] font-mono font-bold ${
-            vibrationGated 
-              ? 'bg-amber-950/80 border-amber-600 text-amber-300 animate-pulse' 
-              : 'bg-slate-800/80 border-slate-700 text-slate-300'
-          }`}>
+          <div
+            className={`hidden sm:flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[10px] font-mono font-bold ${
+              vibrationGated
+                ? 'bg-amber-950/80 border-amber-600 text-amber-300 animate-pulse'
+                : 'bg-slate-800/80 border-slate-700 text-slate-300'
+            }`}
+          >
             <span className={`w-1.5 h-1.5 rounded-full ${vibrationGated ? 'bg-amber-400' : 'bg-cyan-400'}`} />
             <span>{vibrationGated ? 'SHOCK GATED' : 'IMU STABLE'}</span>
           </div>
@@ -804,19 +941,31 @@ export default function MobileCapturePage() {
               </div>
             ))}
 
-            {/* Perception Region of Interest (ROI) */}
-            <div className="self-center w-60 sm:w-72 h-44 sm:h-52 border-2 border-dashed border-cyan-500/50 rounded-xl relative flex items-center justify-center shadow-[0_0_15px_rgba(6,182,212,0.15)]">
-              <div className="absolute -top-3 bg-cyan-950/90 text-cyan-300 border border-cyan-800 text-[9px] px-2 py-0.5 rounded font-mono uppercase tracking-wider font-bold shadow">
-                {frameGatingEnabled
-                  ? '⚡ Shock-Gated Frame Perception'
-                  : autoDetectEnabled
-                  ? '⚡ Continuous AI Perception (Damage + Traffic)'
-                  : 'Perception Standby'}
+            {/* Perception Region of Interest (ROI) with HUD Reticle */}
+            <div className="self-center w-60 sm:w-72 h-44 sm:h-52 border border-cyan-500/40 rounded-xl relative flex items-center justify-center shadow-[0_0_20px_rgba(6,182,212,0.2)]">
+              <div className="absolute -top-3 bg-slate-950/95 text-cyan-300 border border-cyan-800 text-[9px] px-2.5 py-0.5 rounded-full font-mono uppercase tracking-wider font-bold shadow flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping" />
+                <span>
+                  {frameGatingEnabled
+                    ? '⚡ Shock-Gated Frame Perception'
+                    : autoDetectEnabled
+                    ? '⚡ Continuous AI Perception (Damage + Traffic)'
+                    : 'Perception Standby'}
+                </span>
               </div>
-              <div className="w-3 h-3 border-t-2 border-l-2 border-cyan-400 absolute top-2 left-2" />
-              <div className="w-3 h-3 border-t-2 border-r-2 border-cyan-400 absolute top-2 right-2" />
-              <div className="w-3 h-3 border-b-2 border-l-2 border-cyan-400 absolute bottom-2 left-2" />
-              <div className="w-3 h-3 border-b-2 border-r-2 border-cyan-400 absolute bottom-2 right-2" />
+
+              {/* Tactical Corner Reticles */}
+              <div className="hud-reticle-corner hud-reticle-tl" />
+              <div className="hud-reticle-corner hud-reticle-tr" />
+              <div className="hud-reticle-corner hud-reticle-bl" />
+              <div className="hud-reticle-corner hud-reticle-br" />
+
+              {/* Center Targeting Crosshair */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-30">
+                <div className="w-10 h-[1px] bg-cyan-400" />
+                <div className="h-10 w-[1px] bg-cyan-400 absolute" />
+                <div className="w-3 h-3 border border-cyan-400 rounded-full absolute" />
+              </div>
 
               {isCapturing && (
                 <div className="absolute inset-0 bg-red-600/30 border-2 border-red-500 rounded-xl animate-ping flex items-center justify-center">
@@ -852,6 +1001,35 @@ export default function MobileCapturePage() {
             </div>
           </div>
         )}
+      </div>
+
+      {/* Dynamic G-Force Vibration Shockwave Meter */}
+      <div className="px-3 sm:px-4 py-1.5 bg-slate-950/95 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-2 text-[10px] font-mono shrink-0">
+        <div className="flex items-center gap-2">
+          <span className="text-slate-400 font-semibold">IMU TELEMETRY:</span>
+          <span className="text-cyan-400">X: {currentGForce.x >= 0 ? `+${currentGForce.x}` : currentGForce.x}G</span>
+          <span className="text-cyan-400">Y: {currentGForce.y >= 0 ? `+${currentGForce.y}` : currentGForce.y}G</span>
+          <span className="text-cyan-400">Z: {currentGForce.z >= 0 ? `+${currentGForce.z}` : currentGForce.z}G</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span
+            className={`font-bold ${
+              currentGForce.shock >= SHOCK_THRESHOLD ? 'text-amber-400 animate-pulse' : 'text-slate-400'
+            }`}
+          >
+            DYNAMIC SHOCK: {currentGForce.shock.toFixed(1)} m/s²
+          </span>
+          {/* Mini Meter Gauge */}
+          <div className="w-20 sm:w-28 h-2 bg-slate-800 rounded-full overflow-hidden border border-slate-700 relative">
+            <div className="absolute top-0 bottom-0 left-[35%] w-0.5 bg-amber-400 z-10 opacity-75" title="Shock Gate 3.5m/s²" />
+            <div
+              className={`h-full transition-all duration-75 ${
+                currentGForce.shock >= SHOCK_THRESHOLD ? 'bg-amber-500 animate-pulse' : 'bg-cyan-500'
+              }`}
+              style={{ width: `${Math.min(100, (currentGForce.shock / 10.0) * 100)}%` }}
+            />
+          </div>
+        </div>
       </div>
 
       {/* Control Panel Bottom */}

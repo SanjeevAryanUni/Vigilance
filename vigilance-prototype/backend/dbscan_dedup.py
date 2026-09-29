@@ -54,9 +54,19 @@ def run_spatial_deduplication(db_session, eps_meters: float = 15.0) -> int:
 
     # 1. Snapshot previous cluster statuses and centroids for continuity
     previous_clusters = db_session.query(Cluster).all()
-    prev_status_map: List[Tuple[float, float, str, datetime]] = [
-        (c.centroid_lat, c.centroid_lon, c.status, c.created_at) for c in previous_clusters
+    prev_cluster_data = [
+        {
+            "id": c.id,
+            "lat": c.centroid_lat,
+            "lon": c.centroid_lon,
+            "status": c.status,
+            "created_at": c.created_at,
+            "contractor_name": getattr(c, "contractor_name", None),
+            "sla_hours": getattr(c, "sla_hours", None),
+        }
+        for c in previous_clusters
     ]
+    used_prev_ids = set()
 
     labels = []
 
@@ -136,15 +146,33 @@ def run_spatial_deduplication(db_session, eps_meters: float = 15.0) -> int:
 
         rpi = compute_rpi(max_sev, len(det_list), road_type_weight=road_wt, proximity_weight=prox_wt)
 
-        # Match centroid to nearest previous cluster within 25m to preserve operational workflow status
+        # Match centroid to 1-to-1 closest previous cluster within eps_meters (15m) to preserve operational workflow status
         matched_status = "open"
         created_time = datetime.utcnow()
-        for prev_lat, prev_lon, prev_status, prev_created in prev_status_map:
-            dist = haversine_meters(center_lat, center_lon, prev_lat, prev_lon)
-            if dist <= 25.0:
-                matched_status = prev_status
-                created_time = prev_created
-                break
+        contractor_name = contractor.get("name", "Greater Chennai PWD")
+        contractor_contact = contractor.get("contact", "+91 44 2538 4520")
+        sla_hours = contractor.get("sla_hours", 48)
+
+        # Find closest available previous cluster within eps_meters
+        best_prev = None
+        min_prev_dist = float("inf")
+        for prev in prev_cluster_data:
+            if prev["id"] in used_prev_ids:
+                continue
+            dist = haversine_meters(center_lat, center_lon, prev["lat"], prev["lon"])
+            if dist <= eps_meters and dist < min_prev_dist:
+                min_prev_dist = dist
+                best_prev = prev
+
+        if best_prev is not None:
+            used_prev_ids.add(best_prev["id"])
+            matched_status = best_prev["status"]
+            if best_prev["created_at"]:
+                created_time = best_prev["created_at"]
+            if best_prev["contractor_name"]:
+                contractor_name = best_prev["contractor_name"]
+            if best_prev["sla_hours"]:
+                sla_hours = best_prev["sla_hours"]
 
         cluster = Cluster(
             id=int(c_id),
@@ -158,9 +186,9 @@ def run_spatial_deduplication(db_session, eps_meters: float = 15.0) -> int:
             road_name=road_name,
             nearest_poi=nearest_poi,
             poi_distance_m=poi_dist,
-            contractor_name=contractor.get("name", "Greater Chennai PWD"),
-            contractor_contact=contractor.get("contact", "+91 44 2538 4520"),
-            sla_hours=contractor.get("sla_hours", 48),
+            contractor_name=contractor_name,
+            contractor_contact=contractor_contact,
+            sla_hours=sla_hours,
             created_at=created_time,
             updated_at=datetime.utcnow()
         )

@@ -75,6 +75,7 @@ type WorkstationMode = 'full-gis' | 'split-ops';
 type SidebarTab = 'queue' | 'traffic' | 'analytics';
 
 const MAP_LAYER_OPTIONS = [
+  { key: 'cartoDark', label: 'Dark Vector' },
   { key: 'esriDark', label: 'Dark Canvas' },
   { key: 'osmStandard', label: 'Street Map' },
   { key: 'esriSatellite', label: 'Satellite (Esri)' },
@@ -123,7 +124,7 @@ export default function CommandCenterPage() {
   const [showCameraGridModal, setShowCameraGridModal] = useState(false);
   const [showCommandPalette, setShowCommandPalette] = useState(false);
   const [workstationMode, setWorkstationMode] = useState<WorkstationMode>('full-gis');
-  const [activeMapStyle, setActiveMapStyle] = useState<string>('esriDark');
+  const [activeMapStyle, setActiveMapStyle] = useState<string>('cartoDark');
   const [sidebarTab, setSidebarTab] = useState<SidebarTab>('queue');
   const [mobileTab, setMobileTab] = useState<'map' | 'telemetry'>('map');
 

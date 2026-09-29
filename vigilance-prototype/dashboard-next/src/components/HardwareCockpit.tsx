@@ -1,259 +1,242 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Cpu, Zap, Wifi, Activity, HardDrive, Gauge, ChevronDown, ChevronUp } from 'lucide-react';
+import {
+  Cpu,
+  Zap,
+  Wifi,
+  HardDrive,
+  Gauge,
+  ChevronDown,
+  ChevronUp,
+  Server,
+  Smartphone,
+  ShieldCheck,
+  CheckCircle2,
+  TrendingDown,
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-interface CockpitMetric {
-  label: string;
-  value: string;
-  subtext: string;
-  icon: React.ReactNode;
-  accentColor: string;
-  gaugePercent: number;
-}
+type CockpitTab = 'quantization' | 'bandwidth' | 'bom';
 
 export default function HardwareCockpit() {
   const [isExpanded, setIsExpanded] = useState(true);
-  const [gForce, setGForce] = useState(0.0);
-  const [gForceActive, setGForceActive] = useState(false);
+  const [activeTab, setActiveTab] = useState<CockpitTab>('quantization');
+  const [transitHours, setTransitHours] = useState(1);
 
-  // Simulated G-force from accelerometer (real data comes via DeviceMotion in /capture)
-  useEffect(() => {
-    const interval = setInterval(() => {
-      // Simulate accelerometer data — in production, this reads DeviceMotionEvent
-      const simulated = 0.5 + Math.random() * 4.5;
-      setGForce(parseFloat(simulated.toFixed(2)));
-      setGForceActive(simulated > 3.5);
-    }, 800);
-    return () => clearInterval(interval);
-  }, []);
-
-  const metrics: CockpitMetric[] = [
-    {
-      label: 'Model Size (INT8)',
-      value: '3.2 MB',
-      subtext: 'vs 12.2 MB FP32 → 72.6% compression',
-      icon: <HardDrive className="w-5 h-5" />,
-      accentColor: 'cyan',
-      gaugePercent: 26.2, // 3.2/12.2 * 100
-    },
-    {
-      label: 'Mean Latency (INT8)',
-      value: '28.4 ms',
-      subtext: 'vs 64.2 ms FP32 → 2.26× speedup',
-      icon: <Zap className="w-5 h-5" />,
-      accentColor: 'green',
-      gaugePercent: 44.2, // 28.4/64.2 * 100
-    },
-    {
-      label: 'Bandwidth Saved',
-      value: '99.8%',
-      subtext: '200B MQTT vs 5 Mbps raw video',
-      icon: <Wifi className="w-5 h-5" />,
-      accentColor: 'amber',
-      gaugePercent: 99.8,
-    },
-    {
-      label: 'Edge Hardware Cost',
-      value: '₹2,800',
-      subtext: 'Raspberry Pi 4B + Camera Module v3',
-      icon: <Cpu className="w-5 h-5" />,
-      accentColor: 'red',
-      gaugePercent: 9.3, // 2800/30000 * 100 (vs typical server)
-    },
-  ];
-
-  const accentStyles: Record<string, { border: string; text: string; bg: string; glow: string; fill: string }> = {
-    cyan: {
-      border: 'border-cyan-500/30',
-      text: 'text-cyan-400',
-      bg: 'bg-cyan-500/10',
-      glow: 'shadow-[0_0_20px_rgba(34,211,238,0.15)]',
-      fill: 'from-cyan-600 to-cyan-400',
-    },
-    green: {
-      border: 'border-emerald-500/30',
-      text: 'text-emerald-400',
-      bg: 'bg-emerald-500/10',
-      glow: 'shadow-[0_0_20px_rgba(74,222,128,0.15)]',
-      fill: 'from-emerald-600 to-emerald-400',
-    },
-    amber: {
-      border: 'border-amber-500/30',
-      text: 'text-amber-400',
-      bg: 'bg-amber-500/10',
-      glow: 'shadow-[0_0_20px_rgba(251,191,36,0.15)]',
-      fill: 'from-amber-600 to-amber-400',
-    },
-    red: {
-      border: 'border-rose-500/30',
-      text: 'text-rose-400',
-      bg: 'bg-rose-500/10',
-      glow: 'shadow-[0_0_20px_rgba(248,113,113,0.15)]',
-      fill: 'from-rose-600 to-rose-400',
-    },
-  };
+  // Bandwidth calculation: 5 Mbps video = 2.25 GB/hour, 200B MQTT at 1/10s = 36 KB/hour
+  const rawVideoGB = (transitHours * 2.25).toFixed(2);
+  const telemetryKB = (transitHours * 36).toFixed(0);
+  const bandwidthSaved = '99.998%';
 
   return (
-    <div className="glass-card rounded-xl overflow-hidden animate-slide-up">
-      {/* Header */}
-      <button
+    <div className="glass-obsidian rounded-2xl overflow-hidden transition-all duration-300">
+      {/* Header Bar */}
+      <div
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between px-5 py-3.5 bg-slate-900/60 border-b border-white/[0.06] hover:bg-slate-900/80 transition-colors"
+        className="px-4 py-3 bg-slate-900/60 flex items-center justify-between cursor-pointer border-b border-white/10 hover:bg-slate-800/50 transition-colors"
       >
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-cyan-500/20 flex items-center justify-center border border-cyan-500/30">
-            <Cpu className="w-4 h-4 text-cyan-400" />
+        <div className="flex items-center gap-2.5">
+          <div className="p-1.5 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-cyan-400">
+            <Cpu className="w-4 h-4" />
           </div>
-          <div className="text-left">
-            <h3 className="text-sm font-bold text-slate-100 font-mono tracking-wide">
-              EDGE AI HARDWARE COCKPIT
+          <div>
+            <h3 className="font-mono font-bold text-xs tracking-wider text-slate-100 flex items-center gap-2">
+              <span>EDGE AI & HARDWARE COCKPIT</span>
+              <span className="px-1.5 py-0.2 rounded text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-mono font-normal">
+                BEL-VERIFIED
+              </span>
             </h3>
-            <p className="text-[10px] text-slate-500 font-mono">
-              INT8 Quantized • Sub-₹3,000 Hardware • MQTT Telemetry
+            <p className="text-[10px] text-slate-400 font-mono">
+              Quantization • Green Cellular Proof • Tactical BOM
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          {/* Live G-force indicator */}
-          <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-mono border backdrop-blur-md transition-all ${
-            gForceActive
-              ? 'bg-rose-950/50 border-rose-500/40 text-rose-300 shadow-[0_0_15px_rgba(248,113,113,0.3)] animate-pulse'
-              : 'bg-emerald-950/40 border-emerald-500/30 text-emerald-400'
-          }`}>
-            <Activity className="w-3 h-3" />
-            <span>{gForce} m/s²</span>
-            <span className="font-semibold">{gForceActive ? 'BUMP' : 'IDLE'}</span>
-          </div>
-          {isExpanded ? <ChevronUp className="w-4 h-4 text-slate-500" /> : <ChevronDown className="w-4 h-4 text-slate-500" />}
-        </div>
-      </button>
 
-      {/* Content */}
+        <div className="flex items-center gap-3">
+          <div className="hidden sm:flex items-center gap-1.5 text-[11px] font-mono text-cyan-400">
+            <Zap className="w-3.5 h-3.5" />
+            <span>41.74ms INT8</span>
+          </div>
+          <button className="text-slate-400 hover:text-slate-200">
+            {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          </button>
+        </div>
+      </div>
+
       <AnimatePresence>
         {isExpanded && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.35, ease: 'easeInOut' }}
-            className="p-4"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="p-4 flex flex-col gap-3.5"
           >
-            {/* Metrics Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-              {metrics.map((m, idx) => {
-                const style = accentStyles[m.accentColor];
-                return (
-                  <motion.div
-                    key={idx}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: idx * 0.05 }}
-                    whileHover={{
-                      y: -4,
-                      scale: 1.025,
-                      rotateY: 3,
-                      transition: { type: 'spring', stiffness: 350, damping: 20 },
-                    }}
-                    style={{ perspective: 1000, transformStyle: 'preserve-3d' }}
-                    className={`glass-card rounded-xl p-4 ${style.border} ${style.glow} cursor-default transition-all`}
-                  >
-                    {/* Icon + Label */}
-                    <div className="flex items-center gap-2.5 mb-3">
-                      <div className={`w-9 h-9 rounded-lg ${style.bg} flex items-center justify-center ${style.text} border ${style.border}`}>
-                        {m.icon}
-                      </div>
-                      <span className="text-[11px] font-mono text-slate-400 leading-tight">
-                        {m.label}
-                      </span>
-                    </div>
-
-                    {/* Value */}
-                    <div className={`text-2xl font-extrabold font-mono ${style.text} tracking-tight mb-1`}>
-                      {m.value}
-                    </div>
-
-                    {/* Subtext */}
-                    <p className="text-[10px] text-slate-500 font-mono mb-3 leading-relaxed">
-                      {m.subtext}
-                    </p>
-
-                    {/* Gauge Bar */}
-                    <div className="h-2 rounded-full bg-slate-800/60 overflow-hidden">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${m.gaugePercent}%` }}
-                        transition={{ duration: 1.2, delay: 0.2 + idx * 0.1, ease: 'easeOut' }}
-                        className={`h-full rounded-full bg-gradient-to-r ${style.fill}`}
-                      />
-                    </div>
-                    <div className="flex justify-between mt-1">
-                      <span className="text-[9px] text-slate-600 font-mono">0</span>
-                      <span className={`text-[9px] font-mono font-semibold ${style.text}`}>
-                        {m.gaugePercent.toFixed(1)}%
-                      </span>
-                    </div>
-                  </motion.div>
-                );
-              })}
+            {/* Tab Controls */}
+            <div className="flex items-center gap-1 p-1 bg-slate-950/60 rounded-xl border border-white/10 text-xs font-mono">
+              <button
+                onClick={() => setActiveTab('quantization')}
+                className={cn(
+                  'flex-1 py-1.5 px-2 rounded-lg flex items-center justify-center gap-1.5 transition font-semibold text-[11px]',
+                  activeTab === 'quantization'
+                    ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-[0_0_12px_rgba(6,182,212,0.2)]'
+                    : 'text-slate-400 hover:text-slate-200'
+                )}
+              >
+                <Zap className="w-3.5 h-3.5" />
+                <span>INT8 Quantization</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('bandwidth')}
+                className={cn(
+                  'flex-1 py-1.5 px-2 rounded-lg flex items-center justify-center gap-1.5 transition font-semibold text-[11px]',
+                  activeTab === 'bandwidth'
+                    ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-[0_0_12px_rgba(6,182,212,0.2)]'
+                    : 'text-slate-400 hover:text-slate-200'
+                )}
+              >
+                <Wifi className="w-3.5 h-3.5" />
+                <span>Bandwidth Proof</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('bom')}
+                className={cn(
+                  'flex-1 py-1.5 px-2 rounded-lg flex items-center justify-center gap-1.5 transition font-semibold text-[11px]',
+                  activeTab === 'bom'
+                    ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-[0_0_12px_rgba(6,182,212,0.2)]'
+                    : 'text-slate-400 hover:text-slate-200'
+                )}
+              >
+                <HardDrive className="w-3.5 h-3.5" />
+                <span>Defense BOM</span>
+              </button>
             </div>
 
-          {/* G-Force Vibration Gauge */}
-          <div className="mt-4 glass-card rounded-xl p-4 border-cyan-500/20">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <Gauge className="w-4 h-4 text-cyan-400" />
-                <span className="text-xs font-mono font-semibold text-slate-300">
-                  ACCELEROMETER VIBRATION GAUGE
-                </span>
+            {/* Tab 1: Quantization Benchmarks */}
+            {activeTab === 'quantization' && (
+              <div className="grid grid-cols-2 gap-2.5">
+                <div className="p-3 rounded-xl bg-slate-900/60 border border-white/10 flex flex-col justify-between">
+                  <span className="text-[10px] uppercase font-mono text-slate-400">Inference Latency</span>
+                  <div className="my-1.5 flex items-baseline gap-2">
+                    <span className="text-xl font-bold font-mono text-cyan-300">41.74 ms</span>
+                    <span className="text-[10px] text-emerald-400 font-mono font-semibold">2.3× Speedup</span>
+                  </div>
+                  <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                    <div className="bg-gradient-to-r from-cyan-500 to-emerald-400 h-full w-[43%]" />
+                  </div>
+                  <span className="text-[9.5px] font-mono text-slate-400 mt-1.5">INT8 vs 96.0ms FP32 baseline</span>
+                </div>
+
+                <div className="p-3 rounded-xl bg-slate-900/60 border border-white/10 flex flex-col justify-between">
+                  <span className="text-[10px] uppercase font-mono text-slate-400">Binary Footprint</span>
+                  <div className="my-1.5 flex items-baseline gap-2">
+                    <span className="text-xl font-bold font-mono text-emerald-300">3.20 MB</span>
+                    <span className="text-[10px] text-emerald-400 font-mono font-semibold">72.6% Reduced</span>
+                  </div>
+                  <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                    <div className="bg-gradient-to-r from-emerald-500 to-cyan-400 h-full w-[27%]" />
+                  </div>
+                  <span className="text-[9.5px] font-mono text-slate-400 mt-1.5">INT8 vs 11.70MB FP32 model</span>
+                </div>
               </div>
-              <span className={`text-xs font-mono font-bold ${gForceActive ? 'text-rose-400' : 'text-emerald-400'}`}>
-                THRESHOLD: 3.5 m/s²
-              </span>
-            </div>
-            <div className="flex items-end gap-1 h-16">
-              {Array.from({ length: 24 }).map((_, i) => {
-                const barHeight = 20 + Math.random() * (gForceActive ? 80 : 40);
-                const isHot = barHeight > 60;
-                return (
-                  <div
-                    key={i}
-                    className={`flex-1 rounded-t-sm transition-all duration-300 ${
-                      isHot
-                        ? 'bg-gradient-to-t from-rose-600 to-amber-400 shadow-[0_0_8px_rgba(248,113,113,0.4)]'
-                        : 'bg-gradient-to-t from-cyan-700 to-cyan-400'
-                    }`}
-                    style={{
-                      height: `${barHeight}%`,
-                      animationDelay: `${i * 50}ms`,
-                    }}
-                  />
-                );
-              })}
-            </div>
-            <div className="flex justify-between mt-2">
-              <span className="text-[9px] text-slate-600 font-mono">0 Hz</span>
-              <span className={`text-[10px] font-mono font-bold ${gForceActive ? 'text-rose-400 animate-pulse' : 'text-cyan-400'}`}>
-                {gForceActive ? '⚠ ROAD DEFECT ZONE — CAPTURING' : '● MONITORING — SMOOTH ROAD'}
-              </span>
-              <span className="text-[9px] text-slate-600 font-mono">50 Hz</span>
-            </div>
-          </div>
+            )}
 
-          {/* AIKosh Retraining Architecture Banner */}
-          <div className="mt-3 p-2.5 rounded-lg bg-indigo-950/30 border border-indigo-500/20 flex items-center justify-between text-[10.5px] font-mono">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-indigo-400 animate-ping" />
-              <span className="text-indigo-300 font-bold">Planned Sovereign Pipeline:</span>
-              <span className="text-slate-300">AIKosh (aikosh.indiaai.gov.in) Road Safety Dataset + AIRAWAT GPU Retraining</span>
-            </div>
-            <span className="text-[9.5px] px-2 py-0.5 rounded bg-indigo-900/60 text-indigo-200 border border-indigo-700/60 font-semibold">
-              IndiaAI Mission
-            </span>
-          </div>
-        </motion.div>
-      )}
+            {/* Tab 2: Green Cellular Bandwidth Proof */}
+            {activeTab === 'bandwidth' && (
+              <div className="p-3 rounded-xl bg-slate-900/60 border border-white/10 flex flex-col gap-2.5">
+                <div className="flex items-center justify-between text-xs font-mono">
+                  <span className="text-slate-300 font-semibold">Fleet Transit Duration:</span>
+                  <div className="flex items-center gap-1">
+                    {[1, 4, 8, 24].map((hrs) => (
+                      <button
+                        key={hrs}
+                        onClick={() => setTransitHours(hrs)}
+                        className={cn(
+                          'px-2 py-0.5 rounded text-[10.5px] font-mono transition',
+                          transitHours === hrs
+                            ? 'bg-cyan-500/30 text-cyan-200 border border-cyan-400/50'
+                            : 'bg-white/[0.04] text-slate-400 hover:text-slate-200'
+                        )}
+                      >
+                        {hrs}h
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 pt-1 font-mono">
+                  <div className="p-2 rounded-lg bg-rose-950/30 border border-rose-500/30 text-rose-200">
+                    <div className="text-[9.5px] text-rose-300 uppercase">Raw 1080p Video Stream</div>
+                    <div className="text-base font-bold text-rose-400">{rawVideoGB} GB</div>
+                    <div className="text-[9px] text-rose-300/80">Continuous 5 Mbps Uplink</div>
+                  </div>
+                  <div className="p-2 rounded-lg bg-emerald-950/30 border border-emerald-500/30 text-emerald-200">
+                    <div className="text-[9.5px] text-emerald-300 uppercase">VIGILANCE Edge Telemetry</div>
+                    <div className="text-base font-bold text-emerald-400">{telemetryKB} KB</div>
+                    <div className="text-[9px] text-emerald-300/80">200-Byte JSON Telemetry</div>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between text-[11px] font-mono text-emerald-300 bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/30">
+                  <span className="flex items-center gap-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Total Cellular Bandwidth Saved:</span>
+                  </span>
+                  <span className="font-bold text-xs">{bandwidthSaved}</span>
+                </div>
+              </div>
+            )}
+
+            {/* Tab 3: Defense BOM Specifications */}
+            {activeTab === 'bom' && (
+              <div className="flex flex-col gap-2 font-mono text-xs">
+                <div className="p-2.5 rounded-xl bg-slate-900/60 border border-white/10 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Server className="w-4 h-4 text-cyan-400" />
+                    <div>
+                      <div className="font-semibold text-slate-200 text-[11.5px]">Apple Silicon M5 Host</div>
+                      <div className="text-[9.5px] text-slate-400">Development Baseline Node</div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-cyan-300 font-bold">24 FPS Real</span>
+                    <div className="text-[9px] text-emerald-400">0ms Dropped</div>
+                  </div>
+                </div>
+
+                <div className="p-2.5 rounded-xl bg-slate-900/60 border border-white/10 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Cpu className="w-4 h-4 text-emerald-400" />
+                    <div>
+                      <div className="font-semibold text-slate-200 text-[11.5px]">Raspberry Pi Zero 2W</div>
+                      <div className="text-[9.5px] text-slate-400">Sub-₹3,000 Production BOM</div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-emerald-300 font-bold">~2.5 FPS</span>
+                    <div className="text-[9px] text-slate-400">3.3m @ 30km/h</div>
+                  </div>
+                </div>
+
+                <div className="p-2.5 rounded-xl bg-slate-900/60 border border-white/10 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Smartphone className="w-4 h-4 text-indigo-400" />
+                    <div>
+                      <div className="font-semibold text-slate-200 text-[11.5px]">Android Smartphone / Termux</div>
+                      <div className="text-[9.5px] text-slate-400">Zero-Procurement Option</div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-indigo-300 font-bold">~12 FPS</span>
+                    <div className="text-[9px] text-emerald-400">85ms Mobile</div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </motion.div>
+        )}
       </AnimatePresence>
     </div>
   );

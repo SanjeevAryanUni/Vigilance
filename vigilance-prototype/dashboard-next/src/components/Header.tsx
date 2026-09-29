@@ -4,9 +4,10 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { ShieldAlert, Radio, RefreshCw, Cpu, Activity, LayoutDashboard, BarChart3, Truck, ClipboardList, Search, Smartphone } from 'lucide-react';
+import { ShieldAlert, Radio, RefreshCw, Cpu, Activity, LayoutDashboard, BarChart3, Truck, ClipboardList, Search, Smartphone, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BackendConnectionStatus } from '@/hooks/useDashboardData';
+import { getApiBase } from '@/lib/api';
 import CitySelector from './CitySelector';
 
 interface HeaderProps {
@@ -174,33 +175,45 @@ export default function Header({
           className={cn(
             'flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10.5px] font-mono border backdrop-blur-md transition-all shadow-xs',
             isLive
-              ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-300 shadow-[0_0_12px_rgba(16,185,129,0.2)]'
+              ? 'bg-cyan-950/40 border-cyan-500/40 text-cyan-300 shadow-[0_0_12px_rgba(6,182,212,0.25)]'
               : isColdStarting
               ? 'bg-amber-950/50 border-amber-500/50 text-amber-300 shadow-[0_0_12px_rgba(245,158,11,0.25)] animate-pulse'
-              : 'bg-rose-950/40 border-rose-500/40 text-rose-300 shadow-[0_0_12px_rgba(244,63,94,0.2)]'
+              : 'bg-amber-950/40 border-amber-500/40 text-amber-300 shadow-[0_0_12px_rgba(245,158,11,0.2)]'
           )}
           title={
             isLive
-              ? 'Connected to live FastAPI & PostGIS backend'
+              ? 'Connected to live Supabase PostgreSQL 17 + PostGIS 3.3 stream'
               : isColdStarting
-              ? 'Backend is waking up from sleep (Render free tier cold-start)'
-              : 'Backend unreachable — displaying fallback demo data'
+              ? 'Backend service is waking up from idle state'
+              : 'Operating in Offline Reference Benchmark mode'
           }
         >
           <span
             className={cn(
               'w-2 h-2 rounded-full',
               isLive
-                ? 'bg-emerald-400 animate-pulse'
+                ? 'bg-cyan-400 animate-pulse'
                 : isColdStarting
                 ? 'bg-amber-400 animate-ping'
-                : 'bg-rose-400'
+                : 'bg-amber-400'
             )}
           />
-          <span className="font-semibold">
-            {isLive ? 'LIVE BACKEND' : isColdStarting ? 'WAKING BACKEND' : 'DEMO DATA'}
+          <span className="font-semibold tracking-wide">
+            {isLive ? '● LIVE POSTGIS STREAM' : isColdStarting ? '◐ WAKING BACKEND' : '○ HISTORICAL BENCHMARK'}
           </span>
         </div>
+
+        {/* PWD Municipal Audit PDF Export Button */}
+        <a
+          href={`${getApiBase() || ''}/api/reports/pwd-summary?format=pdf`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="hidden xl:flex items-center gap-1.5 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 hover:border-cyan-400/50 text-xs px-2.5 py-1 rounded-lg font-mono backdrop-blur-md transition-all shadow-[0_0_12px_rgba(6,182,212,0.15)] active:scale-95"
+          title="Download Official PWD Municipal Audit Report (PDF)"
+        >
+          <FileText className="w-3.5 h-3.5 text-cyan-400" />
+          <span>PWD Audit PDF</span>
+        </a>
 
         {/* Active Fleet Node Count */}
         <div className="hidden sm:flex items-center gap-1.5 bg-white/[0.04] border border-white/10 px-2 py-1 rounded-lg text-xs text-slate-300 font-mono backdrop-blur-md">

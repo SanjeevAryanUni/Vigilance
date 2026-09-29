@@ -12,7 +12,8 @@ load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"))
 import io
 import json
 import asyncio
-from datetime import datetime
+import hashlib
+from datetime import datetime, timedelta
 from typing import List, Optional
 from contextlib import asynccontextmanager
 
@@ -408,7 +409,8 @@ def get_clusters(city: Optional[str] = Query(None), db: Session = Depends(get_db
             "sla_hours": getattr(c, "sla_hours", 48),
             "nearest_poi": getattr(c, "nearest_poi", "Urban Corridor"),
             "poi_distance_m": getattr(c, "poi_distance_m", 0.0),
-            "updated_at": c.updated_at.isoformat()
+            "created_at": (getattr(c, "created_at", None) or getattr(c, "updated_at", None) or datetime.utcnow()).isoformat(),
+            "updated_at": (getattr(c, "updated_at", None) or datetime.utcnow()).isoformat()
         }
         for c in clusters
     ]
@@ -805,20 +807,47 @@ def get_fleet_positions(city: Optional[str] = Query(None), db: Session = Depends
 # ====================================================================
 
 @app.get("/api/reports/pwd-summary", tags=["Reports"])
-async def pwd_summary_report(format: str = Query("json", enum=["json", "pdf", "csv"]), db: Session = Depends(get_db)):
+async def pwd_summary_report(
+    format: str = Query("json", description="Export format: json, pdf, or csv"),
+    city: Optional[str] = Query(None, description="City key to filter report: chennai, bangalore, or delhi"),
+    days: Optional[int] = Query(30, ge=1, le=365, description="Time window in days (default 30)"),
+    db: Session = Depends(get_db)
+):
     """
     PWD Municipal Audit Report -- generates JSON, PDF, or CSV.
-    Judges ask: "What does the Chief Engineer print on Monday morning?"
-    This is the answer.
+    Enforces format validation, city scoping, and explicit time window filtering.
     """
-    detections_orm = db.query(Detection).order_by(Detection.timestamp.desc()).limit(500).all()
+    fmt = format.lower().strip()
+    if fmt not in ("json", "pdf", "csv"):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid format '{format}'. Supported formats are 'json', 'pdf', 'csv'."
+        )
+
+    from poi_data import get_city_config, get_active_city
+    effective_city = (city or get_active_city()).lower().strip()
+    city_cfg = get_city_config(effective_city) or get_active_city_config()
+
+    query = db.query(Detection)
+
+    # 1. Filter by time window (default: last 30 days)
+    if days and days > 0:
+        cutoff = datetime.utcnow() - timedelta(days=days)
+        query = query.filter(Detection.timestamp >= cutoff)
+
+    # 2. Filter by city roads
+    if city_cfg and city_cfg.get("roads"):
+        city_roads = [r.get("name") for r in city_cfg["roads"]]
+        query = query.filter(Detection.road_name.in_(city_roads))
+
+    detections_orm = query.order_by(Detection.timestamp.desc()).limit(1000).all()
     detections = []
     for d in detections_orm:
         detections.append({
             "id": d.id,
             "lat": d.lat,
             "lon": d.lon,
-            "road_name": d.road_name or match_nearest_road(d.lat, d.lon),
+            "road_name": d.road_name or match_nearest_road(d.lat, d.lon, city_key=effective_city),
             "damage_type": d.defect_type,
             "defect_type": d.defect_type,
             "severity": d.severity,
@@ -827,23 +856,35 @@ async def pwd_summary_report(format: str = Query("json", enum=["json", "pdf", "c
             "timestamp": d.timestamp.isoformat() if d.timestamp else None,
         })
 
-    if format == "pdf":
-        pdf_bytes = generate_pwd_pdf(detections)
+    if fmt == "pdf":
+        pdf_bytes = generate_pwd_pdf(detections, city=effective_city)
+        digest = hashlib.sha256(pdf_bytes).hexdigest()
         return StreamingResponse(
             io.BytesIO(pdf_bytes),
             media_type="application/pdf",
-            headers={"Content-Disposition": f"attachment; filename=VIGILANCE_PWD_Report_{get_active_city()}.pdf"}
+            headers={
+                "Content-Disposition": f"attachment; filename=VIGILANCE_PWD_Report_{effective_city}.pdf",
+                "X-Report-SHA256": digest,
+                "X-Report-City": effective_city,
+                "X-Report-Days": str(days),
+            }
         )
-    elif format == "csv":
-        csv_str = generate_pwd_csv(detections)
+    elif fmt == "csv":
+        csv_str = generate_pwd_csv(detections, city=effective_city)
+        csv_bytes = csv_str.encode("utf-8")
+        digest = hashlib.sha256(csv_bytes).hexdigest()
         return StreamingResponse(
-            io.BytesIO(csv_str.encode("utf-8")),
+            io.BytesIO(csv_bytes),
             media_type="text/csv",
-            headers={"Content-Disposition": f"attachment; filename=VIGILANCE_Detections_{get_active_city()}.csv"}
+            headers={
+                "Content-Disposition": f"attachment; filename=VIGILANCE_Detections_{effective_city}.csv",
+                "X-Report-SHA256": digest,
+                "X-Report-City": effective_city,
+                "X-Report-Days": str(days),
+            }
         )
     else:
         # JSON summary
-        cfg = get_active_city_config()
         type_counts = {}
         total_budget = 0.0
         for d in detections:
@@ -852,15 +893,19 @@ async def pwd_summary_report(format: str = Query("json", enum=["json", "pdf", "c
             class_code = dtype.split(" ")[0] if " " in dtype else dtype
             total_budget += estimate_repair_cost(class_code)["estimated_cost_inr"]
 
-        return {
-            "city": cfg["display_name"],
-            "municipal_body": cfg["municipal_body"],
+        json_payload = {
+            "city": city_cfg["display_name"],
+            "city_key": effective_city,
+            "municipal_body": city_cfg["municipal_body"],
+            "report_period_days": days,
             "total_defects": len(detections),
             "damage_breakdown": type_counts,
             "estimated_total_budget_inr": round(total_budget, 2),
             "report_generated_utc": datetime.utcnow().isoformat(),
+            "sha256_audit_hash": hashlib.sha256(json.dumps(type_counts, sort_keys=True).encode("utf-8")).hexdigest(),
             "detections": detections[:50],  # Preview first 50
         }
+        return json_payload
 
 
 # ====================================================================

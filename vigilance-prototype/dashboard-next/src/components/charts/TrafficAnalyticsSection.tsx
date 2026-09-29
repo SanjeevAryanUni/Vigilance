@@ -21,7 +21,7 @@ import {
   TrendingDown,
   Navigation,
 } from 'lucide-react';
-import { getCongestion } from '@/lib/api';
+import { getCongestion, getRouteDelays } from '@/lib/api';
 
 // Fallback baseline for high-fidelity demonstration
 const DEFAULT_CONGESTION = [
@@ -98,6 +98,7 @@ const OD_MATRIX = [
 
 export default function TrafficAnalyticsSection() {
   const [congestionList, setCongestionList] = useState(DEFAULT_CONGESTION);
+  const [delaysList, setDelaysList] = useState(CORRIDOR_DELAYS);
 
   useEffect(() => {
     getCongestion().then((res) => {
@@ -112,6 +113,21 @@ export default function TrafficAnalyticsSection() {
         );
       }
     });
+
+    getRouteDelays().then((res) => {
+      if (res && res.length > 0) {
+        setDelaysList(
+          res.map((d: any) => ({
+            corridor: d.route || d.corridor,
+            nominalTime: `${d.free_flow_time_min || 25} min`,
+            actualTime: `${d.estimated_time_min || 40} min`,
+            delay: `+${d.delay_min || 15} min`,
+            bottleneck: d.bottleneck || 'Major Intersection',
+            status: (d.delay_min || 0) > 15 ? 'severe' : (d.delay_min || 0) > 8 ? 'moderate' : 'minor',
+          }))
+        );
+      }
+    });
   }, []);
 
   return (
@@ -119,7 +135,7 @@ export default function TrafficAnalyticsSection() {
       {/* Row 1: Congestion Bar Chart & Hourly Flow Time Series */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
         {/* Congestion Index per Corridor */}
-        <div className="lg:col-span-6 bg-slate-900/80 backdrop-blur-xl border border-slate-800/80 rounded-xl p-4 flex flex-col shadow-xl">
+        <div className="lg:col-span-6 glass-obsidian rounded-xl p-4 flex flex-col shadow-xl">
           <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-800 font-mono text-xs">
             <div className="flex items-center gap-2">
               <Flame className="w-4 h-4 text-orange-400" />
@@ -234,7 +250,7 @@ export default function TrafficAnalyticsSection() {
       </div>
 
       {/* Row 2: Route Delay Analysis Cards */}
-      <div className="bg-slate-900/80 backdrop-blur-xl border border-slate-800/80 rounded-xl p-4 lg:p-5 flex flex-col gap-3 shadow-xl">
+      <div className="glass-obsidian rounded-xl p-4 lg:p-5 flex flex-col gap-3 shadow-xl">
         <div className="flex items-center justify-between pb-2 border-b border-slate-800">
           <div className="flex items-center gap-2">
             <Clock className="w-4 h-4 text-amber-400" />
@@ -242,16 +258,16 @@ export default function TrafficAnalyticsSection() {
               Transit Route Delay Intelligence & Bottlenecks
             </h2>
           </div>
-          <span className="text-[10px] font-mono text-amber-400 bg-amber-950 px-2 py-0.5 rounded border border-amber-800">
+          <span className="text-[10px] font-mono text-amber-400 bg-amber-950/80 px-2 py-0.5 rounded border border-amber-800">
             Real-Time GPS & ETA
           </span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-          {CORRIDOR_DELAYS.map((card, idx) => (
+          {delaysList.map((card, idx) => (
             <div
               key={idx}
-              className="bg-slate-950/70 border border-slate-800 rounded-lg p-3 flex flex-col justify-between font-mono text-xs hover:border-slate-700 transition"
+              className="bg-slate-950/70 border border-slate-800/80 rounded-lg p-3 flex flex-col justify-between font-mono text-xs hover:border-slate-700 transition"
             >
               <div>
                 <div className="text-[11px] font-bold text-slate-200 truncate mb-1">
@@ -287,7 +303,7 @@ export default function TrafficAnalyticsSection() {
       </div>
 
       {/* Row 3: Origin-Destination (OD) Matrix Table */}
-      <div className="bg-slate-900/80 backdrop-blur-xl border border-slate-800/80 rounded-xl p-4 lg:p-5 flex flex-col gap-3 shadow-xl">
+      <div className="glass-obsidian rounded-xl p-4 lg:p-5 flex flex-col gap-3 shadow-xl">
         <div className="flex items-center justify-between pb-2 border-b border-slate-800">
           <div className="flex items-center gap-2">
             <ArrowRightLeft className="w-4 h-4 text-cyan-400" />

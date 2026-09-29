@@ -71,7 +71,7 @@ export default function KPICard({
       whileHover={{ scale: 1.02, y: -3, transition: { type: 'spring', stiffness: 400, damping: 25 } }}
       transition={{ duration: 0.35, ease: 'easeOut' }}
       className={cn(
-        'relative overflow-hidden p-3.5 rounded-2xl bg-slate-900/50 backdrop-blur-xl border border-white/10 flex flex-col justify-between transition-colors duration-200 group shadow-[0_4px_24px_rgba(0,0,0,0.3),inset_0_1px_0_0_rgba(255,255,255,0.10)]',
+        'relative overflow-hidden p-3.5 rounded-2xl glass-obsidian flex flex-col justify-between transition-colors duration-200 group',
         SPOTLIGHT_BORDER_MAP[spotlightColor] || 'hover:border-white/20'
       )}
     >

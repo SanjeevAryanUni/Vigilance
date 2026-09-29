@@ -184,6 +184,10 @@ def test_api_reports_pwd_summary_endpoints(client):
     assert "text/csv" in r_csv.headers["content-type"]
     assert b"ID,Latitude,Longitude,Road Name" in r_csv.content
 
+    # 4. Invalid format should reject with 400 Bad Request (R06 audit fix)
+    r_xml = client.get("/api/reports/pwd-summary?format=xml")
+    assert r_xml.status_code == 400
+
 
 def test_api_city_endpoints(client):
     """Verify /api/cities, /api/cities/switch, and /api/cities/config endpoints."""

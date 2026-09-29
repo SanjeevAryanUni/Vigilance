@@ -155,3 +155,61 @@ def test_status_preservation_across_recurring_passes(db_session):
 
     assert updated_cluster.status == "assigned", f"Expected 'assigned' status preserved, got '{updated_cluster.status}'"
     assert updated_cluster.detection_count == 2
+
+
+def test_distinct_defects_20m_apart_retain_independent_status_r09(db_session):
+    """
+    R09 Audit Regression Test:
+    Two distinct defects ~20m apart (greater than 15m DBSCAN threshold).
+    Resolve the first defect ('resolved'). The second defect is 'open'.
+    Rerunning deduplication must NOT transfer the resolved status to the nearby open defect.
+    """
+    lat1, lon1 = 13.006700, 80.203000
+    # ~20.0 meters away along latitude (0.00018 deg lat ~ 20.0m)
+    lat2, lon2 = 13.006880, 80.203000
+    dist = haversine_meters(lat1, lon1, lat2, lon2)
+    assert 18.0 <= dist <= 22.0, f"Test fixture requires ~20m distance, got {dist}m"
+
+    d1 = Detection(
+        defect_type="D40",
+        confidence=0.92,
+        severity="critical",
+        vehicle_id="BUS-01",
+        lat=lat1,
+        lon=lon1,
+        road_name="GST Road, Tambaram, Chennai"
+    )
+    d2 = Detection(
+        defect_type="D40",
+        confidence=0.89,
+        severity="high",
+        vehicle_id="BUS-02",
+        lat=lat2,
+        lon=lon2,
+        road_name="GST Road, Tambaram, Chennai"
+    )
+    db_session.add_all([d1, d2])
+    db_session.commit()
+
+    run_spatial_deduplication(db_session, eps_meters=15.0)
+    clusters = db_session.query(Cluster).all()
+    assert len(clusters) == 2, "Expected 2 distinct clusters"
+
+    # Mark cluster 1 as resolved
+    c1 = next(c for c in clusters if haversine_meters(c.centroid_lat, c.centroid_lon, lat1, lon1) < 5.0)
+    c2 = next(c for c in clusters if haversine_meters(c.centroid_lat, c.centroid_lon, lat2, lon2) < 5.0)
+    c1.status = "resolved"
+    c2.status = "open"
+    db_session.commit()
+
+    # Rerun deduplication
+    run_spatial_deduplication(db_session, eps_meters=15.0)
+
+    re_clusters = db_session.query(Cluster).all()
+    assert len(re_clusters) == 2
+
+    re_c1 = next(c for c in re_clusters if haversine_meters(c.centroid_lat, c.centroid_lon, lat1, lon1) < 5.0)
+    re_c2 = next(c for c in re_clusters if haversine_meters(c.centroid_lat, c.centroid_lon, lat2, lon2) < 5.0)
+
+    assert re_c1.status == "resolved", f"Cluster 1 should be 'resolved', got '{re_c1.status}'"
+    assert re_c2.status == "open", f"Cluster 2 should remain 'open', got '{re_c2.status}' (R09 regression: status stolen)"
