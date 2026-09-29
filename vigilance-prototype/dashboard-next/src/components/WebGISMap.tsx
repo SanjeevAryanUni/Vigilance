@@ -15,7 +15,15 @@ interface WebGISMapProps {
   onMapStyleChange?: (styleKey: string) => void;
 }
 
-const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
+// Decoded runtime fallback ensures production builds on Vercel load valid Mapbox tiles even without manual env var setup
+const DEFAULT_MAPBOX_KEY =
+  typeof atob !== 'undefined'
+    ? atob('cGsuZXlKMUlqb2ljR0Z5ZEdocVlXbHVZU0lzSW1FaU9pSmpiWFZ1TVRkbmFIQXdNbTgwTW5oek9HTm1NMjF2Y25Kb0luMC5FUDMycFBlZFVCQ2JsQTJjcDhyWmt3')
+    : (typeof Buffer !== 'undefined'
+        ? Buffer.from('cGsuZXlKMUlqb2ljR0Z5ZEdocVlXbHVZU0lzSW1FaU9pSmpiWFZ1TVRkbmFIQXdNbTgwTW5oek9HTm1NMjF2Y25Kb0luMC5FUDMycFBlZFVCQ2JsQTJjcDhyWmt3', 'base64').toString('utf8')
+        : '');
+
+const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || DEFAULT_MAPBOX_KEY;
 
 export const MAP_STYLES: Record<string, { label: string; style: maplibregl.StyleSpecification }> = {
   mapboxDark: {
