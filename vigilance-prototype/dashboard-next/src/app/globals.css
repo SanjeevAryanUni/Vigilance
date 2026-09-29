@@ -3,13 +3,36 @@
 @tailwind utilities;
 
 :root {
-  --background: #030712;
+  --background: #06080F;
   --foreground: #f8fafc;
+
+  /* Surface Layers */
+  --bg-void: #06080F;
+  --bg-surface: #0D1322;
+  --bg-raised: #131B30;
+  --bg-glass: rgba(13, 19, 34, 0.75);
+
+  /* Borders & Dividers */
+  --border-subtle: #1E293B;
+  --border-active: #334155;
+  --border-accent: rgba(6, 182, 212, 0.4);
+
+  /* Text & Foreground */
+  --text-primary: #F8FAFC;
+  --text-secondary: #94A3B8;
+  --text-disabled: #64748B;
+
+  /* Semantic State Colors */
+  --status-critical: #EF4444;
+  --status-warning: #F59E0B;
+  --status-info: #3B82F6;
+  --status-success: #10B981;
+  --status-telemetry: #00F2FE;
 }
 
 body {
   color: var(--foreground);
-  background: var(--background);
+  background: var(--bg-void);
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   overflow-x: hidden;
 }

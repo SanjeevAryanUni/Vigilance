@@ -9,10 +9,11 @@ import RPIProgressBar from '@/components/RPIProgressBar';
 import StatusDropdown from '@/components/StatusDropdown';
 import AgentThoughtStream from '@/components/manus/AgentThoughtStream';
 import CommandPalette from '@/components/manus/CommandPalette';
+import DetailDrawer from '@/components/DetailDrawer';
 import { useDashboardData } from '@/hooks/useDashboardData';
 import { exportToCSV, formatDateTime } from '@/lib/utils';
 import { getApiBase } from '@/lib/api';
-import { ClusterStatus, Severity } from '@/types/vigilance';
+import { Cluster, ClusterStatus, Severity } from '@/types/vigilance';
 import {
   ClipboardList,
   Download,
@@ -100,6 +101,7 @@ export default function WorkOrdersPage() {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [sortBy, setSortBy] = useState<'rpi' | 'passes' | 'date' | 'cost'>('rpi');
   const [showCommandPalette, setShowCommandPalette] = useState(false);
+  const [selectedCluster, setSelectedCluster] = useState<Cluster | null>(null);
 
   // Summary counts and IRC budget calculation
   const openCount = clusters.filter((c) => c.status === 'open').length;
@@ -380,8 +382,12 @@ export default function WorkOrdersPage() {
                     const sla = getSlaStatus(cluster);
 
                     return (
-                      <tr key={cluster.id} className="hover:bg-slate-800/30 transition-colors">
-                        <td className="py-3.5 px-4 font-bold text-cyan-400">
+                      <tr
+                        key={cluster.id}
+                        onClick={() => setSelectedCluster(cluster)}
+                        className="hover:bg-slate-800/40 transition-colors cursor-pointer group"
+                      >
+                        <td className="py-3.5 px-4 font-bold text-cyan-400 group-hover:underline">
                           WO-{cluster.id.toString().padStart(4, '0')}
                         </td>
                         <td className="py-3.5 px-4">
@@ -428,7 +434,7 @@ export default function WorkOrdersPage() {
                         <td className="py-3.5 px-4 text-[10px] text-slate-400 whitespace-nowrap">
                           {formatDateTime(cluster.created_at)}
                         </td>
-                        <td className="py-3.5 px-4 text-right">
+                        <td className="py-3.5 px-4 text-right" onClick={(e) => e.stopPropagation()}>
                           <StatusDropdown
                             status={cluster.status as ClusterStatus}
                             onChange={(newStatus) => updateStatus(cluster.id, newStatus)}
@@ -449,6 +455,16 @@ export default function WorkOrdersPage() {
         onClose={() => setShowCommandPalette(false)}
         onRefreshData={refreshData}
         onTriggerDedup={triggerDedup}
+      />
+
+      <DetailDrawer
+        cluster={selectedCluster}
+        isOpen={!!selectedCluster}
+        onClose={() => setSelectedCluster(null)}
+        onStatusChange={updateStatus}
+        onFlyTo={(lat, lon) => {
+          window.location.href = `/?lat=${lat}&lon=${lon}`;
+        }}
       />
 
       <ConnectionStatus isConnected={isConnected} backendAvailable={backendAvailable} lastUpdated={lastUpdated} />

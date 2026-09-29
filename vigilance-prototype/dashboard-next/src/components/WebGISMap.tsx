@@ -258,8 +258,25 @@ export default function WebGISMap({
         }
       }
     };
+    const handleFlyTo = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      const { lat, lon } = customEvent.detail || {};
+      if (lat && lon && mapRef.current) {
+        mapRef.current.flyTo({
+          center: [lon, lat],
+          zoom: 16,
+          pitch: 45,
+          essential: true,
+          speed: 1.4,
+        });
+      }
+    };
     window.addEventListener('vigilance:city_change', handleCityChange);
-    return () => window.removeEventListener('vigilance:city_change', handleCityChange);
+    window.addEventListener('vigilance:fly_to', handleFlyTo);
+    return () => {
+      window.removeEventListener('vigilance:city_change', handleCityChange);
+      window.removeEventListener('vigilance:fly_to', handleFlyTo);
+    };
   }, []);
 
   // Helper to render Cluster markers with interactive popups
@@ -355,6 +372,17 @@ export default function WebGISMap({
           </div>
         </div>
         <div style="display: flex; gap: 6px; margin-top: 8px; border-top: 1px solid #334155; padding-top: 6px;">
+          <button id="btn-inspect-${c.id}" style="
+            flex: 1;
+            padding: 5px 8px;
+            background: #1e293b;
+            color: #38bdf8;
+            border: 1px solid #334155;
+            border-radius: 5px;
+            font-size: 10.5px;
+            font-weight: bold;
+            cursor: pointer;
+          ">Inspect</button>
           <button id="btn-assign-${c.id}" style="
             flex: 1;
             padding: 5px 8px;
@@ -383,8 +411,15 @@ export default function WebGISMap({
       const popup = new maplibregl.Popup({ offset: 25, closeButton: true }).setDOMContent(popupDiv);
 
       popup.on('open', () => {
+        const btnInspect = document.getElementById(`btn-inspect-${c.id}`);
         const btnAssign = document.getElementById(`btn-assign-${c.id}`);
         const btnResolve = document.getElementById(`btn-resolve-${c.id}`);
+        if (btnInspect) {
+          btnInspect.onclick = () => {
+            window.dispatchEvent(new CustomEvent('vigilance:select_cluster', { detail: c }));
+            popup.remove();
+          };
+        }
         if (btnAssign) {
           btnAssign.onclick = () => {
             onStatusChange(c.id, 'assigned');

@@ -14,6 +14,7 @@ import CommandPalette from '@/components/manus/CommandPalette';
 import CorridorDistressSpline from '@/components/charts/CorridorDistressSpline';
 import RPIRadialGauge from '@/components/charts/RPIRadialGauge';
 import IncidentFeed from '@/components/IncidentFeed';
+import DetailDrawer from '@/components/DetailDrawer';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AnimatedLayout } from '@/components/AnimatedLayout';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -118,6 +119,18 @@ export default function CommandCenterPage() {
   }, [lastUpdated]);
 
   const [selectedCluster, setSelectedCluster] = useState<Cluster | null>(null);
+
+  useEffect(() => {
+    const handleSelectCluster = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      if (customEvent.detail) {
+        setSelectedCluster(customEvent.detail);
+      }
+    };
+    window.addEventListener('vigilance:select_cluster', handleSelectCluster);
+    return () => window.removeEventListener('vigilance:select_cluster', handleSelectCluster);
+  }, []);
+
   const [showRPIModal, setShowRPIModal] = useState(false);
   const [showExecutiveBrief, setShowExecutiveBrief] = useState(false);
   const [showCockpitModal, setShowCockpitModal] = useState(false);
@@ -756,6 +769,19 @@ export default function CommandCenterPage() {
           onClose={() => setShowCommandPalette(false)}
           onTriggerDedup={triggerDedup}
           onRefreshData={refreshData}
+        />
+
+        {/* 5. Slide-Out Cluster Detail & IRC Audit Drawer */}
+        <DetailDrawer
+          cluster={selectedCluster}
+          isOpen={!!selectedCluster}
+          onClose={() => setSelectedCluster(null)}
+          onStatusChange={updateStatus}
+          onFlyTo={(lat, lon) => {
+            if (typeof window !== 'undefined') {
+              window.dispatchEvent(new CustomEvent('vigilance:fly_to', { detail: { lat, lon } }));
+            }
+          }}
         />
       </div>
     </AnimatedLayout>
