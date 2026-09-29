@@ -9,31 +9,36 @@ interface AnimatedLayoutProps {
 }
 
 export function AnimatedLayout({ children }: AnimatedLayoutProps) {
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [showSplash, setShowSplash] = useState(true);
 
   useEffect(() => {
-    // Subtle initial reveal delay
+    // Ephemeral smooth dismissal
     const timer = setTimeout(() => {
-      setIsLoaded(true);
-    }, 450);
+      setShowSplash(false);
+    }, 350);
     return () => clearTimeout(timer);
   }, []);
 
   return (
     <div className="relative min-h-screen w-full bg-slate-950 text-slate-100 overflow-x-hidden bg-grid-pattern bg-radial-vignette">
-      <AnimatePresence mode="wait">
-        {!isLoaded ? (
+      <div className="w-full min-h-screen">
+        {children}
+      </div>
+
+      {/* Non-blocking overlay splash that cleanly exits without destroying or delaying children */}
+      <AnimatePresence>
+        {showSplash && (
           <motion.div
             key="splash-screen"
             initial={{ opacity: 1 }}
-            exit={{ opacity: 0, scale: 1.02 }}
-            transition={{ duration: 0.4, ease: 'easeInOut' }}
-            className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#030712]"
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25, ease: 'easeInOut' }}
+            className="fixed inset-0 z-50 pointer-events-none flex flex-col items-center justify-center bg-[#030712]"
           >
             <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
+              initial={{ scale: 0.9, opacity: 0.8 }}
               animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.35, ease: 'easeOut' }}
+              transition={{ duration: 0.2, ease: 'easeOut' }}
               className="flex flex-col items-center"
             >
               <div className="relative mb-4 flex items-center justify-center">
@@ -54,16 +59,6 @@ export function AnimatedLayout({ children }: AnimatedLayoutProps) {
                 AI Edge Road Telemetry Platform
               </p>
             </motion.div>
-          </motion.div>
-        ) : (
-          <motion.div
-            key="main-content"
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45, ease: 'easeOut' }}
-            className="w-full min-h-screen"
-          >
-            {children}
           </motion.div>
         )}
       </AnimatePresence>
