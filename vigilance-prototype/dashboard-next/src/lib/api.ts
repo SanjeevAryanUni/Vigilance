@@ -26,9 +26,19 @@ export async function getHealth(): Promise<{ status: string; service: string; ti
   const url = base ? `${base}/api/health` : '/api/health';
   try {
     const res = await fetch(url, { cache: 'no-store' });
-    if (!res.ok) return null;
-    return await res.json();
+    if (res.ok) return await res.json();
+    if (base) {
+      const fb = await fetch('/api/health', { cache: 'no-store' });
+      if (fb.ok) return await fb.json();
+    }
+    return null;
   } catch (err) {
+    if (base) {
+      try {
+        const fb = await fetch('/api/health', { cache: 'no-store' });
+        if (fb.ok) return await fb.json();
+      } catch {}
+    }
     return null;
   }
 }
@@ -38,9 +48,19 @@ export async function getStats(): Promise<DashboardStats | null> {
   const url = base ? `${base}/api/stats` : '/api/stats';
   try {
     const res = await fetch(url, { cache: 'no-store' });
-    if (!res.ok) return null;
-    return await res.json();
+    if (res.ok) return await res.json();
+    if (base) {
+      const fb = await fetch('/api/stats', { cache: 'no-store' });
+      if (fb.ok) return await fb.json();
+    }
+    return null;
   } catch (err) {
+    if (base) {
+      try {
+        const fb = await fetch('/api/stats', { cache: 'no-store' });
+        if (fb.ok) return await fb.json();
+      } catch {}
+    }
     return null;
   }
 }
@@ -50,9 +70,19 @@ export async function getDetections(limit = 50): Promise<Detection[] | null> {
   const url = base ? `${base}/api/detections?limit=${limit}` : `/api/detections?limit=${limit}`;
   try {
     const res = await fetch(url, { cache: 'no-store' });
-    if (!res.ok) return null;
-    return await res.json();
+    if (res.ok) return await res.json();
+    if (base) {
+      const fb = await fetch(`/api/detections?limit=${limit}`, { cache: 'no-store' });
+      if (fb.ok) return await fb.json();
+    }
+    return null;
   } catch (err) {
+    if (base) {
+      try {
+        const fb = await fetch(`/api/detections?limit=${limit}`, { cache: 'no-store' });
+        if (fb.ok) return await fb.json();
+      } catch {}
+    }
     return null;
   }
 }
@@ -62,9 +92,19 @@ export async function getClusters(): Promise<Cluster[] | null> {
   const url = base ? `${base}/api/clusters` : '/api/clusters';
   try {
     const res = await fetch(url, { cache: 'no-store' });
-    if (!res.ok) return null;
-    return await res.json();
+    if (res.ok) return await res.json();
+    if (base) {
+      const fb = await fetch('/api/clusters', { cache: 'no-store' });
+      if (fb.ok) return await fb.json();
+    }
+    return null;
   } catch (err) {
+    if (base) {
+      try {
+        const fb = await fetch('/api/clusters', { cache: 'no-store' });
+        if (fb.ok) return await fb.json();
+      } catch {}
+    }
     return null;
   }
 }
