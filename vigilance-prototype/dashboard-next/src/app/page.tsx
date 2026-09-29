@@ -42,6 +42,8 @@ import {
   ShieldAlert,
   Flame,
   Video,
+  ChevronDown,
+  Check,
 } from 'lucide-react';
 
 const WebGISMap = dynamic(() => import('@/components/WebGISMap'), {
@@ -76,12 +78,12 @@ type WorkstationMode = 'full-gis' | 'split-ops';
 type SidebarTab = 'queue' | 'traffic' | 'analytics';
 
 const MAP_LAYER_OPTIONS = [
-  { key: 'cartoDark', label: 'Dark Vector' },
-  { key: 'esriDark', label: 'Dark Canvas' },
-  { key: 'osmStandard', label: 'Street Map' },
-  { key: 'esriSatellite', label: 'Satellite (Esri)' },
-  { key: 'bhuvanSatellite', label: '🇮🇳 Bhuvan (ISRO)' },
-  { key: 'esriTopo', label: 'Topography' },
+  { key: 'mapboxDark', label: 'Mapbox Dark', badge: 'HD' },
+  { key: 'mapboxSatellite', label: 'Satellite (Maxar)', badge: 'SAT' },
+  { key: 'mapboxNavigation', label: 'Navigation', badge: 'NIGHT' },
+  { key: 'esriDark', label: 'Dark Canvas', badge: 'ESRI' },
+  { key: 'bhuvanSatellite', label: 'Bhuvan ISRO', badge: '🇮🇳' },
+  { key: 'osmStandard', label: 'Street Map', badge: 'OSM' },
 ];
 
 export default function CommandCenterPage() {
@@ -137,9 +139,33 @@ export default function CommandCenterPage() {
   const [showCameraGridModal, setShowCameraGridModal] = useState(false);
   const [showCommandPalette, setShowCommandPalette] = useState(false);
   const [workstationMode, setWorkstationMode] = useState<WorkstationMode>('full-gis');
-  const [activeMapStyle, setActiveMapStyle] = useState<string>('cartoDark');
+  const [activeMapStyle, setActiveMapStyle] = useState<string>('mapboxDark');
+  const [showLayerDropdown, setShowLayerDropdown] = useState(false);
   const [sidebarTab, setSidebarTab] = useState<SidebarTab>('queue');
   const [mobileTab, setMobileTab] = useState<'map' | 'telemetry'>('map');
+  const [toast, setToast] = useState<{ title: string; message: string; type?: 'success' | 'info' } | null>(null);
+
+  const [selectedCity, setSelectedCity] = useState({
+    key: 'chennai',
+    name: 'Chennai',
+    displayName: 'Chennai Arterial Grid',
+    hospitals: 6,
+    universities: 6,
+    arterials: 8,
+  });
+
+  // Listen for tactical toast events
+  useEffect(() => {
+    const handleToast = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail) {
+        setToast(detail);
+        setTimeout(() => setToast(null), 3500);
+      }
+    };
+    window.addEventListener('vigilance:toast', handleToast);
+    return () => window.removeEventListener('vigilance:toast', handleToast);
+  }, []);
 
   const avgRpi =
     clusters.length > 0
@@ -163,6 +189,16 @@ export default function CommandCenterPage() {
         onRefresh={refreshData}
         onTriggerDedup={triggerDedup}
         onOpenCommandPalette={() => setShowCommandPalette(true)}
+        onCityChange={(city) => {
+          setSelectedCity({
+            key: city.key,
+            name: city.display_name,
+            displayName: `${city.display_name} Arterial Grid`,
+            hospitals: city.pois?.filter((p: any) => p.type === 'hospital').length || 4,
+            universities: city.pois?.filter((p: any) => p.type === 'school').length || 4,
+            arterials: 8,
+          });
+        }}
       />
 
       {/* Fallback / Demo Data Warning Banner (when backend is cold/sleeping or unreachable) */}
@@ -437,7 +473,7 @@ export default function CommandCenterPage() {
             <div className="flex items-center gap-1.5 shrink-0">
               <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-slate-200 bg-white/[0.05] backdrop-blur-md px-2.5 py-1 rounded-lg border border-white/10 shadow-xs">
                 <MapPin className="w-3.5 h-3.5 text-amber-400" />
-                <span>Chennai Arterial Grid</span>
+                <span>{selectedCity.displayName}</span>
                 <span className="text-slate-500 hidden sm:inline">•</span>
                 <span className="text-[10px] text-slate-400 font-normal hidden sm:inline">EPSG:4326</span>
               </div>
@@ -471,22 +507,56 @@ export default function CommandCenterPage() {
               </div>
             </div>
 
-            {/* Center Section: Map Layer Switcher */}
-            <div className="flex items-center bg-white/[0.04] backdrop-blur-md border border-white/10 p-0.5 rounded-lg text-xs font-mono shrink-0">
-              {MAP_LAYER_OPTIONS.map((layer) => (
-                <button
-                  key={layer.key}
-                  onClick={() => setActiveMapStyle(layer.key)}
-                  className={cn(
-                    'px-2 py-0.5 text-[10.5px] rounded-md transition-all',
-                    activeMapStyle === layer.key
-                      ? 'bg-white/[0.12] text-slate-100 font-semibold border border-white/20 shadow-xs'
-                      : 'text-slate-400 hover:text-slate-200 border border-transparent'
-                  )}
+            {/* Center Section: Compact Map Layer Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setShowLayerDropdown(!showLayerDropdown)}
+                className="flex items-center gap-1.5 px-2.5 py-1 bg-white/[0.06] hover:bg-white/[0.10] border border-white/10 hover:border-amber-500/40 rounded-lg text-xs font-mono text-slate-200 transition-all shadow-xs"
+                title="Select Map Basemap Layer"
+              >
+                <Layers className="w-3.5 h-3.5 text-amber-400" />
+                <span className="font-semibold text-[11px]">
+                  {MAP_LAYER_OPTIONS.find((l) => l.key === activeMapStyle)?.label || 'Map Layer'}
+                </span>
+                <ChevronDown className={cn('w-3 h-3 text-slate-400 transition-transform', showLayerDropdown && 'rotate-180')} />
+              </button>
+
+              {showLayerDropdown && (
+                <div
+                  className="absolute top-full mt-1.5 left-0 w-56 bg-slate-950/95 backdrop-blur-2xl border border-white/15 rounded-xl shadow-2xl p-1.5 z-50 animate-in fade-in zoom-in-95 duration-150"
+                  onMouseLeave={() => setShowLayerDropdown(false)}
                 >
-                  {layer.label}
-                </button>
-              ))}
+                  <div className="px-2 py-1 text-[9.5px] font-mono text-slate-400 uppercase tracking-widest border-b border-white/10 mb-1">
+                    BASEMAP TELEMETRY LAYER
+                  </div>
+                  {MAP_LAYER_OPTIONS.map((layer) => {
+                    const isSelected = activeMapStyle === layer.key;
+                    return (
+                      <button
+                        key={layer.key}
+                        onClick={() => {
+                          setActiveMapStyle(layer.key);
+                          setShowLayerDropdown(false);
+                        }}
+                        className={cn(
+                          'w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left text-xs font-mono transition-colors cursor-pointer',
+                          isSelected
+                            ? 'bg-amber-500/15 text-amber-300 font-bold border border-amber-500/30'
+                            : 'text-slate-300 hover:text-white hover:bg-white/[0.06]'
+                        )}
+                      >
+                        <span className="flex items-center gap-2">
+                          <span className="text-[10px] text-slate-400 font-semibold px-1 rounded bg-white/[0.05] border border-white/10">
+                            {layer.badge}
+                          </span>
+                          <span>{layer.label}</span>
+                        </span>
+                        {isSelected && <Check className="w-3.5 h-3.5 text-amber-400" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
             {/* Right Action Buttons */}
@@ -590,9 +660,9 @@ export default function CommandCenterPage() {
               </div>
 
               <div className="hidden xl:flex items-center gap-2 bg-slate-950/65 backdrop-blur-xl border border-white/15 px-2.5 py-1.5 rounded-xl text-[10.5px] font-mono text-slate-300 pointer-events-auto shadow-[0_8px_32px_rgba(0,0,0,0.5),inset_0_1px_0_0_rgba(255,255,255,0.1)]">
-                <span>🏥 Hospitals: 6</span>
+                <span>🏥 Hospitals: {selectedCity.hospitals}</span>
                 <span className="text-slate-600">•</span>
-                <span>🎓 Universities: 6</span>
+                <span>🎓 Universities: {selectedCity.universities}</span>
                 <span className="text-slate-600">•</span>
                 <span>🛣️ Arterials: 8</span>
               </div>
@@ -780,6 +850,26 @@ export default function CommandCenterPage() {
             }
           }}
         />
+
+        {/* Tactical Toast Notification HUD */}
+        <AnimatePresence>
+          {toast && (
+            <motion.div
+              initial={{ opacity: 0, y: 20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 20, scale: 0.95 }}
+              className="fixed bottom-5 right-5 z-50 flex items-center gap-3 p-3 rounded-xl bg-slate-950/95 backdrop-blur-2xl border border-amber-500/40 shadow-[0_10px_35px_rgba(0,0,0,0.8),0_0_15px_rgba(245,158,11,0.2)] font-mono text-xs max-w-sm pointer-events-auto"
+            >
+              <div className="p-2 rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/30 shrink-0">
+                <Check className="w-4 h-4 text-amber-400" />
+              </div>
+              <div className="flex-1">
+                <div className="font-bold text-slate-100">{toast.title}</div>
+                <div className="text-[11px] text-slate-300">{toast.message}</div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </AnimatedLayout>
   );

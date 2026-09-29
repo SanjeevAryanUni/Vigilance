@@ -298,10 +298,14 @@ export default function DetailDrawer({
             <button
               disabled={isUpdating}
               onClick={() => handleStatusUpdate('assigned')}
-              className="flex-1 py-2.5 bg-zinc-100 hover:bg-white text-zinc-950 font-bold rounded-lg transition shadow-xs flex items-center justify-center gap-1.5"
+              className="flex-1 py-2.5 bg-zinc-100 hover:bg-white text-zinc-950 font-bold rounded-lg transition shadow-xs flex items-center justify-center gap-1.5 disabled:opacity-50 active:scale-95 cursor-pointer"
             >
-              <Wrench className="w-4 h-4" />
-              <span>Assign to Contractor</span>
+              {isUpdating ? (
+                <div className="w-4 h-4 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <Wrench className="w-4 h-4" />
+              )}
+              <span>{isUpdating ? 'Assigning...' : 'Assign to Contractor'}</span>
             </button>
           )}
 
@@ -309,10 +313,14 @@ export default function DetailDrawer({
             <button
               disabled={isUpdating}
               onClick={() => handleStatusUpdate('resolved')}
-              className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg transition shadow flex items-center justify-center gap-1.5"
+              className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg transition shadow flex items-center justify-center gap-1.5 disabled:opacity-50 active:scale-95 cursor-pointer"
             >
-              <CheckCircle2 className="w-4 h-4" />
-              <span>Mark Resolved & Closed</span>
+              {isUpdating ? (
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <CheckCircle2 className="w-4 h-4" />
+              )}
+              <span>{isUpdating ? 'Resolving...' : 'Mark Resolved & Closed'}</span>
             </button>
           )}
 
@@ -320,9 +328,12 @@ export default function DetailDrawer({
             <button
               disabled={isUpdating}
               onClick={() => handleStatusUpdate('open')}
-              className="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-lg transition border border-slate-700 flex items-center justify-center gap-1.5"
+              className="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-lg transition border border-slate-700 flex items-center justify-center gap-1.5 disabled:opacity-50 active:scale-95 cursor-pointer"
             >
-              <span>Re-open Work Order</span>
+              {isUpdating ? (
+                <div className="w-4 h-4 border-2 border-slate-400 border-t-transparent rounded-full animate-spin" />
+              ) : null}
+              <span>{isUpdating ? 'Reopening...' : 'Re-open Work Order'}</span>
             </button>
           )}
         </div>

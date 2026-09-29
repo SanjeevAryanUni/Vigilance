@@ -67,17 +67,32 @@ export default function ClusterTable({
                     : 'border-l-4 border-l-zinc-500 border-white/10 hover:border-l-zinc-400 hover:shadow-xs'
                 )}
               >
-                {/* Row 1: Rank Badge + Defect Type + Severity Badge */}
+                {/* Row 1: Rank Badge + Defect Type + Status + Severity Badge */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="w-5 h-5 rounded-md bg-white/[0.06] border border-white/10 text-slate-300 text-[10px] font-mono font-bold flex items-center justify-center">
                       #{idx + 1}
                     </span>
-                    <span className="font-bold text-slate-100 font-mono text-[11px] truncate max-w-[150px]">
+                    <span className="font-bold text-slate-100 font-mono text-[11px] truncate max-w-[140px]">
                       {cluster.dominant_type}
                     </span>
+                    <span
+                      className={cn(
+                        'text-[8.5px] font-mono font-bold px-1.5 py-0.2 rounded border uppercase',
+                        cluster.status === 'resolved'
+                          ? 'bg-emerald-950/80 text-emerald-300 border-emerald-700/60'
+                          : cluster.status === 'assigned'
+                          ? 'bg-amber-950/80 text-amber-300 border-amber-600/60'
+                          : 'bg-rose-950/80 text-rose-300 border-rose-700/60'
+                      )}
+                    >
+                      {cluster.status}
+                    </span>
                   </div>
-                  <SeverityBadge severity={cluster.max_severity} />
+                  <div className="flex items-center gap-1.5">
+                    <SeverityBadge severity={cluster.max_severity} />
+                    <span className="text-[10px] font-mono text-amber-400 group-hover:translate-x-0.5 transition-transform hidden sm:inline">➔</span>
+                  </div>
                 </div>
 
                 {/* Row 2: Road Name & POI */}

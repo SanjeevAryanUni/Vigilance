@@ -15,7 +15,66 @@ interface WebGISMapProps {
   onMapStyleChange?: (styleKey: string) => void;
 }
 
+const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
+
 export const MAP_STYLES: Record<string, { label: string; style: maplibregl.StyleSpecification }> = {
+  mapboxDark: {
+    label: '🌑 Mapbox Dark',
+    style: {
+      version: 8,
+      sources: {
+        'mapbox-dark': {
+          type: 'raster',
+          tiles: [
+            `https://api.mapbox.com/styles/v1/mapbox/dark-v11/tiles/{z}/{x}/{y}?access_token=${MAPBOX_TOKEN}`,
+          ],
+          tileSize: 512,
+          attribution: '© Mapbox, © OpenStreetMap',
+        },
+      },
+      layers: [
+        { id: 'mapbox-dark-layer', type: 'raster', source: 'mapbox-dark', minzoom: 0, maxzoom: 22 },
+      ],
+    },
+  },
+  mapboxSatellite: {
+    label: '🛰️ Mapbox Satellite',
+    style: {
+      version: 8,
+      sources: {
+        'mapbox-satellite': {
+          type: 'raster',
+          tiles: [
+            `https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v12/tiles/{z}/{x}/{y}?access_token=${MAPBOX_TOKEN}`,
+          ],
+          tileSize: 512,
+          attribution: '© Mapbox, © Maxar',
+        },
+      },
+      layers: [
+        { id: 'mapbox-satellite-layer', type: 'raster', source: 'mapbox-satellite', minzoom: 0, maxzoom: 22 },
+      ],
+    },
+  },
+  mapboxNavigation: {
+    label: '🛣️ Mapbox Navigation',
+    style: {
+      version: 8,
+      sources: {
+        'mapbox-navigation': {
+          type: 'raster',
+          tiles: [
+            `https://api.mapbox.com/styles/v1/mapbox/navigation-night-v1/tiles/{z}/{x}/{y}?access_token=${MAPBOX_TOKEN}`,
+          ],
+          tileSize: 512,
+          attribution: '© Mapbox',
+        },
+      },
+      layers: [
+        { id: 'mapbox-navigation-layer', type: 'raster', source: 'mapbox-navigation', minzoom: 0, maxzoom: 22 },
+      ],
+    },
+  },
   esriDark: {
     label: '🌙 Dark Canvas',
     style: {
@@ -79,25 +138,6 @@ export const MAP_STYLES: Record<string, { label: string; style: maplibregl.Style
       ],
     },
   },
-  esriSatellite: {
-    label: '🛰️ Satellite',
-    style: {
-      version: 8,
-      sources: {
-        'esri-satellite': {
-          type: 'raster',
-          tiles: [
-            'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-          ],
-          tileSize: 256,
-          attribution: '© Esri, Maxar, Earthstar Geographics',
-        },
-      },
-      layers: [
-        { id: 'esri-satellite-layer', type: 'raster', source: 'esri-satellite', minzoom: 0, maxzoom: 20 },
-      ],
-    },
-  },
   bhuvanSatellite: {
     label: '🇮🇳 Bhuvan (ISRO)',
     style: {
@@ -136,30 +176,9 @@ export const MAP_STYLES: Record<string, { label: string; style: maplibregl.Style
       ],
     },
   },
-  cartoDark: {
-    label: '🌑 Carto Dark Matter',
-    style: {
-      version: 8,
-      sources: {
-        'carto-dark': {
-          type: 'raster',
-          tiles: [
-            'https://a.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}@2x.png',
-            'https://b.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}@2x.png',
-            'https://c.basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}@2x.png',
-          ],
-          tileSize: 256,
-          attribution: '© CARTO, © OpenStreetMap contributors',
-        },
-      },
-      layers: [
-        { id: 'carto-dark-layer', type: 'raster', source: 'carto-dark', minzoom: 0, maxzoom: 20 },
-      ],
-    },
-  },
 };
 
-const DEFAULT_STYLE = 'cartoDark';
+const DEFAULT_STYLE = MAPBOX_TOKEN ? 'mapboxDark' : 'esriDark';
 
 function escapeHtml(val: unknown): string {
   if (val === null || val === undefined) return '';

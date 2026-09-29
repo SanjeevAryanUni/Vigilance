@@ -175,8 +175,7 @@ export default function WorkOrdersPage() {
   };
 
   const handleDownloadPDF = () => {
-    const apiBase = getApiBase();
-    window.open(`${apiBase}/api/reports/pwd-summary?format=pdf&download=true`, '_blank');
+    window.open('/api/reports/pwd-summary', '_blank');
   };
 
   return (

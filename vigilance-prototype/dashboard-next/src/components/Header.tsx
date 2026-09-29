@@ -18,6 +18,7 @@ interface HeaderProps {
   onRefresh?: () => void;
   onTriggerDedup?: () => Promise<any>;
   onOpenCommandPalette?: () => void;
+  onCityChange?: (city: any) => void;
 }
 
 function LiveUTCClock() {
@@ -49,6 +50,7 @@ export default function Header({
   onRefresh,
   onTriggerDedup,
   onOpenCommandPalette,
+  onCityChange,
 }: HeaderProps) {
   const pathname = usePathname();
   const [isDeduping, setIsDeduping] = useState(false);
@@ -205,7 +207,7 @@ export default function Header({
 
         {/* PWD Municipal Audit PDF Export Button */}
         <a
-          href={`${getApiBase() || ''}/api/reports/pwd-summary?format=pdf`}
+          href="/api/reports/pwd-summary"
           target="_blank"
           rel="noopener noreferrer"
           className="hidden xl:flex items-center gap-1.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-zinc-700/80 hover:border-zinc-500 text-xs px-2.5 py-1 rounded-lg font-mono backdrop-blur-md transition-all shadow-xs active:scale-95"
@@ -226,7 +228,7 @@ export default function Header({
 
         {/* City Selector Dropdown */}
         <CitySelector onCityChange={(city) => {
-          console.log(`[VIGILANCE] Switched to ${city.display_name}`);
+          onCityChange?.(city);
         }} />
 
         {/* Trigger Dedup Button */}

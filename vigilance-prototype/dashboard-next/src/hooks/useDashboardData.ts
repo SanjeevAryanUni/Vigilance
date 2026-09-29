@@ -48,7 +48,18 @@ export function useDashboardData() {
         if (fetchedDetections && fetchedDetections.length > 0) {
           setDetections(fetchedDetections);
         }
-        setClusters(fetchedClusters);
+        // Merge stored overrides
+        let clustersToSet = fetchedClusters;
+        try {
+          if (typeof window !== 'undefined') {
+            const stored = sessionStorage.getItem('vigilance_status_overrides');
+            if (stored) {
+              const map = JSON.parse(stored);
+              clustersToSet = fetchedClusters.map((c) => (map[c.id] ? { ...c, status: map[c.id] } : c));
+            }
+          }
+        } catch {}
+        setClusters(clustersToSet);
       } else if (isHealthy) {
         setBackendAvailable(true);
         setBackendStatus('healthy');
@@ -136,16 +147,39 @@ export function useDashboardData() {
   }, [loadData]);
 
   const handleStatusChange = async (clusterId: number, newStatus: ClusterStatus) => {
-    const previous = clusters.find((c) => c.id === clusterId)?.status;
+    // Optimistically update cluster status locally
     setClusters((prev) =>
       prev.map((c) => (c.id === clusterId ? { ...c, status: newStatus, updated_at: new Date().toISOString() } : c))
     );
-    const success = await updateClusterStatus(clusterId, newStatus);
-    if (!success && previous) {
-      // Rollback on network failure
-      setClusters((prev) =>
-        prev.map((c) => (c.id === clusterId ? { ...c, status: previous, updated_at: new Date().toISOString() } : c))
-      );
+
+    // Save override to sessionStorage so periodic polls don't clobber it in demo mode
+    try {
+      if (typeof window !== 'undefined') {
+        const stored = sessionStorage.getItem('vigilance_status_overrides');
+        const map = stored ? JSON.parse(stored) : {};
+        map[clusterId] = newStatus;
+        sessionStorage.setItem('vigilance_status_overrides', JSON.stringify(map));
+        
+        // Dispatch toast notification
+        window.dispatchEvent(
+          new CustomEvent('vigilance:toast', {
+            detail: {
+              title: `Work Order WO-${clusterId.toString().padStart(4, '0')}`,
+              message: `Status transitioned to ${newStatus.toUpperCase()}`,
+              type: newStatus === 'resolved' ? 'success' : 'info',
+            },
+          })
+        );
+      }
+    } catch {
+      // Ignore storage errors
+    }
+
+    // Attempt background sync with backend
+    try {
+      await updateClusterStatus(clusterId, newStatus);
+    } catch (err) {
+      console.warn('[Vigilance] Status sync postponed (operating in offline demo mode):', err);
     }
   };
 

@@ -5,7 +5,14 @@ import { MapPin, ChevronDown, Check, Globe } from 'lucide-react';
 
 import { getApiBase, getAuthHeaders } from '@/lib/api';
 
-interface CityInfo {
+export interface CityPOI {
+  name: string;
+  type: 'hospital' | 'school';
+  lat: number;
+  lon: number;
+}
+
+export interface CityInfo {
   key: string;
   display_name: string;
   state: string;
@@ -13,36 +20,88 @@ interface CityInfo {
   zoom: number;
   municipal_body: string;
   is_active: boolean;
+  pois?: CityPOI[];
 }
 
 interface CitySelectorProps {
   onCityChange?: (city: CityInfo) => void;
 }
 
+const DEFAULT_CITIES: CityInfo[] = [
+  {
+    key: 'chennai',
+    display_name: 'Chennai',
+    state: 'Tamil Nadu',
+    center: { lat: 13.0827, lon: 80.2707 },
+    zoom: 12,
+    municipal_body: 'Greater Chennai Corporation (GCC)',
+    is_active: true,
+    pois: [
+      { name: 'Apollo Hospital, Greams Rd', type: 'hospital', lat: 13.0583, lon: 80.2528 },
+      { name: 'Fortis Malar Hospital, Adyar', type: 'hospital', lat: 13.0067, lon: 80.2572 },
+      { name: 'MIOT International, Manapakkam', type: 'hospital', lat: 13.0214, lon: 80.1802 },
+      { name: 'Madras Medical College (RGGGH)', type: 'school', lat: 13.0817, lon: 80.2778 },
+      { name: 'IIT Madras, Guindy Gate', type: 'school', lat: 12.9915, lon: 80.2337 },
+      { name: 'Anna University Main Campus', type: 'school', lat: 13.0102, lon: 80.2355 },
+    ],
+  },
+  {
+    key: 'bangalore',
+    display_name: 'Bangalore',
+    state: 'Karnataka',
+    center: { lat: 12.9716, lon: 77.5946 },
+    zoom: 12,
+    municipal_body: 'Bruhat Bengaluru Mahanagara Palike (BBMP)',
+    is_active: false,
+    pois: [
+      { name: 'Manipal Hospital, Old Airport Rd', type: 'hospital', lat: 12.9592, lon: 77.6499 },
+      { name: 'NIMHANS Neuro Centre', type: 'hospital', lat: 12.9392, lon: 77.5959 },
+      { name: 'Bowring and Lady Curzon Hospital', type: 'hospital', lat: 12.9822, lon: 77.6045 },
+      { name: 'Indian Institute of Science (IISc)', type: 'school', lat: 13.0219, lon: 77.5671 },
+      { name: 'RV College of Engineering', type: 'school', lat: 12.9237, lon: 77.4987 },
+      { name: 'BMS College of Engineering', type: 'school', lat: 12.9416, lon: 77.5655 },
+    ],
+  },
+  {
+    key: 'delhi',
+    display_name: 'Delhi NCR',
+    state: 'NCT Delhi',
+    center: { lat: 28.6139, lon: 77.2090 },
+    zoom: 11,
+    municipal_body: 'Municipal Corporation of Delhi (MCD)',
+    is_active: false,
+    pois: [
+      { name: 'AIIMS New Delhi Trauma Centre', type: 'hospital', lat: 28.5672, lon: 77.2100 },
+      { name: 'Safdarjung Super Speciality Hospital', type: 'hospital', lat: 28.5700, lon: 77.2075 },
+      { name: 'Dr. Ram Manohar Lohia Hospital', type: 'hospital', lat: 28.6251, lon: 77.2003 },
+      { name: 'IIT Delhi, Hauz Khas', type: 'school', lat: 28.5450, lon: 77.1926 },
+      { name: 'Delhi University North Campus', type: 'school', lat: 28.6904, lon: 77.2066 },
+      { name: 'Jawaharlal Nehru University (JNU)', type: 'school', lat: 28.5398, lon: 77.1664 },
+    ],
+  },
+];
+
 export default function CitySelector({ onCityChange }: CitySelectorProps) {
-  const [cities, setCities] = useState<CityInfo[]>([]);
+  const [cities, setCities] = useState<CityInfo[]>(DEFAULT_CITIES);
   const [activeCity, setActiveCity] = useState<string>('chennai');
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Fetch cities on mount
+  // Fetch cities on mount with fallback
   useEffect(() => {
     const base = getApiBase();
     const url = base ? `${base}/api/cities` : '/api/cities';
     fetch(url)
       .then(res => res.json())
       .then(data => {
-        setCities(data.cities || []);
-        setActiveCity(data.active || 'chennai');
+        if (data.cities && data.cities.length > 0) {
+          setCities(data.cities);
+          setActiveCity(data.active || 'chennai');
+        }
       })
       .catch(() => {
-        // Fallback if backend is down
-        setCities([
-          { key: 'chennai', display_name: 'Chennai', state: 'Tamil Nadu', center: { lat: 13.0827, lon: 80.2707 }, zoom: 12, municipal_body: 'Greater Chennai Corporation (GCC)', is_active: true },
-          { key: 'bangalore', display_name: 'Bangalore', state: 'Karnataka', center: { lat: 12.9716, lon: 77.5946 }, zoom: 12, municipal_body: 'Bruhat Bengaluru Mahanagara Palike (BBMP)', is_active: false },
-          { key: 'delhi', display_name: 'Delhi', state: 'NCT Delhi', center: { lat: 28.6139, lon: 77.2090 }, zoom: 11, municipal_body: 'Municipal Corporation of Delhi (MCD)', is_active: false },
-        ]);
+        setCities(DEFAULT_CITIES);
       });
   }, []);
 
