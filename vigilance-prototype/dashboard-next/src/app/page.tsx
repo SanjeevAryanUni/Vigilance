@@ -78,12 +78,16 @@ type WorkstationMode = 'full-gis' | 'split-ops';
 type SidebarTab = 'queue' | 'traffic' | 'analytics';
 
 const MAP_LAYER_OPTIONS = [
-  { key: 'mapboxDark', label: 'Mapbox Dark', badge: 'HD' },
-  { key: 'mapboxSatellite', label: 'Satellite (Maxar)', badge: 'SAT' },
-  { key: 'mapboxNavigation', label: 'Navigation', badge: 'NIGHT' },
-  { key: 'esriDark', label: 'Dark Canvas', badge: 'ESRI' },
-  { key: 'bhuvanSatellite', label: 'Bhuvan ISRO', badge: '🇮🇳' },
-  { key: 'osmStandard', label: 'Street Map', badge: 'OSM' },
+  { key: 'mapboxDark', label: 'Mapbox Dark (HD)', badge: 'MAPBOX' },
+  { key: 'mapboxSatellite', label: 'Mapbox Satellite (Maxar)', badge: 'SAT' },
+  { key: 'mapboxNavigation', label: 'Mapbox Navigation', badge: 'NIGHT' },
+  { key: 'esriDark', label: 'Dark Canvas (ESRI)', badge: 'ESRI' },
+  { key: 'esriSatellite', label: 'World Imagery (ESRI)', badge: 'IMG' },
+  { key: 'esriTopo', label: 'Topography (ESRI)', badge: 'TOPO' },
+  { key: 'bhuvanSatellite', label: 'Bhuvan ISRO (India)', badge: '🇮🇳' },
+  { key: 'osmStandard', label: 'OpenStreetMap', badge: 'OSM' },
+  { key: 'cartoDark', label: 'Carto Dark Matter', badge: 'CARTO' },
+  { key: 'humanitarian', label: 'Humanitarian OSM', badge: 'HOT' },
 ];
 
 export default function CommandCenterPage() {
@@ -468,7 +472,7 @@ export default function CommandCenterPage() {
           )}
         >
           {/* Single-Row Unified Map Control Ribbon (NEVER WRAPS) */}
-          <div className="bg-slate-950/70 backdrop-blur-2xl border-b border-white/10 px-3 py-1.5 flex items-center justify-between gap-2 shrink-0 z-20 select-none overflow-x-auto custom-scrollbar flex-nowrap whitespace-nowrap shadow-xs">
+          <div className="bg-slate-950/70 backdrop-blur-2xl border-b border-white/10 px-3 py-1.5 flex items-center justify-between gap-2 shrink-0 z-30 select-none overflow-visible flex-nowrap whitespace-nowrap shadow-xs relative">
             {/* Left Section: Region Title & View Mode Tabs */}
             <div className="flex items-center gap-1.5 shrink-0">
               <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-slate-200 bg-white/[0.05] backdrop-blur-md px-2.5 py-1 rounded-lg border border-white/10 shadow-xs">
@@ -510,52 +514,63 @@ export default function CommandCenterPage() {
             {/* Center Section: Compact Map Layer Dropdown */}
             <div className="relative">
               <button
-                onClick={() => setShowLayerDropdown(!showLayerDropdown)}
-                className="flex items-center gap-1.5 px-2.5 py-1 bg-white/[0.06] hover:bg-white/[0.10] border border-white/10 hover:border-amber-500/40 rounded-lg text-xs font-mono text-slate-200 transition-all shadow-xs"
+                type="button"
+                onClick={() => setShowLayerDropdown((prev) => !prev)}
+                className="flex items-center gap-1.5 px-2.5 py-1 bg-white/[0.06] hover:bg-white/[0.10] border border-white/10 hover:border-amber-500/40 rounded-lg text-xs font-mono text-slate-200 transition-all shadow-xs cursor-pointer active:scale-95"
                 title="Select Map Basemap Layer"
               >
                 <Layers className="w-3.5 h-3.5 text-amber-400" />
                 <span className="font-semibold text-[11px]">
                   {MAP_LAYER_OPTIONS.find((l) => l.key === activeMapStyle)?.label || 'Map Layer'}
                 </span>
-                <ChevronDown className={cn('w-3 h-3 text-slate-400 transition-transform', showLayerDropdown && 'rotate-180')} />
+                <ChevronDown className={cn('w-3 h-3 text-slate-400 transition-transform duration-150', showLayerDropdown && 'rotate-180')} />
               </button>
 
               {showLayerDropdown && (
-                <div
-                  className="absolute top-full mt-1.5 left-0 w-56 bg-slate-950/95 backdrop-blur-2xl border border-white/15 rounded-xl shadow-2xl p-1.5 z-50 animate-in fade-in zoom-in-95 duration-150"
-                  onMouseLeave={() => setShowLayerDropdown(false)}
-                >
-                  <div className="px-2 py-1 text-[9.5px] font-mono text-slate-400 uppercase tracking-widest border-b border-white/10 mb-1">
-                    BASEMAP TELEMETRY LAYER
+                <>
+                  {/* Click-away backdrop */}
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setShowLayerDropdown(false)}
+                  />
+                  <div
+                    className="absolute top-full mt-1.5 left-0 w-64 bg-slate-950/98 backdrop-blur-2xl border border-white/15 rounded-xl shadow-2xl p-1.5 z-50 animate-in fade-in zoom-in-95 duration-100 max-h-80 overflow-y-auto custom-scrollbar"
+                  >
+                    <div className="px-2.5 py-1 text-[9.5px] font-mono text-slate-400 uppercase tracking-widest border-b border-white/10 mb-1 flex items-center justify-between">
+                      <span>BASEMAP TELEMETRY LAYERS</span>
+                      <span className="text-[9px] text-amber-400 font-semibold">{MAP_LAYER_OPTIONS.length} MAPS</span>
+                    </div>
+                    <div className="space-y-0.5">
+                      {MAP_LAYER_OPTIONS.map((layer) => {
+                        const isSelected = activeMapStyle === layer.key;
+                        return (
+                          <button
+                            key={layer.key}
+                            type="button"
+                            onClick={() => {
+                              setActiveMapStyle(layer.key);
+                              setShowLayerDropdown(false);
+                            }}
+                            className={cn(
+                              'w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left text-xs font-mono transition-colors cursor-pointer',
+                              isSelected
+                                ? 'bg-amber-500/15 text-amber-300 font-bold border border-amber-500/30'
+                                : 'text-slate-300 hover:text-white hover:bg-white/[0.06]'
+                            )}
+                          >
+                            <span className="flex items-center gap-2">
+                              <span className="text-[9.5px] text-slate-400 font-semibold px-1 py-0.5 rounded bg-white/[0.05] border border-white/10 min-w-10 text-center">
+                                {layer.badge}
+                              </span>
+                              <span className="truncate">{layer.label}</span>
+                            </span>
+                            {isSelected && <Check className="w-3.5 h-3.5 text-amber-400 shrink-0 ml-1.5" />}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
-                  {MAP_LAYER_OPTIONS.map((layer) => {
-                    const isSelected = activeMapStyle === layer.key;
-                    return (
-                      <button
-                        key={layer.key}
-                        onClick={() => {
-                          setActiveMapStyle(layer.key);
-                          setShowLayerDropdown(false);
-                        }}
-                        className={cn(
-                          'w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-left text-xs font-mono transition-colors cursor-pointer',
-                          isSelected
-                            ? 'bg-amber-500/15 text-amber-300 font-bold border border-amber-500/30'
-                            : 'text-slate-300 hover:text-white hover:bg-white/[0.06]'
-                        )}
-                      >
-                        <span className="flex items-center gap-2">
-                          <span className="text-[10px] text-slate-400 font-semibold px-1 rounded bg-white/[0.05] border border-white/10">
-                            {layer.badge}
-                          </span>
-                          <span>{layer.label}</span>
-                        </span>
-                        {isSelected && <Check className="w-3.5 h-3.5 text-amber-400" />}
-                      </button>
-                    );
-                  })}
-                </div>
+                </>
               )}
             </div>
 

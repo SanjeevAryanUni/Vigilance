@@ -184,6 +184,63 @@ export const MAP_STYLES: Record<string, { label: string; style: maplibregl.Style
       ],
     },
   },
+  esriSatellite: {
+    label: '🛰️ World Imagery',
+    style: {
+      version: 8,
+      sources: {
+        'esri-satellite': {
+          type: 'raster',
+          tiles: [
+            'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+          ],
+          tileSize: 256,
+          attribution: '© Esri, Maxar, Earthstar Geographics',
+        },
+      },
+      layers: [
+        { id: 'esri-satellite-layer', type: 'raster', source: 'esri-satellite', minzoom: 0, maxzoom: 20 },
+      ],
+    },
+  },
+  cartoDark: {
+    label: '🌑 Carto Dark Matter',
+    style: {
+      version: 8,
+      sources: {
+        'carto-dark': {
+          type: 'raster',
+          tiles: [
+            'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png',
+            'https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png',
+            'https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png',
+          ],
+          tileSize: 256,
+          attribution: '© CARTO, © OpenStreetMap',
+        },
+      },
+      layers: [
+        { id: 'carto-dark-layer', type: 'raster', source: 'carto-dark', minzoom: 0, maxzoom: 20 },
+      ],
+    },
+  },
+  humanitarian: {
+    label: '🏥 Humanitarian OSM',
+    style: {
+      version: 8,
+      sources: {
+        'hot-tiles': {
+          type: 'raster',
+          tiles: ['https://a.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png'],
+          tileSize: 256,
+          attribution: '© OpenStreetMap contributors, Humanitarian OSM Team',
+        },
+      },
+      layers: [
+        { id: 'hot-tiles-layer', type: 'raster', source: 'hot-tiles', minzoom: 0, maxzoom: 19 },
+      ],
+    },
+  },
 };
 
 const DEFAULT_STYLE = MAPBOX_TOKEN ? 'mapboxDark' : 'esriDark';
