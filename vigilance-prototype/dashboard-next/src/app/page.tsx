@@ -148,7 +148,7 @@ export default function CommandCenterPage() {
 
   return (
     <AnimatedLayout>
-      <div className="flex flex-col min-h-screen lg:h-[100dvh] w-screen bg-[#030712] text-slate-100 overflow-x-hidden lg:overflow-hidden font-sans select-none relative">
+      <div className="flex flex-col min-h-screen w-full bg-[#030712] text-slate-100 overflow-x-hidden font-sans select-none relative">
         {/* Ambient Glowing Background Orbs (Diffuses through frosted glass panels) */}
         <div className="absolute -top-40 -left-40 w-96 h-96 bg-amber-600/10 rounded-full blur-[140px] pointer-events-none z-0" />
         <div className="absolute top-1/2 -right-40 w-96 h-96 bg-zinc-700/10 rounded-full blur-[140px] pointer-events-none z-0" />
@@ -192,8 +192,8 @@ export default function CommandCenterPage() {
         </div>
       )}
 
-      {/* Mobile Tab Switcher Bar (visible only on mobile/tablet < lg) */}
-      <div className="lg:hidden flex items-center bg-slate-950/60 backdrop-blur-xl border-b border-white/10 px-3 py-1.5 shrink-0 z-20">
+      {/* Mobile Tab Switcher Bar (visible only on mobile/tablet < xl) */}
+      <div className="xl:hidden flex items-center bg-slate-950/60 backdrop-blur-xl border-b border-white/10 px-3 py-1.5 shrink-0 z-20">
         <div className="flex items-center gap-1 p-0.5 bg-slate-950/50 rounded-lg border border-white/10 text-xs font-mono w-full">
           <button
             onClick={() => setMobileTab('map')}
@@ -227,13 +227,13 @@ export default function CommandCenterPage() {
         <AgentThoughtStream />
       </div>
 
-      {/* 3. Main Workstation Grid */}
-      <div className="flex-1 flex flex-col lg:flex-row overflow-visible lg:overflow-hidden p-3 gap-3 min-h-0 z-10">
+      {/* 3. Main Workstation Grid — scrollable two-column layout */}
+      <div className="flex flex-col xl:flex-row gap-3 p-3 z-10">
         {/* Left Sidebar: Executive KPIs + Tabbed Operations / Analytics */}
         <aside
           className={cn(
-            'w-full lg:w-[410px] xl:w-[440px] flex flex-col gap-2.5 shrink-0 overflow-y-auto custom-scrollbar pr-0.5',
-            mobileTab !== 'telemetry' && 'hidden lg:flex'
+            'w-full xl:w-[430px] flex flex-col gap-2.5 shrink-0',
+            mobileTab !== 'telemetry' && 'hidden xl:flex'
           )}
         >
           {/* Executive KPI 2x2 Metric Grid */}
@@ -360,7 +360,7 @@ export default function CommandCenterPage() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -8 }}
                 transition={{ duration: 0.18, ease: 'easeOut' }}
-                className="flex-1 flex flex-col gap-2.5 overflow-y-auto custom-scrollbar pr-1 min-h-0"
+                className="flex flex-col gap-2.5"
               >
                 {/* Edge AI Hardware Cockpit — GAP 3 Proof */}
                 <HardwareCockpit />
@@ -381,7 +381,7 @@ export default function CommandCenterPage() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -8 }}
                 transition={{ duration: 0.18, ease: 'easeOut' }}
-                className="flex-1 flex flex-col gap-2.5 overflow-y-auto custom-scrollbar pr-1 min-h-0"
+                className="flex flex-col gap-2.5"
               >
                 <IncidentFeed />
               </motion.div>
@@ -394,7 +394,7 @@ export default function CommandCenterPage() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -8 }}
                 transition={{ duration: 0.18, ease: 'easeOut' }}
-                className="flex-1 flex flex-col gap-2.5 overflow-y-auto custom-scrollbar pr-1 min-h-0"
+                className="flex flex-col gap-2.5"
               >
                 {/* Corridor Distress Spline */}
                 <div className="bg-slate-900/40 backdrop-blur-xl border border-white/10 rounded-2xl p-3.5 flex flex-col shadow-[0_8px_32px_0_rgba(0,0,0,0.37),inset_0_1px_0_0_rgba(255,255,255,0.08)]">
@@ -427,8 +427,8 @@ export default function CommandCenterPage() {
         {/* Center/Right: WebGIS Map Canvas & Unified Workstation Area */}
         <main
           className={cn(
-            'flex-1 flex flex-col rounded-2xl overflow-hidden border border-white/10 bg-slate-950/40 backdrop-blur-2xl shadow-[0_16px_40px_rgba(0,0,0,0.5),inset_0_1px_0_0_rgba(255,255,255,0.10)] min-h-0 relative',
-            mobileTab !== 'map' && 'hidden lg:flex'
+            'flex-1 flex flex-col rounded-2xl overflow-hidden border border-white/10 bg-slate-950/40 backdrop-blur-2xl shadow-[0_16px_40px_rgba(0,0,0,0.5),inset_0_1px_0_0_rgba(255,255,255,0.10)] relative',
+            mobileTab !== 'map' && 'hidden xl:flex'
           )}
         >
           {/* Single-Row Unified Map Control Ribbon (NEVER WRAPS) */}
@@ -539,8 +539,8 @@ export default function CommandCenterPage() {
             </div>
           </div>
 
-          {/* Map & Cockpit Viewport */}
-          <div className="flex-1 w-full h-full flex overflow-hidden relative">
+          {/* Map & Cockpit Viewport — fixed height so map is always visible */}
+          <div className="w-full flex overflow-hidden relative" style={{ height: 'min(72vh, 860px)' }}>
             {workstationMode === 'split-ops' && (
               <div className="w-1/2 h-full border-r border-white/10 p-2 relative bg-slate-950/80">
                 <div className="absolute top-2 left-3 z-10 text-[10px] font-mono text-slate-300 font-bold flex items-center gap-1.5 bg-slate-900/60 backdrop-blur-md border border-white/10 px-2 py-0.5 rounded-md shadow-xs">
