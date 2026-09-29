@@ -69,6 +69,15 @@ export default function CommandPalette({
           action: () => {
             onClose();
             onTriggerDedup?.();
+            if (typeof window !== 'undefined') {
+              window.dispatchEvent(new CustomEvent('vigilance:toast', {
+                detail: {
+                  title: 'SPATIAL DEDUP INITIATED',
+                  message: 'Executing PostGIS ST_ClusterDBSCAN (15m radius, min 3 points).',
+                  type: 'info'
+                }
+              }));
+            }
           },
         },
         {
@@ -79,6 +88,15 @@ export default function CommandPalette({
           action: () => {
             onClose();
             onRefreshData?.();
+            if (typeof window !== 'undefined') {
+              window.dispatchEvent(new CustomEvent('vigilance:toast', {
+                detail: {
+                  title: 'REFRESHING TELEMETRY PIPELINE',
+                  message: 'Synchronizing latest telemetry frames and corridor severity indices.',
+                  type: 'info'
+                }
+              }));
+            }
           },
         },
         {
@@ -117,7 +135,15 @@ export default function CommandPalette({
           icon: CloudRain,
           action: () => {
             onClose();
-            alert('Monsoon simulation active: Elevated distress weight applied to GST Road & OMR.');
+            if (typeof window !== 'undefined') {
+              window.dispatchEvent(new CustomEvent('vigilance:toast', {
+                detail: {
+                  title: 'MONSOON SIMULATION ACTIVE',
+                  message: 'Elevated distress weighting (+35%) applied to GST Road & OMR corridors.',
+                  type: 'info'
+                }
+              }));
+            }
           },
         },
       ],

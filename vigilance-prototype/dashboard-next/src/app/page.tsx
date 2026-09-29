@@ -836,6 +836,7 @@ export default function CommandCenterPage() {
           onClose={() => setShowCommandPalette(false)}
           onTriggerDedup={triggerDedup}
           onRefreshData={refreshData}
+          onOpenCockpit={() => setShowCockpitModal(true)}
         />
 
         {/* 5. Slide-Out Cluster Detail & IRC Audit Drawer */}
